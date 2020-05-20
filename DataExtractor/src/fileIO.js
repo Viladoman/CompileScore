@@ -2,6 +2,7 @@ var fs = require('fs');
 var path = require('path');
 
 var extension = 'json';
+var batchMaxSize = 100; 
 
 function IsExtensionFile(file,extension)
 {
@@ -18,18 +19,37 @@ function ParseFile(file,parseCallback,doneCallback)
   });
 }
 
+function OpenNextFileBatch(files,parseCallback,doneCallback)
+{ 
+  if (files.length == 0)
+  { 
+    doneCallback(); 
+  }
+  else 
+  { 
+    var batchSize = Math.min(batchMaxSize,files.length); 
+    var batch = files.slice(0,batchSize);
+    files.splice(0,batchSize); 
+
+    console.log('Open file batch of '+batchSize+' files');
+
+    var pending = batchSize; 
+    for (var i=0,sz=batch.length;i<sz;++i)
+    { 
+      ParseFile(batch[i],parseCallback,function(err){
+        if (err){ doneCallback(err); return; }
+        if (!--pending) 
+        {
+          OpenNextFileBatch(files,parseCallback,doneCallback);
+        }
+      })
+    }
+  }
+}
+
 function OpenFiles(files,parseCallback,doneCallback)
 { 
-  //TODO ~ limit this to a max open files to avoid nodejs crashing for too many files open.
-
-  var pending = files.length;
-  for (var i=0,sz=files.length;i<sz;++i)
-  { 
-    ParseFile(files[i],parseCallback,function(err){
-      if (err){ doneCallback(err); return; }
-       if (!--pending) doneCallback();
-    })
-  }
+  OpenNextFileBatch(files,parseCallback,doneCallback);
 }
 
 function SearchSingleDir(dir,folders,files,doneCallback)
