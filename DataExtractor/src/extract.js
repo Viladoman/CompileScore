@@ -6,10 +6,11 @@ var sources = {};
 
 function FillDatabaseData(collection,name,duration)
 {
-  var found = collection[name];
+  var label = name.toLowerCase();
+  var found = collection[label];
   if (found == undefined)
   {
-    collection[name] = {min: duration, max: duration, acc: duration, num: 1};
+    collection[label] = {min: duration, max: duration, acc: duration, num: 1};
   }
   else
   {
