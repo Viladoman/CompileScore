@@ -1,0 +1,21 @@
+# Specifies intentionally untracked files to ignore.
+#
+# https://git-scm.com/docs/gitignore
+# https://www.gitignore.io/
+# https://github.com/github/gitignore
+#
+# In case of conflict with a specific file format, feel free to remove the
+# problematic line.
+
+# Generated when a Git operation is conflicting.
+*.orig
+
+# Visual Studio Code
+DataExtractor/.vscode/
+DataExtractor/.history
+
+# VS Exports
+CompileScore/.vs/
+CompileScore/bin/
+CompileScore/obj/
+

@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="CompileScore.CompileDetailAdornment"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:vs_shell="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
+             xmlns:local="clr-namespace:CompileScore"
+             x:Name="CompileDetailAdornmentUserControl"
+             mc:Ignorable="d" 
+             d:DesignHeight="7" d:DesignWidth="7">
+    <Grid>
+        <Label Foreground="{DynamicResource {x:Static vs_shell:EnvironmentColors.ToolWindowTextBrushKey}}" FontSize="4" x:Name="ExpandLabel" Margin="0 0 0 0" Content="+" 
+           MouseEnter="OnMouseEnter"
+           MouseLeave="OnMouseLeave"/>
+        <Popup x:Name="HoverPopup"
+            PlacementTarget="{Binding ElementName=ExpandLabel}"
+               Placement="Custom"
+               Focusable="False"
+               MouseLeave="OnMouseLeavePopup"
+               IsOpen="False" 
+               StaysOpen="True"
+               Width="350">
+            <Border Background="{DynamicResource {x:Static vs_shell:EnvironmentColors.ToolWindowBackgroundBrushKey}}" BorderBrush="{DynamicResource {x:Static vs_shell:EnvironmentColors.ToolWindowTextBrushKey}}" BorderThickness="1" Padding="3 2 3 4" >
+                <TextBlock Foreground="{DynamicResource {x:Static vs_shell:EnvironmentColors.ToolWindowTextBrushKey}}" x:Name="PopupText" TextWrapping="Wrap"></TextBlock>
+            </Border>
+
+        </Popup>
+    </Grid>
+</UserControl>
