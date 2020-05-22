@@ -3,7 +3,7 @@
     <Metadata>
         <Identity Id="CompileScore.19699ea5-2ee6-44b6-9964-a19882b92403" Version="1.0" Language="en-US" Publisher="Ramon Viladomat" />
         <DisplayName>Compile Score</DisplayName>
-        <Description xml:space="preserve">Code hihglighting based on compilation data.Code Hihgl</Description>
+        <Description xml:space="preserve">Code hihglighting based on compilation data.</Description>
     </Metadata>
     <Installation>
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0, 17.0)" />

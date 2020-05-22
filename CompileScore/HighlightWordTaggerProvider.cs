@@ -7,7 +7,7 @@
     using Microsoft.VisualStudio.Utilities;
 
     [Export(typeof(IViewTaggerProvider))]
-    [ContentType("text")]
+    [ContentType("C/C++")]
     [TagType(typeof(HighlightWordTag))]
     public class HighlightWordTaggerProvider : IViewTaggerProvider
     {

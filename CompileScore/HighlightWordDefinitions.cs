@@ -43,6 +43,14 @@
     [UserVisible(true)]
     internal class SeverityDefinition3 : SeverityDefinitionBase
     {
-        public SeverityDefinition3() { this.Fill = new SolidColorBrush(Color.FromArgb(70, (byte)255, (byte)0, (byte)0)); }
+        public SeverityDefinition3() { this.Fill = new SolidColorBrush(Color.FromArgb(70, (byte)159, (byte)0, (byte)255)); }
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [Name("SeverityDefinition5")]
+    [UserVisible(true)]
+    internal class SeverityDefinition4 : SeverityDefinitionBase
+    {
+        public SeverityDefinition4() { this.Fill = new SolidColorBrush(Color.FromArgb(70, (byte)255, (byte)0, (byte)0)); }
     }
 }

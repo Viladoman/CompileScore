@@ -45,9 +45,6 @@ namespace CompileScore
         private Dictionary<string, CompileValue> _values = new Dictionary<string, CompileValue>();
         private List<uint> _normalizedThresholds = new List<uint>();
 
-        private FileSystemWatcher _includeWatcher = null;
-        private DateTime _includeWatcherLastRead = DateTime.MinValue;
-
         public event Notify IncludeDataChanged; // event
 
         public static CompilerData Instance { get { return lazy.Value; } }
@@ -69,6 +66,8 @@ namespace CompileScore
             {
                 ReloadSeverities();
             }
+
+            DocumentLifetimeManager.FileWatchedChanged += OnFileWatchedChanged;
         }
 
         private bool SetPath(string input)
@@ -100,9 +99,9 @@ namespace CompileScore
         private void ReloadSeverities()
         {
             string realPath = _solutionDir + _path;
-            WatchIncludeFile(realPath, _includeFileName, OnIncludeFileChanged);
+
+            DocumentLifetimeManager.WatchFile(realPath, _includeFileName);
             LoadSeverities(realPath + _includeFileName);
-            IncludeDataChanged?.Invoke();
         }
 
         private void LoadSeverities(string fullPath)
@@ -125,7 +124,7 @@ namespace CompileScore
                         uint max = UInt32.Parse(match.Groups[4].Value);
                         uint count = UInt32.Parse(match.Groups[5].Value);
 
-                        onlyValues.Add(mean);
+                        onlyValues.Add(max);
                         _values.Add(match.Groups[1].Value.ToLower(),new CompileValue(mean,min,max,count));
                     }
                 }
@@ -134,11 +133,13 @@ namespace CompileScore
             }
 
             RecomputeSeverities();
+
+            IncludeDataChanged?.Invoke();
         }
 
         private void ComputeNormalizedThresholds(List<uint> inputList)
         {
-            const int numSeverities = 4; //this should be a constant somewhere else 
+            const int numSeverities = 5; //this should be a constant somewhere else 
 
             _normalizedThresholds.Clear();
             inputList.Sort();
@@ -171,7 +172,7 @@ namespace CompileScore
 
             foreach (KeyValuePair<string, CompileValue> entry in _values)
             {
-                entry.Value.Severity = ComputeSeverity(thresholdList, entry.Value.Mean);
+                entry.Value.Severity = ComputeSeverity(thresholdList, entry.Value.Max);
             }
         }
 
@@ -190,50 +191,10 @@ namespace CompileScore
             return Convert.ToUInt32(ret);
         }
 
-        [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
-        private void WatchIncludeFile(string path, string filename, FileSystemEventHandler callback)
+        private void OnFileWatchedChanged()
         {
-            return; //PLACEHOLDER until we fix teh threading with STA 
-
-            if (Directory.Exists(path))
-            {
-                if (_includeWatcher == null)
-                {
-                    _includeWatcher = new FileSystemWatcher();
-                }
-
-                _includeWatcher.Path = path;
-                _includeWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
-                _includeWatcher.Filter = filename;
-                _includeWatcher.Changed += callback;
-                _includeWatcher.Created += callback;
-                _includeWatcher.Deleted += callback;
-                _includeWatcher.EnableRaisingEvents = true; // Begin watching.
-            }
-            else
-            {
-                if (_includeWatcher != null)
-                {
-                    _includeWatcher.EnableRaisingEvents = false;
-                    _includeWatcher = null;
-                }
-            }
-        }
-
-        private void OnIncludeFileChanged(object source, FileSystemEventArgs e)
-        {
-            string filePath = _solutionDir + _path + _includeFileName;
-            DateTime lastWriteTime = File.GetLastWriteTime(filePath);
-            if (lastWriteTime != _includeWatcherLastRead)
-            {
-                //Do this in the appropriate thread
-
-                //TODO ~ ramonv ~ do this once in an STA thread
-                //LoadSeverities(filePath);
-
-                _includeWatcherLastRead = lastWriteTime;
-            }
-        }
+            LoadSeverities(_solutionDir + _path + _includeFileName);
+        } 
 
         public void OnSettingsPathChanged()
         {

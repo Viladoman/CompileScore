@@ -26,7 +26,7 @@ function FinalizeDatabaseData(container, targetContainer)
   for (var key in container)
   {
     var entry = container[key];
-    targetContainer.push({ name: key, min: entry.min, max: entry.max, num: entry.num, avg: Math.round((entry.acc*100)/entry.num)/100 });
+    targetContainer.push({ name: key, min: entry.min, max: entry.max, num: entry.num, avg: Math.round(entry.acc/entry.num) });
   }
 }
 
