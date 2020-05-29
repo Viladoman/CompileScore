@@ -8,10 +8,11 @@
     using Microsoft.VisualStudio.Text;
     using Microsoft.VisualStudio.Text.Editor;
     using Microsoft.VisualStudio.Text.Tagging;
+    using CompileScore.Common;
 
-    public class HighlightWordTag : TextMarkerTag
+    public class ScoreGlyphTag : IGlyphTag
     {
-        public HighlightWordTag(CompileValue value) : base("SeverityDefinition" + value.Severity)
+        public ScoreGlyphTag(CompileValue value)
         {
             Value = value;
         }
@@ -19,13 +20,13 @@
         public CompileValue Value { get; }
     }
 
-    class HighlightWordTagger : ITagger<HighlightWordTag>
+    class ScoreGlyphTagger : ITagger<ScoreGlyphTag>
     {
         private ITextBuffer _buffer;
         private readonly string _filename;
         private Dictionary<ITrackingSpan, CompileValue> _trackingSpans;
 
-        public HighlightWordTagger(ITextView view, ITextBuffer sourceBuffer)
+        public ScoreGlyphTagger(ITextView view, ITextBuffer sourceBuffer)
         {
             _buffer = sourceBuffer;
             _filename = GetFileName(sourceBuffer);
@@ -38,7 +39,7 @@
 
         private string GetFileName(ITextBuffer buffer)
         {
-            buffer.Properties.TryGetProperty( typeof(ITextDocument), out ITextDocument document);
+            buffer.Properties.TryGetProperty(typeof(ITextDocument), out ITextDocument document);
             return document == null ? null : document.FilePath;
         }
 
@@ -49,7 +50,7 @@
                 RefreshTags();
             }
         }
-        
+
         private void OnDataChanged()
         {
             RefreshTags();
@@ -65,7 +66,7 @@
         {
             _trackingSpans = new Dictionary<ITrackingSpan, CompileValue>();
             var currentSnapshot = _buffer.CurrentSnapshot;
-            MatchCollection matches = Regex.Matches(currentSnapshot.GetText(), @"#\s*include\s*(?:<|"")(.*)(?:>|"")");
+            MatchCollection matches = Regex.Matches(currentSnapshot.GetText(), @"#\s*include\s*[<""]([a-zA-Z0-9\\/\.]+)[>""]");
             foreach (Match match in matches)
             {
                 if (match.Success)
@@ -95,12 +96,12 @@
 
         public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
 
-        public IEnumerable<ITagSpan<HighlightWordTag>> GetTags(NormalizedSnapshotSpanCollection spans)
+        public IEnumerable<ITagSpan<ScoreGlyphTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
             RemoveEmptyTrackingSpans();
 
-            List<ITagSpan<HighlightWordTag>> res =  new List<ITagSpan<HighlightWordTag>>();
- 
+            List<ITagSpan<ScoreGlyphTag>> res = new List<ITagSpan<ScoreGlyphTag>>();
+
             var currentSnapshot = _buffer.CurrentSnapshot;
             foreach (KeyValuePair<ITrackingSpan, CompileValue> item in _trackingSpans)
             {
@@ -108,10 +109,10 @@
                 if (spans.Any(sp => spanInCurrentSnapshot.IntersectsWith(sp)))
                 {
                     var snapshotSpan = new SnapshotSpan(currentSnapshot, spanInCurrentSnapshot);
-                    res.Add(new TagSpan<HighlightWordTag>(snapshotSpan, new HighlightWordTag(item.Value)));
+                    res.Add(new TagSpan<ScoreGlyphTag>(snapshotSpan, new ScoreGlyphTag(item.Value)));
                 }
             }
-            
+
             return res;
         }
     }

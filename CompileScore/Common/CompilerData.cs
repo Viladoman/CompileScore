@@ -45,7 +45,9 @@ namespace CompileScore
         private Dictionary<string, CompileValue> _values = new Dictionary<string, CompileValue>();
         private List<uint> _normalizedThresholds = new List<uint>();
 
-        public event Notify IncludeDataChanged; // event
+        //events
+        public event Notify IncludeDataChanged;
+        public event Notify HighlightEnabledChanged;
 
         public static CompilerData Instance { get { return lazy.Value; } }
         private CompilerData(){}
@@ -61,13 +63,21 @@ namespace CompileScore
             _solutionDir = Path.GetDirectoryName(applicationObject.Solution.FullName) + '\\';
 
             //Get the information from the settings
-            GeneralSettingsPageGrid settings = _package.GetGeneralSettings();
+            GeneralSettingsPageGrid settings = GetGeneralSettings();
             if (SetPath(settings.OptionPath) || SetIncludeFileName(settings.OptionIncludeFileName))
             {
                 ReloadSeverities();
             }
 
             DocumentLifetimeManager.FileWatchedChanged += OnFileWatchedChanged;
+
+            //Trigger settings refresh
+            OnHighlightEnabledChanged();
+        }
+
+        public GeneralSettingsPageGrid GetGeneralSettings()
+        {
+            return _package == null? null : _package.GetGeneralSettings();
         }
 
         private bool SetPath(string input)
@@ -167,7 +177,7 @@ namespace CompileScore
         private void RecomputeSeverities()
         {
             //Get table and options from 
-            GeneralSettingsPageGrid settings = _package.GetGeneralSettings();
+            GeneralSettingsPageGrid settings = GetGeneralSettings();
             List<uint> thresholdList = settings.OptionNormalizedSeverity ? _normalizedThresholds : settings.GetOptionSeverities();
 
             foreach (KeyValuePair<string, CompileValue> entry in _values)
@@ -198,17 +208,15 @@ namespace CompileScore
 
         public void OnSettingsPathChanged()
         {
-            if (SetPath(_package.GetGeneralSettings().OptionPath))
+            if (SetPath(GetGeneralSettings().OptionPath))
             {
                 ReloadSeverities(); 
             }
-
-            //TODO ~ ramonv ~ change other services too 
         }
 
         public void OnSettingsIncludeFileNameChanged()
         {
-            if (SetIncludeFileName(_package.GetGeneralSettings().OptionIncludeFileName))
+            if (SetIncludeFileName(GetGeneralSettings().OptionIncludeFileName))
             {
                 ReloadSeverities();
             }
@@ -218,6 +226,11 @@ namespace CompileScore
         {
             RecomputeSeverities();
             IncludeDataChanged?.Invoke();
+        }
+
+        public void OnHighlightEnabledChanged()
+        {
+            HighlightEnabledChanged?.Invoke();
         }
     }
 }

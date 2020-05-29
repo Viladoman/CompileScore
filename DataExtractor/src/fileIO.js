@@ -31,7 +31,7 @@ function OpenNextFileBatch(files,parseCallback,doneCallback)
     var batch = files.slice(0,batchSize);
     files.splice(0,batchSize); 
 
-    console.log('Open file batch of '+batchSize+' files');
+    console.log('Open file batch of '+batchSize+' files (remaining '+files.length+')');
 
     var pending = batchSize; 
     for (var i=0,sz=batch.length;i<sz;++i)

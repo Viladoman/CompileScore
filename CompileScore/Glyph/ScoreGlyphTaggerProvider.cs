@@ -8,20 +8,16 @@
 
     [Export(typeof(IViewTaggerProvider))]
     [ContentType("C/C++")]
-    [TagType(typeof(HighlightWordTag))]
-    public class HighlightWordTaggerProvider : IViewTaggerProvider
+    [TagType(typeof(ScoreGlyphTag))]
+    public class ScoreGlyphTaggerProvider : IViewTaggerProvider
     {
-        #region ITaggerProvider Members
-
         public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag
         {
             // Only provide highlighting on the top-level buffer
             if (textView.TextBuffer != buffer)
                 return null;
 
-            return new HighlightWordTagger(textView, buffer) as ITagger<T>;
+            return new ScoreGlyphTagger(textView, buffer) as ITagger<T>;
         }
-
-        #endregion
     }
 }

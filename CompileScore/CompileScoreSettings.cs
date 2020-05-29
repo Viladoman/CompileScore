@@ -10,6 +10,8 @@ namespace CompileScore
         private string optionPath = @"";
         private string optionIncludeFileName = @"compileIncludeData.txt";
         private bool optionNormalizedSeverity = true;
+        private bool optionHighlightEnabled = true;
+        private bool optionTooltipEnabled = true; 
         private List<uint> optionSeverities = new List<uint> { 250u, 1000u, 25000u, 100000u, 500000u };
 
         public List<uint> GetOptionSeverities() { return optionSeverities; }
@@ -30,6 +32,24 @@ namespace CompileScore
         {
             get { return optionIncludeFileName; }
             set { optionIncludeFileName = value; CompilerData.Instance.OnSettingsIncludeFileNameChanged(); }
+        }
+
+        [Category("Display")]
+        [DisplayName("Text Highlight")]
+        [Description("If true, the text will be highlighted with the severity color")]
+        public bool OptionHighlightEnabled
+        {
+            get { return optionHighlightEnabled; }
+            set { bool hasChanged = optionHighlightEnabled != value; optionHighlightEnabled = value; if (hasChanged) { CompilerData.Instance.OnHighlightEnabledChanged(); } }
+        }
+
+        [Category("Display")]
+        [DisplayName("Tooltip")]
+        [Description("If true, a tooltip will show up when hovering with the mouse")]
+        public bool OptionTooltipEnabled
+        {
+            get { return optionTooltipEnabled; }
+            set { optionTooltipEnabled = value; }
         }
 
         [Category("Tags")]
