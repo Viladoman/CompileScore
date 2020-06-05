@@ -8,7 +8,7 @@
     using Microsoft.VisualStudio.Text;
     using Microsoft.VisualStudio.Text.Editor;
     using Microsoft.VisualStudio.Text.Tagging;
-    using CompileScore.Common;
+    using Microsoft.VisualStudio.Shell;
 
     public class ScoreGlyphTag : IGlyphTag
     {
@@ -28,9 +28,12 @@
 
         public ScoreGlyphTagger(ITextView view, ITextBuffer sourceBuffer)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             _buffer = sourceBuffer;
             _filename = GetFileName(sourceBuffer);
 
+            CompilerData.Instance.RefreshInstance();
             CompilerData.Instance.IncludeDataChanged += OnDataChanged;
             DocumentLifetimeManager.DocumentSavedTrigger += OnDocumentSaved;
 

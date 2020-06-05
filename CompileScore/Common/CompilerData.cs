@@ -10,6 +10,7 @@ namespace CompileScore
     using Microsoft;
     using Microsoft.VisualStudio.Shell;
     using Microsoft.VisualStudio.Shell.Interop;
+    using EnvDTE;
 
     public delegate void Notify();  // delegate
 
@@ -36,7 +37,7 @@ namespace CompileScore
         private static readonly Lazy<CompilerData> lazy = new Lazy<CompilerData>(() => new CompilerData());
 
         private CompileScorePackage _package;
-
+        private IServiceProvider _serviceProvider;
 
         private string _path = "";
         private string _includeFileName = "";
@@ -52,28 +53,42 @@ namespace CompileScore
         public static CompilerData Instance { get { return lazy.Value; } }
         private CompilerData(){}
 
-        public void Initialize(CompileScorePackage package, IServiceProvider servicePRovider)
+        public void Initialize(CompileScorePackage package, IServiceProvider serviceProvider)
         {
             _package = package;
-
-            //Extract the solution Dir
-            ThreadHelper.ThrowIfNotOnUIThread();
-            DTE2 applicationObject = servicePRovider.GetService(typeof(SDTE)) as DTE2;
-            Assumes.Present(applicationObject);
-            string solutionDirRaw = applicationObject.Solution.FullName;
-            _solutionDir = ((Path.HasExtension(solutionDirRaw))? Path.GetDirectoryName(solutionDirRaw) : solutionDirRaw) + '\\';
-
-            //Get the information from the settings
-            GeneralSettingsPageGrid settings = GetGeneralSettings();
-            if (SetPath(settings.OptionPath) || SetIncludeFileName(settings.OptionIncludeFileName))
-            {
-                ReloadSeverities();
-            }
+            _serviceProvider = serviceProvider;
 
             DocumentLifetimeManager.FileWatchedChanged += OnFileWatchedChanged;
 
-            //Trigger settings refresh
-            OnHighlightEnabledChanged();
+            RefreshInstance();
+        }
+
+        public void RefreshInstance()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (_solutionDir.Length == 0 && _serviceProvider != null)
+            {    
+                DTE2 applicationObject = _serviceProvider.GetService(typeof(SDTE)) as DTE2;
+                Assumes.Present(applicationObject);
+                string solutionDirRaw = applicationObject.Solution.FullName;
+
+                if (solutionDirRaw.Length > 0)
+                {
+                    //A valid solution folder was found
+                    _solutionDir = (Path.HasExtension(solutionDirRaw)? Path.GetDirectoryName(solutionDirRaw) : solutionDirRaw) + '\\';
+
+                    //Get the information from the settings
+                    GeneralSettingsPageGrid settings = GetGeneralSettings();
+                    if (SetPath(settings.OptionPath) || SetIncludeFileName(settings.OptionIncludeFileName))
+                    {
+                        ReloadSeverities();
+                    }
+
+                    //Trigger settings refresh
+                    OnHighlightEnabledChanged();
+                }
+            }
         }
 
         public GeneralSettingsPageGrid GetGeneralSettings()
