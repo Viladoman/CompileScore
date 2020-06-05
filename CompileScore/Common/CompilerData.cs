@@ -60,7 +60,8 @@ namespace CompileScore
             ThreadHelper.ThrowIfNotOnUIThread();
             DTE2 applicationObject = servicePRovider.GetService(typeof(SDTE)) as DTE2;
             Assumes.Present(applicationObject);
-            _solutionDir = Path.GetDirectoryName(applicationObject.Solution.FullName) + '\\';
+            string solutionDirRaw = applicationObject.Solution.FullName;
+            _solutionDir = ((Path.HasExtension(solutionDirRaw))? Path.GetDirectoryName(solutionDirRaw) : solutionDirRaw) + '\\';
 
             //Get the information from the settings
             GeneralSettingsPageGrid settings = GetGeneralSettings();
