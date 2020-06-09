@@ -103,7 +103,7 @@ namespace CompileScore
         public uint OptionSeveritiesThreshold5
         {
             get { return optionSeverities[4]; }
-            set { bool hasChanged = optionSeverities[4] != value; optionSeverities[3] = value; if (hasChanged && !optionNormalizedSeverity) { CompilerData.Instance.OnSettingsSeverityChanged(); } }
+            set { bool hasChanged = optionSeverities[4] != value; optionSeverities[4] = value; if (hasChanged && !optionNormalizedSeverity) { CompilerData.Instance.OnSettingsSeverityChanged(); } }
         }
     }
 
