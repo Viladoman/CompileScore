@@ -19,3 +19,8 @@ CompileScore/.vs/
 CompileScore/bin/
 CompileScore/obj/
 
+#Temporary and binaries
+TestProject/compileIncludeData.txt
+TestProject/tmp/*
+TestProject/bin/*
+TestProject/.vs/*
