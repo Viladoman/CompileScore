@@ -1,7 +1,9 @@
 # CompileScore
 VisualStudio extension to highlight compilation profiling data. Know directly inside the VS IDE the real compilation cost of your code ( WIP: At the moment only highlights #include data )
 
-(...)
+( expand description )
+
+( add links to download )
 
 ( add screenshot )
 
@@ -31,3 +33,6 @@ node.js to extract the data
 
 The configurations provided with 'Profile' will add the '-ftime-trace' flag to clang and extract the data once the build is finished. 
 
+## Related 
+
+If not using Visual Studio but still interested in the data aggregation you can use [SeeProfiler](https://github.com/Viladoman/SeeProfiler), a standalone C++ compiler profiler which aggregates all the exported data from clang for a global view.
