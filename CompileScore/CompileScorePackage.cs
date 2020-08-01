@@ -28,6 +28,8 @@ namespace CompileScore
     [ProvideAutoLoad(UIContextGuids80.NoSolution, PackageAutoLoadFlags.BackgroundLoad)]
     [Guid(CompileScorePackage.PackageGuidString)]
     [ProvideOptionPage(typeof(GeneralSettingsPageGrid), "Compile Score", "General", 0, 0, true)]
+    [ProvideMenuResource("Menus.ctmenu", 1)]
+    [ProvideToolWindow(typeof(CompileScore.Overview.OverviewWindow))]
     public sealed class CompileScorePackage : AsyncPackage
     {
         /// <summary>
@@ -54,6 +56,7 @@ namespace CompileScore
 
             CompilerData.Instance.Initialize(this, this);
             DocumentLifetimeManager.Initialize(this);
+            await CompileScore.Overview.OverviewWindowCommand.InitializeAsync(this);
         }
 
         #endregion

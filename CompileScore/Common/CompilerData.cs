@@ -5,6 +5,7 @@ namespace CompileScore
     using System;
     using System.IO;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Text.RegularExpressions;
     using System.Security.Permissions;
     using Microsoft;
@@ -16,8 +17,9 @@ namespace CompileScore
 
     public class CompileValue
     {
-        public CompileValue(uint mean, uint min, uint max, uint count)
+        public CompileValue(string name, uint mean, uint min, uint max, uint count)
         {
+            Name = name;
             Mean = mean;
             Min = min;
             Max = max;
@@ -25,9 +27,10 @@ namespace CompileScore
             Severity = 0;
         }
 
-        public uint Mean { get; }
-        public uint Min { get; }
+        public string Name { get; }
         public uint Max { get; }
+        public uint Min { get; }
+        public uint Mean { get; }
         public uint Count { get; }
         public uint Severity { set; get; }
     }
@@ -43,7 +46,9 @@ namespace CompileScore
         private string _includeFileName = "";
         private string _solutionDir = "";
 
-        private Dictionary<string, CompileValue> _values = new Dictionary<string, CompileValue>();
+        private ObservableCollection<CompileValue> _includeCollection = new ObservableCollection<CompileValue>();
+
+        private Dictionary<string, CompileValue> _includeDict = new Dictionary<string, CompileValue>();
         private List<uint> _normalizedThresholds = new List<uint>();
 
         //events
@@ -96,6 +101,11 @@ namespace CompileScore
             return _package == null? null : _package.GetGeneralSettings();
         }
 
+        public ObservableCollection<CompileValue> GetIncludeCollection()
+        {
+            return _includeCollection;
+        } 
+
         private bool SetPath(string input)
         {
             if (_path != input)
@@ -118,7 +128,7 @@ namespace CompileScore
          
         public CompileValue GetValue(string fileName)
         {
-            if (_values.ContainsKey(fileName)) { return _values[fileName]; }
+            if (_includeDict.ContainsKey(fileName)) { return _includeDict[fileName]; }
             return null;
         }
 
@@ -132,7 +142,8 @@ namespace CompileScore
 
         private void LoadSeverities(string fullPath)
         {
-            _values.Clear();
+            _includeDict.Clear();
+            _includeCollection.Clear();
             List<uint> onlyValues = new List<uint>();
 
             if (File.Exists(fullPath))
@@ -151,7 +162,10 @@ namespace CompileScore
                         uint count = UInt32.Parse(match.Groups[5].Value);
 
                         onlyValues.Add(max);
-                        _values.Add(match.Groups[1].Value.ToLower(),new CompileValue(mean,min,max,count));
+                        var name = match.Groups[1].Value.ToLower();
+                        var compileData = new CompileValue(name, mean, min, max, count);
+                        _includeCollection.Add(compileData);
+                        _includeDict.Add(name, compileData);
                     }
                 }
 
@@ -196,7 +210,7 @@ namespace CompileScore
             GeneralSettingsPageGrid settings = GetGeneralSettings();
             List<uint> thresholdList = settings.OptionNormalizedSeverity ? _normalizedThresholds : settings.GetOptionSeverities();
 
-            foreach (KeyValuePair<string, CompileValue> entry in _values)
+            foreach (KeyValuePair<string, CompileValue> entry in _includeDict)
             {
                 entry.Value.Severity = ComputeSeverity(thresholdList, entry.Value.Max);
             }

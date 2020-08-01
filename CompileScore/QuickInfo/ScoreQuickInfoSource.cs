@@ -11,7 +11,6 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-
     internal sealed class ScoreAsyncQuickInfoSource : IAsyncQuickInfoSource
     {
         private static readonly ImageId _icon = KnownMonikers.CompiledHelpFile.ToImageId();
@@ -29,27 +28,6 @@
         {
             GeneralSettingsPageGrid settings = CompilerData.Instance.GetGeneralSettings();
             return settings != null ? settings.OptionTooltipEnabled : false;
-        }
-
-        private string GetTimeStr(uint uSeconds)
-        {
-            if (uSeconds < 1000)
-            {
-                return uSeconds + "μs";
-            }
-
-            uint ms = uSeconds / 1000;
-
-            if (ms < 1000)
-            {
-                return ms + "ms";
-            }
-
-            uint sec = ms / 1000;
-            uint min = sec / 60;
-            sec = sec - (min * 60);
-
-            return min == 0 ? sec + "s" : min + "m" + sec + "s";
         }
 
         // This is called on a background thread.
@@ -102,11 +80,11 @@
                                 scoreElm,
                                 new ClassifiedTextElement(
                                     new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, "Max: "),
-                                    new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, GetTimeStr(value.Max)),
+                                    new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.UIConverters.GetTimeStr(value.Max)),
                                     new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " Min: "),
-                                    new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, GetTimeStr(value.Min)),
+                                    new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.UIConverters.GetTimeStr(value.Min)),
                                     new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " Average: "),
-                                    new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, GetTimeStr(value.Mean)),
+                                    new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.UIConverters.GetTimeStr(value.Mean)),
                                     new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " Count: "),
                                     new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, $"{value.Count}")
                                 ));
