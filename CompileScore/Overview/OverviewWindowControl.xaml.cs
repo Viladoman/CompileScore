@@ -17,8 +17,6 @@
         private ICollectionView includeView;
         private string searchTokens = "";
 
-        string SearchTest { set; get; }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="OverviewWindowControl"/> class.
         /// </summary>
@@ -26,9 +24,7 @@
         {
             this.InitializeComponent();
 
-            SearchTest = "WTF";
-
-            this.includeView = CollectionViewSource.GetDefaultView(CompilerData.Instance.GetIncludeCollection());
+            this.includeView = CollectionViewSource.GetDefaultView(CompilerData.Instance.GetCollection(CompilerData.CompileCategory.Include));
             this.includeView.Filter = d => FilterCompileValue((CompileValue)d, searchTokens);
             includeGrid.ItemsSource = this.includeView;
         }

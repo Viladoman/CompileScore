@@ -11,6 +11,8 @@ namespace CompileScore.Common
     {
         static public string GetTimeStr(uint uSeconds)
         {
+            //TODO ~ ramonv ~ improve the viewer 
+
             if (uSeconds < 1000)
             {
                 return uSeconds + "μs";

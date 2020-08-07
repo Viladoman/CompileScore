@@ -1,17 +1,18 @@
 ﻿
 namespace CompileScore
 {
+    using EnvDTE;
     using EnvDTE80;
+    using Microsoft;
+    using Microsoft.VisualStudio.Shell;
+    using Microsoft.VisualStudio.Shell.Interop;
     using System;
     using System.IO;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Text.RegularExpressions;
     using System.Security.Permissions;
-    using Microsoft;
-    using Microsoft.VisualStudio.Shell;
-    using Microsoft.VisualStudio.Shell.Interop;
-    using EnvDTE;
+    using System.Linq;
 
     public delegate void Notify();  // delegate
 
@@ -35,9 +36,28 @@ namespace CompileScore
         public uint Severity { set; get; }
     }
 
+    public class FullUnitValue
+    {
+        //TODO ~ ramonv ~ fill with all the data 
+        //TODO ~ ramonv ~ read from the file the full unit data
+
+        public FullUnitValue(string name)
+        {
+            Name = name;
+        }
+
+        public string Name { get; }
+    }
+
     public sealed class CompilerData
     {
         private static readonly Lazy<CompilerData> lazy = new Lazy<CompilerData>(() => new CompilerData());
+
+        public enum CompileCategory
+        {
+            Include = 0,
+            FunctionInstance,
+        }
 
         private CompileScorePackage _package;
         private IServiceProvider _serviceProvider;
@@ -46,10 +66,16 @@ namespace CompileScore
         private string _includeFileName = "";
         private string _solutionDir = "";
 
-        private ObservableCollection<CompileValue> _includeCollection = new ObservableCollection<CompileValue>();
+        public class CompileDataset
+        {
+            public ObservableCollection<CompileValue> collection = new ObservableCollection<CompileValue>();
+            public Dictionary<string, CompileValue>   dictionary = new Dictionary<string, CompileValue>();
+            public List<uint>                         normalizedThresholds = new List<uint>();
+        }
 
-        private Dictionary<string, CompileValue> _includeDict = new Dictionary<string, CompileValue>();
-        private List<uint> _normalizedThresholds = new List<uint>();
+        //private CompileDataset _includeDataset = new CompileDataset();
+
+        private CompileDataset[] _datasets = new CompileDataset[Enum.GetNames(typeof(CompileCategory)).Length].Select(h => new CompileDataset()).ToArray();
 
         //events
         public event Notify IncludeDataChanged;
@@ -101,9 +127,9 @@ namespace CompileScore
             return _package == null? null : _package.GetGeneralSettings();
         }
 
-        public ObservableCollection<CompileValue> GetIncludeCollection()
+        public ObservableCollection<CompileValue> GetCollection(CompileCategory category)
         {
-            return _includeCollection;
+            return _datasets[(int)category].collection;
         } 
 
         private bool SetPath(string input)
@@ -126,9 +152,10 @@ namespace CompileScore
             return false;
         }
          
-        public CompileValue GetValue(string fileName)
+        public CompileValue GetValue(CompileCategory category,string fileName)
         {
-            if (_includeDict.ContainsKey(fileName)) { return _includeDict[fileName]; }
+            CompileDataset dataset = _datasets[(int)category];
+            if (dataset.dictionary.ContainsKey(fileName)) { return dataset.dictionary[fileName]; }
             return null;
         }
 
@@ -140,48 +167,75 @@ namespace CompileScore
             LoadSeverities(realPath + _includeFileName);
         }
 
+        private void ParseCompileValue(string line, CompileDataset dataset)
+        {
+            Match match = Regex.Match(line, @"(.*)\:(\d+):(\d+):(\d+):(\d+)");
+            if (match.Success)
+            {
+                uint mean = UInt32.Parse(match.Groups[2].Value);
+                uint min = UInt32.Parse(match.Groups[3].Value);
+                uint max = UInt32.Parse(match.Groups[4].Value);
+                uint count = UInt32.Parse(match.Groups[5].Value);
+
+                var name = match.Groups[1].Value.ToLower();
+                var compileData = new CompileValue(name, mean, min, max, count);
+                dataset.collection.Add(compileData);
+            }
+        }
+
+        private void ClearDatasets()
+        {
+            for (int i=0;i< Enum.GetNames(typeof(CompileCategory)).Length;++i)
+            {
+                CompileDataset dataset = _datasets[i];
+                dataset.collection.Clear();
+                dataset.dictionary.Clear();
+                dataset.normalizedThresholds.Clear();
+            }
+        }
+
         private void LoadSeverities(string fullPath)
         {
-            _includeDict.Clear();
-            _includeCollection.Clear();
-            List<uint> onlyValues = new List<uint>();
+            ClearDatasets();
 
             if (File.Exists(fullPath))
             {
+                CompileDataset currentDataset = _datasets[(int)CompileCategory.Include];
+
                 FileStream fileStream = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 StreamReader streamReader = new StreamReader(fileStream);
                 while (streamReader.Peek() > -1)
                 {
                     String line = streamReader.ReadLine();
-                    Match match = Regex.Match(line, @"(.*)\:(\d+):(\d+):(\d+):(\d+)");
-                    if (match.Success)
-                    {
-                        uint mean = UInt32.Parse(match.Groups[2].Value);
-                        uint min = UInt32.Parse(match.Groups[3].Value);
-                        uint max = UInt32.Parse(match.Groups[4].Value);
-                        uint count = UInt32.Parse(match.Groups[5].Value);
 
-                        onlyValues.Add(max);
-                        var name = match.Groups[1].Value.ToLower();
-                        var compileData = new CompileValue(name, mean, min, max, count);
-                        _includeCollection.Add(compileData);
-                        _includeDict.Add(name, compileData);
-                    }
+                    //TODO ~ check what kind of data we are getting here
+                    ParseCompileValue(line,currentDataset);
                 }
 
-                ComputeNormalizedThresholds(onlyValues);
+                //Post process on read data
+                FinalizeLoadCompileValues(currentDataset);
             }
 
             RecomputeSeverities();
-
             IncludeDataChanged?.Invoke();
         }
 
-        private void ComputeNormalizedThresholds(List<uint> inputList)
+        private void FinalizeLoadCompileValues(CompileDataset dataset)
+        {
+            List<uint> onlyValues = new List<uint>();
+            foreach (CompileValue entry in dataset.collection)
+            {
+                onlyValues.Add(entry.Max);
+                dataset.dictionary.Add(entry.Name, entry);
+            }
+            ComputeNormalizedThresholds(dataset.normalizedThresholds, onlyValues);
+        }
+
+        private void ComputeNormalizedThresholds(List<uint> normalizedThresholds, List<uint> inputList)
         {
             const int numSeverities = 5; //this should be a constant somewhere else 
 
-            _normalizedThresholds.Clear();
+            normalizedThresholds.Clear();
             inputList.Sort();
 
             float division = (float)inputList.Count / (float)numSeverities;
@@ -193,11 +247,11 @@ namespace CompileScore
             {
                 if (index < inputList.Count)
                 {
-                    _normalizedThresholds.Add(inputList[index]);
+                    normalizedThresholds.Add(inputList[index]);
                 }
                 else
                 {
-                    _normalizedThresholds.Add(uint.MaxValue);
+                    normalizedThresholds.Add(uint.MaxValue);
                 }
 
                 index += elementsPerBucket;
@@ -206,13 +260,16 @@ namespace CompileScore
 
         private void RecomputeSeverities()
         {
-            //Get table and options from 
             GeneralSettingsPageGrid settings = GetGeneralSettings();
-            List<uint> thresholdList = settings.OptionNormalizedSeverity ? _normalizedThresholds : settings.GetOptionSeverities();
 
-            foreach (KeyValuePair<string, CompileValue> entry in _includeDict)
+            for (int i = 0; i < Enum.GetNames(typeof(CompileCategory)).Length; ++i)
             {
-                entry.Value.Severity = ComputeSeverity(thresholdList, entry.Value.Max);
+                CompileDataset dataset = _datasets[(int)CompileCategory.Include];
+                List<uint> thresholdList = settings.OptionNormalizedSeverity ? dataset.normalizedThresholds : settings.GetOptionSeverities();
+                foreach (CompileValue entry in dataset.collection)
+                {
+                    entry.Severity = ComputeSeverity(thresholdList, entry.Max);
+                }
             }
         }
 

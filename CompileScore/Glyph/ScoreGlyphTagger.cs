@@ -76,7 +76,7 @@
                 {
                     string file = match.Groups[1].Value;
                     string fileName = Path.GetFileName(file).ToLower();
-                    CompileValue value = CompilerData.Instance.GetValue(fileName);
+                    CompileValue value = CompilerData.Instance.GetValue(CompilerData.CompileCategory.Include,fileName);
 
                     if (value != null && value.Severity > 0)
                     {

@@ -47,7 +47,7 @@
                         string file = match.Groups[1].Value;
                         string fileName = Path.GetFileName(file);
                         string lowerFilename = fileName.ToLower();
-                        CompileValue value = CompilerData.Instance.GetValue(lowerFilename);
+                        CompileValue value = CompilerData.Instance.GetValue(CompilerData.CompileCategory.Include,lowerFilename);
 
                         Span span = new Span(line.Extent.Start + match.Index, match.Length);
                         var trackingSpan = _textBuffer.CurrentSnapshot.CreateTrackingSpan(span, SpanTrackingMode.EdgeExclusive);
