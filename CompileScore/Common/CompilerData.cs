@@ -38,15 +38,25 @@ namespace CompileScore
 
     public class FullUnitValue
     {
-        //TODO ~ ramonv ~ fill with all the data 
-        //TODO ~ ramonv ~ read from the file the full unit data
-
         public FullUnitValue(string name)
         {
             Name = name;
         }
 
         public string Name { get; }
+        public uint Frontend { set; get; }
+        public uint Backend { set; get; }
+        public uint Source { set; get; }
+        public uint ParseClass { set; get; }
+        public uint ParseTemplate { set; get; }
+        public uint InstantiateClass { set; get; }
+        public uint InstantiateFunction { set; get; }
+        public uint PendingInstantations { set; get; }
+        public uint Codegen { set; get; }
+        public uint RunPass { set; get; }
+        public uint OptModule { set; get; }
+        public uint OptFunction { set; get; }
+        public uint Other { set; get; }
     }
 
     public sealed class CompilerData
@@ -56,7 +66,14 @@ namespace CompileScore
         public enum CompileCategory
         {
             Include = 0,
-            FunctionInstance,
+            ParseClass,
+            ParseTemplate,
+            InstanceClass, 
+            InstanceFunction,
+            CodeGeneration, 
+            OptimizeFunction,
+            OptimizeModule, 
+            Other
         }
 
         private CompileScorePackage _package;
@@ -65,6 +82,8 @@ namespace CompileScore
         private string _path = "";
         private string _includeFileName = "";
         private string _solutionDir = "";
+
+        public ObservableCollection<FullUnitValue> _unitsCollection = new ObservableCollection<FullUnitValue>();
 
         public class CompileDataset
         {
@@ -127,6 +146,11 @@ namespace CompileScore
             return _package == null? null : _package.GetGeneralSettings();
         }
 
+        public ObservableCollection<FullUnitValue> GetUnits()
+        {
+            return _unitsCollection;
+        }
+
         public ObservableCollection<CompileValue> GetCollection(CompileCategory category)
         {
             return _datasets[(int)category].collection;
@@ -167,6 +191,33 @@ namespace CompileScore
             LoadSeverities(realPath + _includeFileName);
         }
 
+        private void ParseCompileUnit(string line, ObservableCollection<FullUnitValue> units)
+        {
+            Match match = Regex.Match(line, @"(.*)\:(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+)");
+            if (match.Success)
+            {
+
+                var name = match.Groups[1].Value.ToLower();
+                var compileData = new FullUnitValue(name);
+
+                compileData.Source               = UInt32.Parse(match.Groups[2].Value);
+                compileData.ParseClass           = UInt32.Parse(match.Groups[3].Value);
+                compileData.ParseTemplate        = UInt32.Parse(match.Groups[4].Value);
+                compileData.InstantiateClass     = UInt32.Parse(match.Groups[5].Value);
+                compileData.InstantiateFunction  = UInt32.Parse(match.Groups[6].Value);
+                compileData.Codegen              = UInt32.Parse(match.Groups[7].Value);
+                compileData.OptModule            = UInt32.Parse(match.Groups[8].Value);
+                compileData.OptFunction          = UInt32.Parse(match.Groups[9].Value);
+                compileData.Other                = UInt32.Parse(match.Groups[10].Value);
+                compileData.RunPass              = UInt32.Parse(match.Groups[11].Value);
+                compileData.PendingInstantations = UInt32.Parse(match.Groups[12].Value);
+                compileData.Frontend             = UInt32.Parse(match.Groups[13].Value);
+                compileData.Backend              = UInt32.Parse(match.Groups[14].Value);
+
+                units.Add(compileData);
+            }
+        }
+
         private void ParseCompileValue(string line, CompileDataset dataset)
         {
             Match match = Regex.Match(line, @"(.*)\:(\d+):(\d+):(\d+):(\d+)");
@@ -200,35 +251,61 @@ namespace CompileScore
 
             if (File.Exists(fullPath))
             {
-                CompileDataset currentDataset = _datasets[(int)CompileCategory.Include];
+                CompileDataset currentDataset = null;
 
                 FileStream fileStream = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 StreamReader streamReader = new StreamReader(fileStream);
                 while (streamReader.Peek() > -1)
                 {
                     String line = streamReader.ReadLine();
-
-                    //TODO ~ check what kind of data we are getting here
-                    ParseCompileValue(line,currentDataset);
+                    if (line.Length > 0 && line[0] == ':')
+                    {
+                        //Change the current dataset
+                        if (line.ToLower() == ":includes")              { currentDataset = _datasets[(int)CompileCategory.Include]; }
+                        else if (line.ToLower() == ":parseclass")       { currentDataset = _datasets[(int)CompileCategory.ParseClass]; }
+                        else if (line.ToLower() == ":parsetemplate")    { currentDataset = _datasets[(int)CompileCategory.ParseTemplate]; }
+                        else if (line.ToLower() == ":instanceclass")    { currentDataset = _datasets[(int)CompileCategory.InstanceClass]; }
+                        else if (line.ToLower() == ":instancefunction") { currentDataset = _datasets[(int)CompileCategory.InstanceFunction]; }
+                        else if (line.ToLower() == ":codegen")          { currentDataset = _datasets[(int)CompileCategory.CodeGeneration]; }
+                        else if (line.ToLower() == ":optfunction")      { currentDataset = _datasets[(int)CompileCategory.OptimizeFunction]; }
+                        else if (line.ToLower() == ":optmodule")        { currentDataset = _datasets[(int)CompileCategory.OptimizeModule]; }
+                        else if (line.ToLower() == ":other")            { currentDataset = _datasets[(int)CompileCategory.Other]; }
+                        else { currentDataset = null; }
+                    }
+                    else
+                    {
+                        if (currentDataset == null)
+                        {
+                            ParseCompileUnit(line, _unitsCollection);
+                        } 
+                        else 
+                        {
+                            ParseCompileValue(line, currentDataset);
+                        }
+                    } 
                 }
 
                 //Post process on read data
-                FinalizeLoadCompileValues(currentDataset);
+                PostProcessLoadedData();
             }
 
             RecomputeSeverities();
             IncludeDataChanged?.Invoke();
         }
 
-        private void FinalizeLoadCompileValues(CompileDataset dataset)
+        private void PostProcessLoadedData()
         {
-            List<uint> onlyValues = new List<uint>();
-            foreach (CompileValue entry in dataset.collection)
+            for(int i = 0; i < Enum.GetNames(typeof(CompileCategory)).Length; ++i)
             {
-                onlyValues.Add(entry.Max);
-                dataset.dictionary.Add(entry.Name, entry);
+                CompileDataset dataset = _datasets[i];
+                List<uint> onlyValues = new List<uint>();
+                foreach (CompileValue entry in dataset.collection)
+                {
+                    onlyValues.Add(entry.Max);
+                    dataset.dictionary.Add(entry.Name, entry);
+                }
+                ComputeNormalizedThresholds(dataset.normalizedThresholds, onlyValues);
             }
-            ComputeNormalizedThresholds(dataset.normalizedThresholds, onlyValues);
         }
 
         private void ComputeNormalizedThresholds(List<uint> normalizedThresholds, List<uint> inputList)

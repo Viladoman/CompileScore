@@ -1,10 +1,11 @@
 ﻿namespace CompileScore.Overview
 {
+    using EnvDTE;
     using Microsoft.VisualStudio.PlatformUI;
     using System;
     using System.Collections.ObjectModel;
-    using System.ComponentModel;
     using System.Diagnostics.CodeAnalysis;
+    using System.Text.RegularExpressions;
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Data;
@@ -14,9 +15,6 @@
     /// </summary>
     public partial class OverviewWindowControl : UserControl
     {
-        private ICollectionView includeView;
-        private string searchTokens = "";
-
         /// <summary>
         /// Initializes a new instance of the <see cref="OverviewWindowControl"/> class.
         /// </summary>
@@ -24,22 +22,22 @@
         {
             this.InitializeComponent();
 
-            this.includeView = CollectionViewSource.GetDefaultView(CompilerData.Instance.GetCollection(CompilerData.CompileCategory.Include));
-            this.includeView.Filter = d => FilterCompileValue((CompileValue)d, searchTokens);
-            includeGrid.ItemsSource = this.includeView;
+            foreach (CompilerData.CompileCategory category in Enum.GetValues(typeof(CompilerData.CompileCategory)))
+            {
+                AddTab(category);
+            }
         }
 
-        private static bool FilterCompileValue(CompileValue value, string tokens)
+        private void AddTab(CompilerData.CompileCategory category)
         {
-            //TODO ~ ramonv ~ handle tokens 
-            return value.Name.Contains(tokens);
-        }
+            TabItem tab = new TabItem();
+            tab.Header = CompileScore.Common.UIConverters.ToSentenceCase(Enum.GetName(typeof(CompilerData.CompileCategory), (int)category));
 
-        private void SearchTextChangedEventHandler(object sender, TextChangedEventArgs args)
-        {
-            this.searchTokens = SearchTextBox.Text.ToLower();
-            this.includeView.Refresh();
+            CompileDataTable content = new CompileDataTable();
+            content.InitCategory(category);
+            tab.Content = content;
+
+            tabControl.Items.Add(tab);
         }
-        
     }
 }

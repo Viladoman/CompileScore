@@ -56,6 +56,12 @@
     <Compile Include="Highlight\HighlightDefinitions.cs" />
     <Compile Include="Highlight\HighlightTagger.cs" />
     <Compile Include="Highlight\HighlightTaggerProvider.cs" />
+    <Compile Include="Overview\CompileDataTable.xaml.cs">
+      <DependentUpon>CompileDataTable.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Overview\OverviewTable.xaml.cs">
+      <DependentUpon>OverviewTable.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Overview\OverviewWindow.cs" />
     <Compile Include="Overview\OverviewWindowCommand.cs" />
     <Compile Include="Overview\OverviewWindowControl.xaml.cs">
@@ -109,6 +115,14 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Overview\CompileDataTable.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Overview\OverviewTable.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Overview\OverviewWindowControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

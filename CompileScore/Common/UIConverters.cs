@@ -2,16 +2,27 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
 namespace CompileScore.Common
 { 
     class UIConverters
-    {
+    { 
+        static public string ToSentenceCase(string str)
+        {
+            return Regex.Replace(str, "[a-z][A-Z]", m => $"{m.Value[0]} {m.Value[1]}");
+        }
+
         static public string GetTimeStr(uint uSeconds)
         {
             //TODO ~ ramonv ~ improve the viewer 
+
+            if (uSeconds == 0)
+            {
+                return "-";
+            }
 
             if (uSeconds < 1000)
             {
@@ -26,7 +37,6 @@ namespace CompileScore.Common
             uint hour = min / 60;
             min = min - (hour * 60);
 
-            //return (hour > 0)? : )
             string ret = ms + "ms";
             ret = (sec > 0 ?  sec  + "s " : "") + ret;
             ret = (min > 0 ?  min  + "m " : "") + ret;

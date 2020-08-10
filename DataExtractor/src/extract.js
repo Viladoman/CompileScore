@@ -2,7 +2,84 @@ var FileIO = require('./fileIO.js')
 
 var path = require('path');
 
-var sources = {};
+var NodeNature = {
+  SOURCE:                0,
+  PARSECLASS:            1,
+  PARSETEMPLATE:         2,
+  INSTANTIATECLASS:      3,
+  INSTANTIATEFUNCTION:   4,
+  CODEGENFUNCTION:       5,
+  OPTMODULE:             6,
+  OPTFUNCTION:           7,
+  OTHER:                 8,
+  RUNPASS:               9,
+  PENDINGINSTANTIATIONS: 10,
+  FRONTEND:              11,
+  BACKEND:               12,
+  EXECUTECOMPILER:       13,
+  INVALID:               14,
+}
+
+var NodeNatureData = {
+  GLOBAL_GATHER_THRESHOLD:  NodeNature.RUNPASS,
+  GLOBAL_DISPLAY_THRESHOLD: NodeNature.EXECUTECOMPILER,
+  COUNT:                    NodeNature.INVALID
+}
+
+function NodeNatureFromString(natureName)
+{
+       if (natureName == 'Source')                      { return NodeNature.SOURCE; }
+  else if (natureName == 'ParseClass')                  { return NodeNature.PARSECLASS; }
+  else if (natureName == 'ParseTemplate')               { return NodeNature.PARSETEMPLATE; }
+  else if (natureName == 'InstantiateClass')            { return NodeNature.INSTANTIATECLASS; }
+  else if (natureName == 'InstantiateFunction')         { return NodeNature.INSTANTIATEFUNCTION; }
+  else if (natureName == 'CodeGen Function')            { return NodeNature.CODEGENFUNCTION; }
+  else if (natureName == 'PerformPendingInstantiations'){ return NodeNature.PENDINGINSTANTIATIONS; }
+  else if (natureName == 'OptModule')                   { return NodeNature.OPTMODULE; }
+  else if (natureName == 'OptFunction')                 { return NodeNature.OPTFUNCTION; }
+  else if (natureName == 'RunPass')                     { return NodeNature.RUNPASS; }
+  else if (natureName == 'Frontend')                    { return NodeNature.FRONTEND; }
+  else if (natureName == 'Backend')                     { return NodeNature.BACKEND; }
+  else if (natureName == 'ExecuteCompiler')             { return NodeNature.EXECUTECOMPILER; }
+  else if (natureName == 'Other')                       { return NodeNature.OTHER; }
+  return NodeNature.OTHER;
+}
+
+function NodeNatureToExportStr(nature)
+{ 
+  switch(nature)
+  { 
+    case NodeNature.SOURCE:              return 'Includes'; 
+    case NodeNature.PARSECLASS:          return 'ParseClass';
+    case NodeNature.PARSETEMPLATE:       return 'ParseTemplate';
+    case NodeNature.INSTANTIATECLASS:    return 'InstanceClass';
+    case NodeNature.INSTANTIATEFUNCTION: return 'InstanceFunction';
+    case NodeNature.CODEGENFUNCTION:     return 'CodeGen';
+    case NodeNature.OPTMODULE:           return 'OptModule';
+    case NodeNature.OPTFUNCTION:         return 'OptFunction';
+    case NodeNature.OTHER:
+    default: return 'Other';
+  }
+}
+
+function CreateObjectArray(size)
+{ 
+  var ret = new Array();
+  for (var i = 0; i < size; ++i)
+    ret.push(new Object());
+  return ret;
+}
+
+function CreateArrayArray(size)
+{
+  var ret = new Array();
+  for (var i = 0; i < size; ++i)
+    ret.push(new Array());
+  return ret;
+}
+
+var globals = CreateObjectArray(NodeNatureData.GLOBAL_GATHER_THRESHOLD);
+var units = [];
 
 function FillDatabaseData(collection,name,duration)
 {
@@ -30,18 +107,63 @@ function FinalizeDatabaseData(container, targetContainer)
   }
 }
 
-function AddToDatabase(events)
+function ComputeUnit(filename,nodes)
 { 
+  var ret = { name: path.basename(filename).replace(/\.[^/.]+$/, ""), totals: Array(NodeNatureData.GLOBAL_DISPLAY_THRESHOLD).fill(0)};
+  
+  for (var i=0;i<NodeNatureData.GLOBAL_DISPLAY_THRESHOLD;i++)
+  {
+    var thisNodes = nodes[i];
+    thisNodes.sort(function(a,b){ return a.start == b.start? b.duration - a.duration : a.start - b.start; });
+
+    var nodesLength = thisNodes.length;
+    if (nodesLength > 0)
+    { 
+      var first = thisNodes[0];
+      var total = first.duration;
+      var threshold = first.start + total;
+      for (var k=1;k<nodesLength;++k)
+      { 
+        var element = thisNodes[k];
+        if ( element.start >= threshold ) //remove overlapping nodes with the same nature
+        { 
+          threshold = element.start + element.duration;
+          total += element.duration;
+        }
+      }
+
+      ret.totals[i] = total;
+    }
+  }
+
+  return ret;
+}
+
+function AddToDatabase(filename,events)
+{ 
+  var nodes = CreateArrayArray(NodeNatureData.GLOBAL_DISPLAY_THRESHOLD);
+
   for (var i=0,sz=events.length;i<sz;++i)
   {
     var element = events[i];
 
     //Check for includes 
-    if (element.tid == 0 && element.name == 'Source')
-    {
-      FillDatabaseData(sources,path.basename(element.args.detail),element.dur);
+    if (element.tid == 0 && element.name != 'process_name') 
+    { 
+      var nature = NodeNatureFromString(element.name);
+      if (nature < NodeNatureData.GLOBAL_GATHER_THRESHOLD) 
+      {
+        FillDatabaseData(globals[nature],nature == NodeNature.SOURCE || nature == NodeNature.OPTMODULE? path.basename(element.args.detail) : element.args.detail,element.dur); 
+      }
+
+      if (nature < NodeNatureData.GLOBAL_DISPLAY_THRESHOLD)
+      { 
+        nodes[nature].push({start: element.ts, duration: element.dur});
+      }
     }
   }
+
+  units.push(ComputeUnit(filename,nodes));
 }
 
 function ParseFile(file,content)
@@ -53,9 +175,17 @@ function ParseFile(file,content)
     var obj = JSON.parse(content);
     if (obj.traceEvents)
     {
-      AddToDatabase(obj.traceEvents);
+      AddToDatabase(file,obj.traceEvents);
     }
   }
+}
+
+function GenerateUnitExportLine(unit)
+{ 
+  //TODO ~ ramonv ~ to be implemented
+  var ret = unit.name; 
+  for (var i=0;i<NodeNatureData.GLOBAL_DISPLAY_THRESHOLD;i++) ret += ':'+unit.totals[i];
+  return ret + '\n';
 }
 
 function GenerateExportFile(list)
@@ -75,10 +205,20 @@ function Extract(inputFolder,outputFile,doneCallback)
     if (error) { console.log(error); doneCallback(error); }
     else
     { 
-      var finalList = [];
-      FinalizeDatabaseData(sources,finalList);
-  
-      var str = GenerateExportFile(finalList);
+      var str = ':Units\n'; 
+
+      for (var i=0,sz=units.length;i<sz;++i)
+      { 
+        str += GenerateUnitExportLine(units[i]);
+      }
+
+      for (var i=0;i<NodeNatureData.GLOBAL_GATHER_THRESHOLD;++i)
+      { 
+        str += ':'+ NodeNatureToExportStr(i) + '\n';
+        var finalList = [];
+        FinalizeDatabaseData(globals[i],finalList); 
+        str +=GenerateExportFile(finalList);
+      }
   
       FileIO.SaveFile(outputFile,str,function(error){
         if (error){ console.log(error); doneCallback(error); }

@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <tuple>
+#include <vector>
 
 int main()
 { 
