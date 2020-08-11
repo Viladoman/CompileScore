@@ -17,8 +17,11 @@ function ProcessCommandLine()
 
   if (args.indexOf('?') >= 0) { DisplayHelp(); }
 
-  var inputFolder = '.';
-  var outputFile = 'output.txt';
+  //var inputFolder = '.';
+  //var outputFile = 'output.txt';
+
+  var inputFolder = 'D:/Code/See/CompileScore/TestProject/bin/x64-Clang-Debug-Profile/CMakeFiles/CompileScoreTest.dir/src';
+  var outputFile = 'D:/Code/See/CompileScore/TestProject/compileData.txt';
 
   for (var i=0;i<args.length;++i)
   { 

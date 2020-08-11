@@ -15,9 +15,9 @@ namespace CompileScore.Common
             return Regex.Replace(str, "[a-z][A-Z]", m => $"{m.Value[0]} {m.Value[1]}");
         }
 
-        static public string GetTimeStr(uint uSeconds)
+        static public string GetTimeStr(ulong uSeconds)
         {
-            //TODO ~ ramonv ~ improve the viewer 
+            //TODO ~ ramonv ~ improve the viewer ( show 2 levels of depth only ) 
 
             if (uSeconds == 0)
             {
@@ -29,12 +29,12 @@ namespace CompileScore.Common
                 return uSeconds + "μs";
             }
 
-            uint ms = uSeconds / 1000;
-            uint sec = ms / 1000;
+            ulong ms = uSeconds / 1000;
+            ulong sec = ms / 1000;
             ms = ms - (sec * 1000);
-            uint min = sec / 60;
+            ulong min = sec / 60;
             sec = sec - (min * 60);
-            uint hour = min / 60;
+            ulong hour = min / 60;
             min = min - (hour * 60);
 
             string ret = ms + "ms";
@@ -52,11 +52,11 @@ namespace CompileScore.Common
         {
             try 
             {
-                return UIConverters.GetTimeStr((uint)value);
+                return value is uint? UIConverters.GetTimeStr((uint)value) : UIConverters.GetTimeStr((ulong)value);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return "ERROR";
+                return e.ToString();
             }
         }
 

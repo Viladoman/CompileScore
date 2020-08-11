@@ -114,6 +114,7 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Name"  Binding="{Binding Name}" IsReadOnly="True" Width="200"/>
 
+                <DataGridTextColumn Header="Duration"              Binding="{Binding Duration,             Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="75"/>
                 <DataGridTextColumn Header="Frontend"              Binding="{Binding Frontend,             Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="75"/>
                 <DataGridTextColumn Header="Backend"               Binding="{Binding Backend,              Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="75"/>
                 <DataGridTextColumn Header="Includes"              Binding="{Binding Source,               Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="75"/>

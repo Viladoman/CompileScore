@@ -18,7 +18,7 @@ namespace CompileScore
 
     public class CompileValue
     {
-        public CompileValue(string name, uint accumulated, uint min, uint max, uint count)
+        public CompileValue(string name, ulong accumulated, uint min, uint max, uint count)
         {
             Name = name;
             Accumulated = accumulated;
@@ -31,8 +31,8 @@ namespace CompileScore
         public string Name { get; }
         public uint Max { get; }
         public uint Min { get; }
-        public uint Accumulated { get; }
-        public uint Mean { get { return Accumulated / Count; }  }
+        public ulong Accumulated { get; }
+        public uint Mean { get { return (uint)(Accumulated / Count); }  }
         public uint Count { get; }
         public uint Severity { set; get; }
     }
@@ -45,6 +45,7 @@ namespace CompileScore
         }
 
         public string Name { get; }
+
         public uint Frontend { set; get; }
         public uint Backend { set; get; }
         public uint Source { set; get; }
@@ -58,6 +59,7 @@ namespace CompileScore
         public uint OptModule { set; get; }
         public uint OptFunction { set; get; }
         public uint Other { set; get; }
+        public uint Duration { set; get; } 
     }
 
     public sealed class CompilerData
@@ -192,6 +194,42 @@ namespace CompileScore
             LoadSeverities(realPath + _scoreFileName);
         }
 
+        private void ReadCompileUnit(BinaryReader reader, ObservableCollection<FullUnitValue> units)
+        {
+            var name = reader.ReadString();
+            var compileData = new FullUnitValue(name);
+
+            compileData.Source = reader.ReadUInt32();
+            compileData.ParseClass = reader.ReadUInt32();
+            compileData.ParseTemplate = reader.ReadUInt32();
+            compileData.InstantiateClass = reader.ReadUInt32();
+            compileData.InstantiateFunction = reader.ReadUInt32();
+            compileData.Codegen = reader.ReadUInt32();
+            compileData.OptModule = reader.ReadUInt32();
+            compileData.OptFunction = reader.ReadUInt32();
+            compileData.Other = reader.ReadUInt32();
+            compileData.RunPass = reader.ReadUInt32();
+            compileData.PendingInstantations = reader.ReadUInt32();
+            compileData.Frontend = reader.ReadUInt32();
+            compileData.Backend = reader.ReadUInt32();
+            compileData.Duration = reader.ReadUInt32();
+
+            units.Add(compileData);
+        }
+
+        private void ReadCompileValue(BinaryReader reader, CompileDataset dataset)
+        {
+            var name = reader.ReadString();
+            ulong acc = reader.ReadUInt64();
+            uint min = reader.ReadUInt32();
+            uint max = reader.ReadUInt32();
+            uint count = reader.ReadUInt32();
+
+            var compileData = new CompileValue(name, acc, min, max, count);
+            dataset.collection.Add(compileData);
+        }
+
+        /*
         private void ParseCompileUnit(string line, ObservableCollection<FullUnitValue> units)
         {
             Match match = Regex.Match(line, @"(.*)\:(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+)");
@@ -224,7 +262,7 @@ namespace CompileScore
             Match match = Regex.Match(line, @"(.*)\:(\d+):(\d+):(\d+):(\d+)");
             if (match.Success)
             {
-                uint acc = UInt32.Parse(match.Groups[2].Value);
+                ulong acc = UInt64.Parse(match.Groups[2].Value);
                 uint min = UInt32.Parse(match.Groups[3].Value);
                 uint max = UInt32.Parse(match.Groups[4].Value);
                 uint count = UInt32.Parse(match.Groups[5].Value);
@@ -234,7 +272,7 @@ namespace CompileScore
                 dataset.collection.Add(compileData);
             }
         }
-
+        */
         private void ClearDatasets()
         {
             for (int i=0;i< Enum.GetNames(typeof(CompileCategory)).Length;++i)
@@ -248,13 +286,38 @@ namespace CompileScore
 
         private void LoadSeverities(string fullPath)
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+
+            _unitsCollection.Clear();
             ClearDatasets();
 
             if (File.Exists(fullPath))
             {
-                CompileDataset currentDataset = null;
 
                 FileStream fileStream = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using (BinaryReader reader = new BinaryReader(fileStream))
+                {
+                    // Read Units 
+                    uint unitsLength = reader.ReadUInt32(); 
+                    for (uint i=0;i<unitsLength;++i)
+                    {
+                        ReadCompileUnit(reader, _unitsCollection);
+                    }
+
+                    //Read Datasets
+                    for(int i = 0; i < Enum.GetNames(typeof(CompileCategory)).Length; ++i)
+                    {
+                        CompileDataset currentDataset = _datasets[i];
+                        uint dataLength = reader.ReadUInt32();
+                        for (uint k = 0; k < dataLength; ++k)
+                        {
+                            ReadCompileValue(reader,currentDataset);
+                        }
+                    }
+                }
+
+                /*
+                CompileDataset currentDataset = null;
                 StreamReader streamReader = new StreamReader(fileStream);
                 while (streamReader.Peek() > -1)
                 {
@@ -285,6 +348,8 @@ namespace CompileScore
                         }
                     } 
                 }
+                */
+
 
                 //Post process on read data
                 PostProcessLoadedData();
@@ -292,6 +357,10 @@ namespace CompileScore
 
             RecomputeSeverities();
             ScoreDataChanged?.Invoke();
+
+            watch.Stop();
+            var elapsedMs = watch.ElapsedMilliseconds;
+            Console.WriteLine(elapsedMs);
         }
 
         private void PostProcessLoadedData()

@@ -1,4 +1,5 @@
 var FileIO = require('./fileIO.js')
+var Bin    = require('./binary.js');
 
 var path = require('path');
 
@@ -22,7 +23,7 @@ var NodeNature = {
 
 var NodeNatureData = {
   GLOBAL_GATHER_THRESHOLD:  NodeNature.RUNPASS,
-  GLOBAL_DISPLAY_THRESHOLD: NodeNature.EXECUTECOMPILER,
+  GLOBAL_DISPLAY_THRESHOLD: NodeNature.INVALID,
   COUNT:                    NodeNature.INVALID
 }
 
@@ -44,7 +45,7 @@ function NodeNatureFromString(natureName)
   else if (natureName == 'Other')                       { return NodeNature.OTHER; }
   return NodeNature.OTHER;
 }
-
+/*
 function NodeNatureToExportStr(nature)
 { 
   switch(nature)
@@ -61,7 +62,7 @@ function NodeNatureToExportStr(nature)
     default: return 'Other';
   }
 }
-
+*/
 function CreateObjectArray(size)
 { 
   var ret = new Array();
@@ -180,23 +181,16 @@ function ParseFile(file,content)
   }
 }
 
-function GenerateUnitExportLine(unit)
-{ 
-  //TODO ~ ramonv ~ to be implemented
-  var ret = unit.name; 
-  for (var i=0;i<NodeNatureData.GLOBAL_DISPLAY_THRESHOLD;i++) ret += ':'+unit.totals[i];
-  return ret + '\n';
+function BinarizeUnit(unit)
+{
+  var ret = Bin.Str(unit.name);
+  for (var i=0;i<NodeNatureData.GLOBAL_DISPLAY_THRESHOLD;i++) ret = Bin.Concat(ret,Bin.Num(unit.totals[i],4)); 
+  return ret;
 }
 
-function GenerateExportFile(list)
+function BinarizeEntry(entry)
 { 
-  var ret = '';
-  for (var i=0;i<list.length;++i)
-  { 
-    var entry = list[i];
-    ret += entry.name+':'+entry.acc+':'+entry.min+':'+entry.max+':'+entry.num+'\n';
-  }
-  return ret;
+  return Bin.Concat(Bin.Str(entry.name),Bin.Concat(Bin.Concat(Bin.Num(entry.acc,8),Bin.Num(entry.min,4)),Bin.Concat(Bin.Num(entry.max,4),Bin.Num(entry.num,4))));
 }
 
 function Extract(inputFolder,outputFile,doneCallback)
@@ -205,25 +199,28 @@ function Extract(inputFolder,outputFile,doneCallback)
     if (error) { console.log(error); doneCallback(error); }
     else
     { 
-      var str = ':Units\n'; 
+      //Export binary version
+      FileIO.SaveFileStream(outputFile,function(stream){
 
-      for (var i=0,sz=units.length;i<sz;++i)
-      { 
-        str += GenerateUnitExportLine(units[i]);
-      }
+        //Export units
+        stream.write(Bin.Num(units.length,4));
+        for (var i=0,sz=units.length;i<sz;++i)
+        { 
+          stream.write(BinarizeUnit(units[i]));
+        }
 
-      for (var i=0;i<NodeNatureData.GLOBAL_GATHER_THRESHOLD;++i)
-      { 
-        str += ':'+ NodeNatureToExportStr(i) + '\n';
-        var finalList = [];
-        FinalizeDatabaseData(globals[i],finalList); 
-        str +=GenerateExportFile(finalList);
-      }
-  
-      FileIO.SaveFile(outputFile,str,function(error){
-        if (error){ console.log(error); doneCallback(error); }
-        else doneCallback();
-      })
+        //Export entries
+        for (var i=0;i<NodeNatureData.GLOBAL_GATHER_THRESHOLD;++i)
+        { 
+          var finalList = [];
+          FinalizeDatabaseData(globals[i],finalList); 
+          stream.write(Bin.Num(finalList.length,4));
+          for (var k=0;k<finalList.length;++k)
+          { 
+            stream.write(BinarizeEntry(finalList[k])); 
+          }
+        }
+      },doneCallback)
     } 
   })
 } 

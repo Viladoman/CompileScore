@@ -106,10 +106,16 @@ function SearchFolder(path,parseCallback,doneCallback)
   });
 }
 
-function SaveFile(file,content,doneCallback)
+function SaveFileStream(file,writeCallback,doneCallback)
 { 
-  fs.writeFile(file, content, 'utf8', doneCallback);
+  var stream = fs.createWriteStream(file);
+  stream.once('open', function(fd) {
+    writeCallback(stream);
+    stream.end();
+    doneCallback();
+  });
 }
 
-exports.SearchFolder = SearchFolder; 
-exports.SaveFile     = SaveFile;
+
+exports.SearchFolder   = SearchFolder; 
+exports.SaveFileStream = SaveFileStream;
