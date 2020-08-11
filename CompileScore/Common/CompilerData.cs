@@ -81,7 +81,7 @@ namespace CompileScore
         private IServiceProvider _serviceProvider;
 
         private string _path = "";
-        private string _includeFileName = "";
+        private string _scoreFileName = "";
         private string _solutionDir = "";
 
         public ObservableCollection<FullUnitValue> _unitsCollection = new ObservableCollection<FullUnitValue>();
@@ -98,7 +98,7 @@ namespace CompileScore
         private CompileDataset[] _datasets = new CompileDataset[Enum.GetNames(typeof(CompileCategory)).Length].Select(h => new CompileDataset()).ToArray();
 
         //events
-        public event Notify IncludeDataChanged;
+        public event Notify ScoreDataChanged;
         public event Notify HighlightEnabledChanged;
 
         public static CompilerData Instance { get { return lazy.Value; } }
@@ -131,7 +131,7 @@ namespace CompileScore
 
                     //Get the information from the settings
                     GeneralSettingsPageGrid settings = GetGeneralSettings();
-                    if (SetPath(settings.OptionPath) || SetIncludeFileName(settings.OptionIncludeFileName))
+                    if (SetPath(settings.OptionPath) || SetScoreFileName(settings.OptionScoreFileName))
                     {
                         ReloadSeverities();
                     }
@@ -167,11 +167,11 @@ namespace CompileScore
             return false;
         }
 
-        private bool SetIncludeFileName(string input)
+        private bool SetScoreFileName(string input)
         {
-            if (_includeFileName != input)
+            if (_scoreFileName != input)
             {
-                _includeFileName = input;
+                _scoreFileName = input;
                 return true;
             }
             return false;
@@ -188,8 +188,8 @@ namespace CompileScore
         {
             string realPath = _solutionDir + _path;
 
-            DocumentLifetimeManager.WatchFile(realPath, _includeFileName);
-            LoadSeverities(realPath + _includeFileName);
+            DocumentLifetimeManager.WatchFile(realPath, _scoreFileName);
+            LoadSeverities(realPath + _scoreFileName);
         }
 
         private void ParseCompileUnit(string line, ObservableCollection<FullUnitValue> units)
@@ -291,12 +291,16 @@ namespace CompileScore
             }
 
             RecomputeSeverities();
-            IncludeDataChanged?.Invoke();
+            ScoreDataChanged?.Invoke();
         }
 
         private void PostProcessLoadedData()
         {
-            for(int i = 0; i < Enum.GetNames(typeof(CompileCategory)).Length; ++i)
+            //TODO ~ ramonv ~ for the time being we are only using Include data for this
+            //                Only store dictionary for it for now
+            const int i = (int)CompileCategory.Include;
+
+            //for(int i = 0; i < Enum.GetNames(typeof(CompileCategory)).Length; ++i)
             {
                 CompileDataset dataset = _datasets[i];
                 List<uint> onlyValues = new List<uint>();
@@ -368,7 +372,7 @@ namespace CompileScore
 
         private void OnFileWatchedChanged()
         {
-            LoadSeverities(_solutionDir + _path + _includeFileName);
+            LoadSeverities(_solutionDir + _path + _scoreFileName);
         } 
 
         public void OnSettingsPathChanged()
@@ -379,9 +383,9 @@ namespace CompileScore
             }
         }
 
-        public void OnSettingsIncludeFileNameChanged()
+        public void OnSettingsScoreFileNameChanged()
         {
-            if (SetIncludeFileName(GetGeneralSettings().OptionIncludeFileName))
+            if (SetScoreFileName(GetGeneralSettings().OptionScoreFileName))
             {
                 ReloadSeverities();
             }
@@ -390,7 +394,7 @@ namespace CompileScore
         public void OnSettingsSeverityChanged()
         {
             RecomputeSeverities();
-            IncludeDataChanged?.Invoke();
+            ScoreDataChanged?.Invoke();
         }
 
         public void OnHighlightEnabledChanged()

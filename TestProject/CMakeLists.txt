@@ -80,7 +80,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND ${COMPILER_PROFILING})
 
 	#Command to gather the data
 	add_custom_command(TARGET ${MAIN_TARGET} POST_BUILD
-		COMMAND node ${CMAKE_CURRENT_SOURCE_DIR}/../DataExtractor/main.js -i CMakeFiles/${MAIN_TARGET}.dir -o ${CMAKE_CURRENT_SOURCE_DIR}/compileIncludeData.txt
+		COMMAND node ${CMAKE_CURRENT_SOURCE_DIR}/../DataExtractor/main.js -i CMakeFiles/${MAIN_TARGET}.dir -o ${CMAKE_CURRENT_SOURCE_DIR}/compileData.txt
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 		COMMENT "Parsing compile time trace data..."
 	)

@@ -34,7 +34,7 @@
             _filename = GetFileName(sourceBuffer);
 
             CompilerData.Instance.RefreshInstance();
-            CompilerData.Instance.IncludeDataChanged += OnDataChanged;
+            CompilerData.Instance.ScoreDataChanged += OnDataChanged;
             DocumentLifetimeManager.DocumentSavedTrigger += OnDocumentSaved;
 
             CreateTrackingSpans();

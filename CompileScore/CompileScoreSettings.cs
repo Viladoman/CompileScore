@@ -8,7 +8,7 @@ namespace CompileScore
     public class GeneralSettingsPageGrid : DialogPage
     {
         private string optionPath = @"";
-        private string optionIncludeFileName = @"compileIncludeData.txt";
+        private string optionScoreFileName = @"compileData.txt";
         private bool optionNormalizedSeverity = true;
         private bool optionHighlightEnabled = true;
         private bool optionTooltipEnabled = true; 
@@ -26,12 +26,12 @@ namespace CompileScore
         }
 
         [Category("File")]
-        [DisplayName("Include Filename")]
-        [Description("Filename that contains the include data")]
-        public string OptionIncludeFileName
+        [DisplayName("Score Filename")]
+        [Description("Filename that contains the compilation data")]
+        public string OptionScoreFileName
         {
-            get { return optionIncludeFileName; }
-            set { optionIncludeFileName = value; CompilerData.Instance.OnSettingsIncludeFileNameChanged(); }
+            get { return optionScoreFileName; }
+            set { optionScoreFileName = value; CompilerData.Instance.OnSettingsScoreFileNameChanged(); }
         }
 
         [Category("Display")]
