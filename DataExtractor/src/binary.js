@@ -1,13 +1,3 @@
-
-
-//Binarization
-function ValidateStringSize(str) {
-  const StringMaxSize = 127;
-  if (str.length > StringMaxSize) {
-      throw new Error("Messages cannot be longer than " + UInt32MaxSize);
-  }
-}
-
 function ConcatTypedArrays(a, b) { // a, b TypedArray of same type
   var c = new (a.constructor)(a.length + b.length);
   c.set(a, 0);
@@ -15,19 +5,8 @@ function ConcatTypedArrays(a, b) { // a, b TypedArray of same type
   return c;
 }
 
-function stringToArrayBuffer(str){
-  if(/[\u0080-\uffff]/.test(str)){
-      throw new Error("this needs encoding, like UTF-8");
-  }
-  var arr = new Uint8Array(str.length);
-  for(var i=str.length; i--; )
-      arr[i] = str.charCodeAt(i);
-  return arr;
-}
-
 function BinarizeNumber(val,size) {
-  // TODO ~ ramonv ~ check for out of bounds number
-  // we want to represent the input as a 8-bytes array
+  var val = Math.min(val,(2 ** (8*size))-1); //Avoid overflows
   var array = new Uint8Array(size);
   for ( var index = 0; index < array.length; index ++ ) {
       var byte = val & 0xff;
@@ -37,13 +16,18 @@ function BinarizeNumber(val,size) {
   return array;
 };
 
+function StringToArrayBuffer(str,length){
+  var arr = new Uint8Array(length);
+  for(var i=0; i<length; ++i) arr[i] = str.charCodeAt(i);
+  return arr;
+}
+
 function BinarizeStr(str)
 {
-  //TODO ~ ramonv ~ Clamp string length if too long
-
-  ValidateStringSize(str);
-  var len = BinarizeNumber(str.length,1);
-  return ConcatTypedArrays(len,stringToArrayBuffer(str));
+  const StringMaxSize = 127;
+  var finalLen = Math.min(str.length,StringMaxSize);
+  var len = BinarizeNumber(finalLen,1);
+  return ConcatTypedArrays(len,StringToArrayBuffer(str,finalLen));
 }
 
 exports.Str = BinarizeStr;

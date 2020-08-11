@@ -45,24 +45,7 @@ function NodeNatureFromString(natureName)
   else if (natureName == 'Other')                       { return NodeNature.OTHER; }
   return NodeNature.OTHER;
 }
-/*
-function NodeNatureToExportStr(nature)
-{ 
-  switch(nature)
-  { 
-    case NodeNature.SOURCE:              return 'Includes'; 
-    case NodeNature.PARSECLASS:          return 'ParseClass';
-    case NodeNature.PARSETEMPLATE:       return 'ParseTemplate';
-    case NodeNature.INSTANTIATECLASS:    return 'InstanceClass';
-    case NodeNature.INSTANTIATEFUNCTION: return 'InstanceFunction';
-    case NodeNature.CODEGENFUNCTION:     return 'CodeGen';
-    case NodeNature.OPTMODULE:           return 'OptModule';
-    case NodeNature.OPTFUNCTION:         return 'OptFunction';
-    case NodeNature.OTHER:
-    default: return 'Other';
-  }
-}
-*/
+
 function CreateObjectArray(size)
 { 
   var ret = new Array();

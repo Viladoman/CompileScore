@@ -228,51 +228,6 @@ namespace CompileScore
             var compileData = new CompileValue(name, acc, min, max, count);
             dataset.collection.Add(compileData);
         }
-
-        /*
-        private void ParseCompileUnit(string line, ObservableCollection<FullUnitValue> units)
-        {
-            Match match = Regex.Match(line, @"(.*)\:(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+):(\d+)");
-            if (match.Success)
-            {
-
-                var name = match.Groups[1].Value.ToLower();
-                var compileData = new FullUnitValue(name);
-
-                compileData.Source               = UInt32.Parse(match.Groups[2].Value);
-                compileData.ParseClass           = UInt32.Parse(match.Groups[3].Value);
-                compileData.ParseTemplate        = UInt32.Parse(match.Groups[4].Value);
-                compileData.InstantiateClass     = UInt32.Parse(match.Groups[5].Value);
-                compileData.InstantiateFunction  = UInt32.Parse(match.Groups[6].Value);
-                compileData.Codegen              = UInt32.Parse(match.Groups[7].Value);
-                compileData.OptModule            = UInt32.Parse(match.Groups[8].Value);
-                compileData.OptFunction          = UInt32.Parse(match.Groups[9].Value);
-                compileData.Other                = UInt32.Parse(match.Groups[10].Value);
-                compileData.RunPass              = UInt32.Parse(match.Groups[11].Value);
-                compileData.PendingInstantations = UInt32.Parse(match.Groups[12].Value);
-                compileData.Frontend             = UInt32.Parse(match.Groups[13].Value);
-                compileData.Backend              = UInt32.Parse(match.Groups[14].Value);
-
-                units.Add(compileData);
-            }
-        }
-
-        private void ParseCompileValue(string line, CompileDataset dataset)
-        {
-            Match match = Regex.Match(line, @"(.*)\:(\d+):(\d+):(\d+):(\d+)");
-            if (match.Success)
-            {
-                ulong acc = UInt64.Parse(match.Groups[2].Value);
-                uint min = UInt32.Parse(match.Groups[3].Value);
-                uint max = UInt32.Parse(match.Groups[4].Value);
-                uint count = UInt32.Parse(match.Groups[5].Value);
-
-                var name = match.Groups[1].Value.ToLower();
-                var compileData = new CompileValue(name, acc, min, max, count);
-                dataset.collection.Add(compileData);
-            }
-        }
-        */
         private void ClearDatasets()
         {
             for (int i=0;i< Enum.GetNames(typeof(CompileCategory)).Length;++i)
@@ -315,41 +270,6 @@ namespace CompileScore
                         }
                     }
                 }
-
-                /*
-                CompileDataset currentDataset = null;
-                StreamReader streamReader = new StreamReader(fileStream);
-                while (streamReader.Peek() > -1)
-                {
-                    String line = streamReader.ReadLine();
-                    if (line.Length > 0 && line[0] == ':')
-                    {
-                        //Change the current dataset
-                        if (line.ToLower() == ":includes")              { currentDataset = _datasets[(int)CompileCategory.Include]; }
-                        else if (line.ToLower() == ":parseclass")       { currentDataset = _datasets[(int)CompileCategory.ParseClass]; }
-                        else if (line.ToLower() == ":parsetemplate")    { currentDataset = _datasets[(int)CompileCategory.ParseTemplate]; }
-                        else if (line.ToLower() == ":instanceclass")    { currentDataset = _datasets[(int)CompileCategory.InstanceClass]; }
-                        else if (line.ToLower() == ":instancefunction") { currentDataset = _datasets[(int)CompileCategory.InstanceFunction]; }
-                        else if (line.ToLower() == ":codegen")          { currentDataset = _datasets[(int)CompileCategory.CodeGeneration]; }
-                        else if (line.ToLower() == ":optfunction")      { currentDataset = _datasets[(int)CompileCategory.OptimizeFunction]; }
-                        else if (line.ToLower() == ":optmodule")        { currentDataset = _datasets[(int)CompileCategory.OptimizeModule]; }
-                        else if (line.ToLower() == ":other")            { currentDataset = _datasets[(int)CompileCategory.Other]; }
-                        else { currentDataset = null; }
-                    }
-                    else
-                    {
-                        if (currentDataset == null)
-                        {
-                            ParseCompileUnit(line, _unitsCollection);
-                        } 
-                        else 
-                        {
-                            ParseCompileValue(line, currentDataset);
-                        }
-                    } 
-                }
-                */
-
 
                 //Post process on read data
                 PostProcessLoadedData();
