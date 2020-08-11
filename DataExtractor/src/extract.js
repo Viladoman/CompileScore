@@ -103,7 +103,7 @@ function FinalizeDatabaseData(container, targetContainer)
   for (var key in container)
   {
     var entry = container[key];
-    targetContainer.push({ name: key, min: entry.min, max: entry.max, num: entry.num, avg: Math.round(entry.acc/entry.num) });
+    targetContainer.push({ name: key, min: entry.min, max: entry.max, num: entry.num, acc: entry.acc });
   }
 }
 
@@ -194,7 +194,7 @@ function GenerateExportFile(list)
   for (var i=0;i<list.length;++i)
   { 
     var entry = list[i];
-    ret += entry.name+':'+entry.avg+':'+entry.min+':'+entry.max+':'+entry.num+'\n';
+    ret += entry.name+':'+entry.acc+':'+entry.min+':'+entry.max+':'+entry.num+'\n';
   }
   return ret;
 }

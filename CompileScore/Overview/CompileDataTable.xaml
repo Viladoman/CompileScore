@@ -110,11 +110,12 @@
         </Grid>
         <DataGrid x:Name="compilaDataGrid" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="Column" SelectionUnit="FullRow" Margin="0,21,0,0">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Name"  Binding="{Binding Name}" IsReadOnly="True" Width="300"/>
-                <DataGridTextColumn Header="Count" Binding="{Binding Count}" IsReadOnly="True" Width="50"/>
-                <DataGridTextColumn Header="Max"   Binding="{Binding Max, Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="75"/>
-                <DataGridTextColumn Header="Min"   Binding="{Binding Min, Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="75"/>
-                <DataGridTextColumn Header="Avg"   Binding="{Binding Mean, Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="75"/>
+                <DataGridTextColumn Header="Name"        Binding="{Binding Name}" IsReadOnly="True" Width="300"/>
+                <DataGridTextColumn Header="Count"       Binding="{Binding Count}" IsReadOnly="True" Width="50"/>
+                <DataGridTextColumn Header="Accumulated" Binding="{Binding Accumulated, Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="100"/>
+                <DataGridTextColumn Header="Max"         Binding="{Binding Max,         Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="75"/>
+                <DataGridTextColumn Header="Min"         Binding="{Binding Min,         Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="75"/>
+                <DataGridTextColumn Header="Avg"         Binding="{Binding Mean,        Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="75"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

@@ -8,7 +8,7 @@
              xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    
+
     <UserControl.Resources>
         <commonUtils:UITimeConverter x:Key="uiTimeConverter"/>
         <Style TargetType="Label">
@@ -97,35 +97,42 @@
     </UserControl.Resources>
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="100" />
             </Grid.ColumnDefinitions>
-            <TextBox   Grid.Row="0" Grid.Column="0" x:Name="SearchTextBox" TextChanged="SearchTextChangedEventHandler"/>
-            <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Path=Items.Count, ElementName=compilaDataGrid, StringFormat='Count {0}'}" />
+            <TextBox   Grid.Column="0" x:Name="SearchTextBox" TextChanged="SearchTextChangedEventHandler"/>
+            <TextBlock Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Path=Items.Count, ElementName=compilaDataGrid, StringFormat='Count {0}'}" />
         </Grid>
-        <DataGrid x:Name="compilaDataGrid" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="Column" SelectionUnit="FullRow" Margin="0,21,0,0">
+        <DataGrid  Grid.Row="1" FrozenColumnCount="1" x:Name="compilaDataGrid" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="Column" SelectionUnit="FullRow">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Name"  Binding="{Binding Name}" IsReadOnly="True" Width="300"/>
+                <DataGridTextColumn Header="Name"  Binding="{Binding Name}" IsReadOnly="True" Width="200"/>
 
                 <DataGridTextColumn Header="Frontend"              Binding="{Binding Frontend,             Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="75"/>
                 <DataGridTextColumn Header="Backend"               Binding="{Binding Backend,              Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="75"/>
                 <DataGridTextColumn Header="Includes"              Binding="{Binding Source,               Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="75"/>
                 <DataGridTextColumn Header="Parse Class"           Binding="{Binding ParseClass,           Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="75"/>
-                <DataGridTextColumn Header="Parse Template"        Binding="{Binding ParseTemplate,        Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="75"/>
-                <DataGridTextColumn Header="Instantiate Class"     Binding="{Binding InstantiateClass,     Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="100"/>
-                <DataGridTextColumn Header="Instantiate Function"  Binding="{Binding InstatiateFunction,   Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="100"/>
-                <DataGridTextColumn Header="Pending Instantations" Binding="{Binding PendingInstantations, Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="100"/>
-                <DataGridTextColumn Header="Code Generation"       Binding="{Binding Codegen,              Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="75"/>
+                <DataGridTextColumn Header="Parse Template"        Binding="{Binding ParseTemplate,        Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="100"/>
+                <DataGridTextColumn Header="Instantiate Class"     Binding="{Binding InstantiateClass,     Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="110"/>
+                <DataGridTextColumn Header="Instantiate Function"  Binding="{Binding InstantiateFunction,  Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="125"/>
+                <DataGridTextColumn Header="Pending Instantations" Binding="{Binding PendingInstantations, Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="130"/>
+                <DataGridTextColumn Header="Code Generation"       Binding="{Binding Codegen,              Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="110"/>
                 <DataGridTextColumn Header="Run Pass"              Binding="{Binding RunPass,              Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="75"/>
-                <DataGridTextColumn Header="Optimize Function"     Binding="{Binding OptFunction,          Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="100"/>
-                <DataGridTextColumn Header="Optimize Module"       Binding="{Binding OptModule,            Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="75"/>
+                <DataGridTextColumn Header="Optimize Function"     Binding="{Binding OptFunction,          Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="120"/>
+                <DataGridTextColumn Header="Optimize Module"       Binding="{Binding OptModule,            Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="110"/>
                 <DataGridTextColumn Header="Other"                 Binding="{Binding Other,                Converter={StaticResource uiTimeConverter}}"  IsReadOnly="True" Width="75"/>
             </DataGrid.Columns>
         </DataGrid>
+        <!--
+        <StackPanel Grid.Row="2" Orientation="Horizontal">
+            <TextBlock TextAlignment="Right" FontWeight="Bold">Total</TextBlock>
+        </StackPanel>
+        -->
     </Grid>
 </UserControl>

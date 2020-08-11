@@ -18,10 +18,10 @@ namespace CompileScore
 
     public class CompileValue
     {
-        public CompileValue(string name, uint mean, uint min, uint max, uint count)
+        public CompileValue(string name, uint accumulated, uint min, uint max, uint count)
         {
             Name = name;
-            Mean = mean;
+            Accumulated = accumulated;
             Min = min;
             Max = max;
             Count = count;
@@ -31,7 +31,8 @@ namespace CompileScore
         public string Name { get; }
         public uint Max { get; }
         public uint Min { get; }
-        public uint Mean { get; }
+        public uint Accumulated { get; }
+        public uint Mean { get { return Accumulated / Count; }  }
         public uint Count { get; }
         public uint Severity { set; get; }
     }
@@ -223,13 +224,13 @@ namespace CompileScore
             Match match = Regex.Match(line, @"(.*)\:(\d+):(\d+):(\d+):(\d+)");
             if (match.Success)
             {
-                uint mean = UInt32.Parse(match.Groups[2].Value);
+                uint acc = UInt32.Parse(match.Groups[2].Value);
                 uint min = UInt32.Parse(match.Groups[3].Value);
                 uint max = UInt32.Parse(match.Groups[4].Value);
                 uint count = UInt32.Parse(match.Groups[5].Value);
 
                 var name = match.Groups[1].Value.ToLower();
-                var compileData = new CompileValue(name, mean, min, max, count);
+                var compileData = new CompileValue(name, acc, min, max, count);
                 dataset.collection.Add(compileData);
             }
         }

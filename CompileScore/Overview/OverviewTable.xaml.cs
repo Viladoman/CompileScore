@@ -44,6 +44,5 @@ namespace CompileScore.Overview
             this.searchTokens = SearchTextBox.Text.ToLower();
             this.dataView.Refresh();
         }
-
     }
 }

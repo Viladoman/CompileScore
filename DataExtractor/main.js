@@ -18,7 +18,6 @@ function ProcessCommandLine()
   if (args.indexOf('?') >= 0) { DisplayHelp(); }
 
   var inputFolder = '.';
-  //var inputFolder = 'D:/Code/Houston/bin/x64-Clang-Debug-Profile/CMakeFiles/houston.dir/code/Core';
   var outputFile = 'output.txt';
 
   for (var i=0;i<args.length;++i)
