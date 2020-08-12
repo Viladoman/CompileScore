@@ -18,11 +18,7 @@ function ProcessCommandLine()
   if (args.indexOf('?') >= 0) { DisplayHelp(); }
 
   var inputFolder = '.';
-  var outputFile = 'output.txt';
-
-  //TODO ~ ramonV ~ remove before submission
-  //inputFolder = 'D:/Code/See/CompileScore/TestProject/bin/x64-Clang-Debug-Profile/CMakeFiles/CompileScoreTest.dir/src';
-  //outputFile = 'D:/Code/See/CompileScore/TestProject/compileData.txt';
+  var outputFile = 'compileData.scor';
 
   for (var i=0;i<args.length;++i)
   { 

@@ -8,7 +8,7 @@ namespace CompileScore
     public class GeneralSettingsPageGrid : DialogPage
     {
         private string optionPath = @"";
-        private string optionScoreFileName = @"compileData.txt";
+        private string optionScoreFileName = @"compileData.scor";
         private bool optionNormalizedSeverity = true;
         private bool optionHighlightEnabled = true;
         private bool optionTooltipEnabled = true; 

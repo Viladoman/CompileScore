@@ -96,8 +96,6 @@ namespace CompileScore
             public List<uint>                         normalizedThresholds = new List<uint>();
         }
 
-        //private CompileDataset _includeDataset = new CompileDataset();
-
         private CompileDataset[] _datasets = new CompileDataset[Enum.GetNames(typeof(CompileCategory)).Length].Select(h => new CompileDataset()).ToArray();
 
         //events
@@ -242,14 +240,11 @@ namespace CompileScore
 
         private void LoadSeverities(string fullPath)
         {
-            //var watch = System.Diagnostics.Stopwatch.StartNew();
-
             _unitsCollection.Clear();
             ClearDatasets();
 
             if (File.Exists(fullPath))
             {
-                //var watch3 = System.Diagnostics.Stopwatch.StartNew();
                 FileStream fileStream = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 using (BinaryReader reader = new BinaryReader(fileStream))
                 {
@@ -276,20 +271,12 @@ namespace CompileScore
                     }
                 }
 
-                //watch3.Stop();
-                //var elapsedMs3 = watch3.ElapsedMilliseconds;
-                //Console.WriteLine(elapsedMs3);
-
                 //Post process on read data
                 PostProcessLoadedData();
             }
 
             RecomputeSeverities();
             ScoreDataChanged?.Invoke();
-
-            //watch.Stop();
-            //var elapsedMs = watch.ElapsedMilliseconds;
-            //Console.WriteLine(elapsedMs);
         }
 
         private void PostProcessLoadedData()

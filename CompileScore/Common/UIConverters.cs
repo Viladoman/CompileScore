@@ -17,19 +17,8 @@ namespace CompileScore.Common
 
         static public string GetTimeStr(ulong uSeconds)
         {
-            //TODO ~ ramonv ~ improve the viewer ( show 2 levels of depth only ) 
-
-            if (uSeconds == 0)
-            {
-                return "-";
-            }
-
-            if (uSeconds < 1000)
-            {
-                return uSeconds + "μs";
-            }
-
             ulong ms = uSeconds / 1000;
+            ulong us = uSeconds - (ms * 1000);
             ulong sec = ms / 1000;
             ms = ms - (sec * 1000);
             ulong min = sec / 60;
@@ -37,12 +26,12 @@ namespace CompileScore.Common
             ulong hour = min / 60;
             min = min - (hour * 60);
 
-            string ret = ms + "ms";
-            ret = (sec > 0 ?  sec  + "s " : "") + ret;
-            ret = (min > 0 ?  min  + "m " : "") + ret;
-            ret = (hour > 0 ? hour + "h " : "") + ret;          
-
-            return ret;
+            if (hour > 0) { return hour + " h " + min + " m"; }
+            if (min > 0)  { return min  + " m " + sec + " s"; }
+            if (sec > 0)  { return sec  + "." + ms.ToString().PadLeft(4, '0') + " s"; }
+            if (ms > 0)   { return ms + "." + us.ToString().PadLeft(4, '0')+" ms"; }
+            if (us > 0)   { return us + " μs"; }
+            return "-";
         }
     }
 
