@@ -36,7 +36,7 @@ function ProcessCommandLine()
   //EXECUTE
   Extract.Extract(inputFolder,outputFile,function(error){ 
     if (error){ }
-    else { console.log("DONE"); }
+    else { console.log("Closing File..."); }
   });
 
 }

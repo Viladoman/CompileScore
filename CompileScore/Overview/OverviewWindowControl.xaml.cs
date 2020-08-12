@@ -34,7 +34,7 @@
             tab.Header = CompileScore.Common.UIConverters.ToSentenceCase(Enum.GetName(typeof(CompilerData.CompileCategory), (int)category));
 
             CompileDataTable content = new CompileDataTable();
-            content.InitCategory(category);
+            content.Category = category;
             tab.Content = content;
 
             tabControl.Items.Add(tab);

@@ -28,15 +28,20 @@ namespace CompileScore.Overview
         {
             InitializeComponent();
 
-            this.dataView = CollectionViewSource.GetDefaultView(CompilerData.Instance.GetUnits());
-            this.dataView.Filter = d => FilterCompileValue((FullUnitValue)d, searchTokens);
-            compilaDataGrid.ItemsSource = this.dataView;
+            CompilerData.Instance.ScoreDataChanged += OnDataChanged;
         }
 
         private static bool FilterCompileValue(FullUnitValue value, string tokens)
         {
             //TODO ~ ramonv ~ handle tokens 
             return value.Name.Contains(tokens);
+        }
+
+        private void OnDataChanged()
+        {
+            this.dataView = CollectionViewSource.GetDefaultView(CompilerData.Instance.GetUnits());
+            this.dataView.Filter = d => FilterCompileValue((FullUnitValue)d, searchTokens);
+            compilaDataGrid.ItemsSource = this.dataView;
         }
 
         private void SearchTextChangedEventHandler(object sender, TextChangedEventArgs args)

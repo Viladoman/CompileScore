@@ -27,18 +27,23 @@ namespace CompileScore.Overview
         public CompileDataTable()
         {
             InitializeComponent();
+
+            CompilerData.Instance.ScoreDataChanged += OnDataChanged;
         }
-        public void InitCategory(CompilerData.CompileCategory category)
-        {
-            this.dataView = CollectionViewSource.GetDefaultView(CompilerData.Instance.GetCollection(category));
-            this.dataView.Filter = d => FilterCompileValue((CompileValue)d, searchTokens);
-            compilaDataGrid.ItemsSource = this.dataView;
-        }
+
+        public CompilerData.CompileCategory Category { set; get; }
 
         private static bool FilterCompileValue(CompileValue value, string tokens)
         {
             //TODO ~ ramonv ~ handle tokens 
             return value.Name.Contains(tokens);
+        }
+
+        private void OnDataChanged()
+        {
+            this.dataView = CollectionViewSource.GetDefaultView(CompilerData.Instance.GetCollection(Category));
+            this.dataView.Filter = d => FilterCompileValue((CompileValue)d, searchTokens);
+            compilaDataGrid.ItemsSource = this.dataView;
         }
 
         private void SearchTextChangedEventHandler(object sender, TextChangedEventArgs args)

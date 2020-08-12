@@ -66,6 +66,7 @@ namespace CompileScore
     {
         private static readonly Lazy<CompilerData> lazy = new Lazy<CompilerData>(() => new CompilerData());
 
+        //Keep this in sync with the data exporter
         public enum CompileCategory
         {
             Include = 0,
@@ -74,8 +75,8 @@ namespace CompileScore
             InstanceClass, 
             InstanceFunction,
             CodeGeneration, 
-            OptimizeFunction,
             OptimizeModule, 
+            OptimizeFunction,
             Other
         }
 
@@ -194,7 +195,7 @@ namespace CompileScore
             LoadSeverities(realPath + _scoreFileName);
         }
 
-        private void ReadCompileUnit(BinaryReader reader, ObservableCollection<FullUnitValue> units)
+        private void ReadCompileUnit(BinaryReader reader, List<FullUnitValue> list)
         {
             var name = reader.ReadString();
             var compileData = new FullUnitValue(name);
@@ -214,10 +215,10 @@ namespace CompileScore
             compileData.Backend = reader.ReadUInt32();
             compileData.Duration = reader.ReadUInt32();
 
-            units.Add(compileData);
+            list.Add(compileData);
         }
 
-        private void ReadCompileValue(BinaryReader reader, CompileDataset dataset)
+        private void ReadCompileValue(BinaryReader reader, List<CompileValue> list)
         {
             var name = reader.ReadString();
             ulong acc = reader.ReadUInt64();
@@ -226,7 +227,7 @@ namespace CompileScore
             uint count = reader.ReadUInt32();
 
             var compileData = new CompileValue(name, acc, min, max, count);
-            dataset.collection.Add(compileData);
+            list.Add(compileData);
         }
         private void ClearDatasets()
         {
@@ -241,35 +242,43 @@ namespace CompileScore
 
         private void LoadSeverities(string fullPath)
         {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
+            //var watch = System.Diagnostics.Stopwatch.StartNew();
 
             _unitsCollection.Clear();
             ClearDatasets();
 
             if (File.Exists(fullPath))
             {
-
+                //var watch3 = System.Diagnostics.Stopwatch.StartNew();
                 FileStream fileStream = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 using (BinaryReader reader = new BinaryReader(fileStream))
                 {
                     // Read Units 
-                    uint unitsLength = reader.ReadUInt32(); 
-                    for (uint i=0;i<unitsLength;++i)
+                    uint unitsLength = reader.ReadUInt32();
+                    var unitList = new List<FullUnitValue>((int)unitsLength);
+                    for (uint i = 0; i < unitsLength; ++i)
                     {
-                        ReadCompileUnit(reader, _unitsCollection);
+                        ReadCompileUnit(reader, unitList);
                     }
+                    
+                    _unitsCollection = new ObservableCollection<FullUnitValue>(unitList);
 
                     //Read Datasets
                     for(int i = 0; i < Enum.GetNames(typeof(CompileCategory)).Length; ++i)
                     {
-                        CompileDataset currentDataset = _datasets[i];
                         uint dataLength = reader.ReadUInt32();
+                        var thislist = new List<CompileValue>((int)dataLength);
                         for (uint k = 0; k < dataLength; ++k)
                         {
-                            ReadCompileValue(reader,currentDataset);
+                            ReadCompileValue(reader, thislist);
                         }
+                        _datasets[i].collection = new ObservableCollection<CompileValue>(thislist);
                     }
                 }
+
+                //watch3.Stop();
+                //var elapsedMs3 = watch3.ElapsedMilliseconds;
+                //Console.WriteLine(elapsedMs3);
 
                 //Post process on read data
                 PostProcessLoadedData();
@@ -278,9 +287,9 @@ namespace CompileScore
             RecomputeSeverities();
             ScoreDataChanged?.Invoke();
 
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-            Console.WriteLine(elapsedMs);
+            //watch.Stop();
+            //var elapsedMs = watch.ElapsedMilliseconds;
+            //Console.WriteLine(elapsedMs);
         }
 
         private void PostProcessLoadedData()
