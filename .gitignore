@@ -20,7 +20,7 @@ CompileScore/bin/
 CompileScore/obj/
 
 #Temporary and binaries
-TestProject/compileData.txt
+TestProject/compileData.scor
 TestProject/tmp/*
 TestProject/bin/*
 TestProject/.vs/*

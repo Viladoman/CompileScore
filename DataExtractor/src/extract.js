@@ -3,6 +3,8 @@ var Bin    = require('./binary.js');
 
 var path = require('path');
 
+const version = 1;
+
 var NodeNature = {
   SOURCE:                0,
   PARSECLASS:            1,
@@ -182,8 +184,9 @@ function Extract(inputFolder,outputFile,doneCallback)
     if (error) { console.log(error); doneCallback(error); }
     else
     { 
-      //Export binary version
       FileIO.SaveFileStream(outputFile,function(stream){
+
+        stream.write(Bin.Num(version,4));
 
         //Export units
         stream.write(Bin.Num(units.length,4));

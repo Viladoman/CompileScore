@@ -248,6 +248,8 @@ namespace CompileScore
                 FileStream fileStream = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 using (BinaryReader reader = new BinaryReader(fileStream))
                 {
+                    uint version = reader.ReadUInt32();
+
                     // Read Units 
                     uint unitsLength = reader.ReadUInt32();
                     var unitList = new List<FullUnitValue>((int)unitsLength);

@@ -111,8 +111,7 @@ function SaveFileStream(file,writeCallback,doneCallback)
   var stream = fs.createWriteStream(file);
   stream.once('open', function(fd) {
     writeCallback(stream);
-    stream.end();
-    doneCallback();
+    stream.end(doneCallback);
   });
 }
 
