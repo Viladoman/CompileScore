@@ -26,7 +26,13 @@ Clang 9+ added the '-ftime-trace' flag. This flag outputs a detailed report for 
 
 The data extraction is a different process due to the fact that in big codebases you might want to just extract the data in a build machine and have the programmers just sync the reports to avoid having to do expensive full compilations locally. 
 
-... ( add small graph here / 2 graphs ) 
+![pipeline flow](https://github.com/Viladoman/CompileScore/wiki/data/Dataextraction.png?raw=true)
+
+The following command will parse recursively all the directories and process all clang trace files. 
+```
+node MyProject/DataExtractorFolder/main.js -i MyProject/TempFolderWithObj/ -o MyProject/compileData.scor
+```
+In the VS extension settings there is a field to tell the plugin where to find the report file (by default next to the solution file or root folder). 
 
 For small projects, like the Test Project included in this repo, you can perfrom the data extraction as a build post process in a given configuration in order to keep your compile data up to date.
 
