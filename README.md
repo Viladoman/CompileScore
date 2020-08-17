@@ -28,11 +28,13 @@ The data extraction is a different process due to the fact that in big codebases
 
 ... ( add small graph here / 2 graphs ) 
 
+For small projects, like the Test Project included in this repo, you can perfrom the data extraction as a build post process in a given configuration in order to keep your compile data up to date.
+
 ## Requirements
 
-Visual Studio 2019
-Clang 9+ ( support for -ftime-trace ) 
-node.js to extract the data
+- Visual Studio 2019
+- Clang 9+ ( support for -ftime-trace ) 
+- [node.js](https://nodejs.org/) to run the data extraction script
 
 ## Running the Test Project 
 
