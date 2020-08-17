@@ -45,7 +45,7 @@ For small projects, like the Test Project included in this repo, you can perfrom
 ## Running the Test Project 
 
 - Install the plugin. 
-- Chose 'Open Folder' option in VS 2019 to the TestProject directy. This will open VS and setup using the CMake configuration provided. 
+- Select 'Open Folder' in VS 2019 to the TestProject folder directy. This will open VS and setup using the CMake configuration provided. 
 - Compile 'x64-Clang-Debug-Profile' in order to generate the data compilation data and see the plugin in action.
 
 The configurations provided with 'Profile' will add the '-ftime-trace' flag to clang and extract the data once the build is finished. 
