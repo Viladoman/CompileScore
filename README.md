@@ -1,15 +1,24 @@
 # CompileScore
-VisualStudio extension to highlight compilation profiling data. Know directly inside the VS IDE the real compilation cost of your code ( WIP: At the moment only highlights #include data )
+VisualStudio extension used to display and highlight compilation profiling data. Know directly inside Visual Studio the real compilation cost of your code. Keep the compile times in check. 
 
-( expand description )
-
-( add links to download )
-
-( add screenshot )
+( add link to marketplace )
 
 ## Motivation
 
-Compile times are one of the most important things that affect productivity and iterations while developing in C/C++. When compile times are slow it can be very frustating at it is a usual case scenario in big code productions. Being able to know in the same spot where you code what pieces are expensive is key in order to keep that tech debt in check.
+Compile times are one of the most important things that affect productivity and iterations while developing in C/C++. When compile times are slow it can be very frustating at it is a usual case scenario in big code productions. Being able to know in the same spot where you code what pieces are expensive is key in order to keep tech debt in check.
+
+## Features
+
+### Text Highlight on include costs
+![Hihglight screenshot](https://github.com/Viladoman/CompileScore/wiki/data/highlightScreenshot.png?raw=true)
+
+### Tool window with full project aggregated data
+
+#### Translation Units
+![Overview screenshot](https://github.com/Viladoman/CompileScore/wiki/data/overview.png?raw=true)
+
+#### Include data
+![Includes screenshot](https://github.com/Viladoman/CompileScore/wiki/data/includes.png?raw=true)
 
 ## How it works
 
