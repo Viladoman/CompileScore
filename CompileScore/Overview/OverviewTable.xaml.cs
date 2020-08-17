@@ -28,6 +28,7 @@ namespace CompileScore.Overview
         {
             InitializeComponent();
 
+            OnDataChanged();
             CompilerData.Instance.ScoreDataChanged += OnDataChanged;
         }
 

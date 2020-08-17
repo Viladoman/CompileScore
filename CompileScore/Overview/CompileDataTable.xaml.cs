@@ -23,15 +23,21 @@ namespace CompileScore.Overview
     {
         private ICollectionView dataView;
         private string searchTokens = "";
+        private CompilerData.CompileCategory Category { set; get; }
 
         public CompileDataTable()
         {
             InitializeComponent();
 
+            OnDataChanged();
             CompilerData.Instance.ScoreDataChanged += OnDataChanged;
         }
 
-        public CompilerData.CompileCategory Category { set; get; }
+        public void SetCategory(CompilerData.CompileCategory category)
+        {
+            Category = category;
+            OnDataChanged();
+        }
 
         private static bool FilterCompileValue(CompileValue value, string tokens)
         {
