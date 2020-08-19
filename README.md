@@ -30,7 +30,7 @@ The data extraction is a different process due to the fact that in big codebases
 
 The following command will parse recursively all the directories and process all clang trace files. 
 ```
-node MyProject/DataExtractorFolder/main.js -i MyProject/TempFolderWithObj/ -o MyProject/compileData.scor
+node DataExtractorFolder/main.js -i TempFolderWithObj/ -o compileData.scor
 ```
 In the VS extension settings there is a field to tell the plugin where to find the report file (by default next to the solution file or root folder). 
 
