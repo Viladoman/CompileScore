@@ -1,11 +1,11 @@
 # CompileScore
 VisualStudio extension used to display and highlight compilation profiling data. Know directly inside Visual Studio the real compilation cost of your code. Keep the compile times in check. 
 
-( add link to marketplace )
+[Visual Studio Marketplace page](https://marketplace.visualstudio.com/items?itemName=RamonViladomat.CompileScore)
 
 ## Motivation
 
-Compile times are one of the most important things that affect productivity and iterations while developing in C/C++. When compile times are slow it can be very frustating at it is a usual case scenario in big code productions. Being able to know in the same spot where you code what pieces are expensive is key in order to keep tech debt in check.
+Compile times are one of the most important things that affect productivity and iterations while developing in C/C++. When compile times are slow it can be very frustrating at it is a usual case scenario in big code productions. Being able to know in the same spot where you code what pieces are expensive is key in order to keep tech debt in check.
 
 ## Features
 
