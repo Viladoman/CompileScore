@@ -46,6 +46,8 @@ namespace CompileScore
 
         public string Name { get; }
 
+        //TODO ~ ramonv ~ Convert all the list below in an array for better scalability
+
         public uint Frontend { set; get; }
         public uint Backend { set; get; }
         public uint Source { set; get; }

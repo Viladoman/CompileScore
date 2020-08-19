@@ -139,7 +139,9 @@ function AddToDatabase(filename,events)
       var nature = NodeNatureFromString(element.name);
       if (nature < NodeNatureData.GLOBAL_GATHER_THRESHOLD) 
       {
-        FillDatabaseData(globals[nature],nature == NodeNature.SOURCE || nature == NodeNature.OPTMODULE? path.basename(element.args.detail) : element.args.detail,element.dur); 
+        var name = element.args == undefined? element.name : element.args.detail;
+        name = nature == NodeNature.SOURCE || nature == NodeNature.OPTMODULE? path.basename(name) : name;
+        FillDatabaseData(globals[nature],name,element.dur); 
       }
 
       if (nature < NodeNatureData.GLOBAL_DISPLAY_THRESHOLD)
