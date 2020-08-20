@@ -39,7 +39,7 @@ For small projects, like the Test Project included in this repo, you can perform
 ## Requirements
 
 - Visual Studio 2019
-- Clang 9+ ( support for -ftime-trace ) 
+- [Clang 9+](https://releases.llvm.org/download.html) ( support for -ftime-trace ) 
 - [node.js](https://nodejs.org/) to run the data extraction script
 
 ## Running the Test Project 
