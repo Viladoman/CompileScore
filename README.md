@@ -1,7 +1,7 @@
 # CompileScore
 VisualStudio extension used to display and highlight compilation profiling data. Know the real compilation cost of your code directly inside Visual Studio. Keep the compile times in check. 
 
-[Visual Studio Marketplace page](https://marketplace.visualstudio.com/items?itemName=RamonViladomat.CompileScore)
+[Download latest from the Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=RamonViladomat.CompileScore)
 
 ## Motivation
 
