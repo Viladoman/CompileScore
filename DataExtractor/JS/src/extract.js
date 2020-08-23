@@ -29,6 +29,12 @@ var NodeNatureData = {
   COUNT:                    NodeNature.INVALID
 }
 
+var logFunc = function(level,data){}; //dummy function
+
+function LogError(data)    { logFunc(0,data); }
+function LogProgress(data) { logFunc(1,data); }
+function LogInfo(data)     { logFunc(2,data); }
+
 function NodeNatureFromString(natureName)
 {
        if (natureName == 'Source')                      { return NodeNature.SOURCE; }
@@ -129,12 +135,12 @@ function AddToDatabase(filename,events)
 { 
   var nodes = CreateArrayArray(NodeNatureData.GLOBAL_DISPLAY_THRESHOLD);
 
+  var refernceTid = events.length > 0? events[0].tid : 0;
+  
   for (var i=0,sz=events.length;i<sz;++i)
   {
     var element = events[i];
-
-    //Check for includes 
-    if (element.tid == 0 && element.name != 'process_name') 
+    if (element.tid == refernceTid && element.name != 'process_name' && element.name != 'thread_name')
     { 
       var nature = NodeNatureFromString(element.name);
       if (nature < NodeNatureData.GLOBAL_GATHER_THRESHOLD) 
@@ -158,7 +164,7 @@ function ParseFile(file,content)
 { 
   if (content.startsWith('{"traceEvents":') || content.startsWith('{ "traceEvents":'))
   {
-    console.log('PARSING: '+file);
+    LogInfo('PARSING: '+file);
 
     var obj = JSON.parse(content);
     if (obj.traceEvents)
@@ -183,7 +189,7 @@ function BinarizeEntry(entry)
 function Extract(inputFolder,outputFile,doneCallback)
 { 
   FileIO.SearchFolder(inputFolder,ParseFile,function(error){
-    if (error) { console.log(error); doneCallback(error); }
+    if (error) { LogError(error); doneCallback(error); }
     else
     { 
       FileIO.SaveFileStream(outputFile,function(stream){
@@ -208,9 +214,14 @@ function Extract(inputFolder,outputFile,doneCallback)
             stream.write(BinarizeEntry(finalList[k])); 
           }
         }
-      },doneCallback)
+      },function(error)
+      {
+        if (error == undefined){ LogProgress("Done!"); }
+        doneCallback();
+      })
     } 
   })
 } 
 
+exports.SetLogFunc = function(func){ logFunc = func; FileIO.SetLogFunc(func); }
 exports.Extract = Extract;

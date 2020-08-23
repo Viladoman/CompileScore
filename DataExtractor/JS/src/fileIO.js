@@ -4,16 +4,21 @@ var path = require('path');
 var extension = 'json';
 var batchMaxSize = 100; 
 
+var logFunc = function(level,data){}; //dummy function
+
+function LogError(data)    { logFunc(0,data); }
+function LogProgress(data) { logFunc(1,data); }
+function LogInfo(data)     { logFunc(2,data); }
+
 function IsExtensionFile(file,extension)
 {
-  var extensionLength = extension.length+1;
-  return file.length > extensionLength && file.indexOf('.'+extension) == file.length-extensionLength;
+  return (file.split('.').pop()) == extension;
 }
 
 function ParseFile(file,parseCallback,doneCallback)
 { 
   fs.readFile(file, 'utf8', function(err, data){
-    if (err){ doneCallback(err); console.log(err); }
+    if (err){ doneCallback(err); LogError(err); }
     else{ parseCallback(file,data); }
     doneCallback();
   });
@@ -31,7 +36,7 @@ function OpenNextFileBatch(files,parseCallback,doneCallback)
     var batch = files.slice(0,batchSize);
     files.splice(0,batchSize); 
 
-    console.log('Open file batch of '+batchSize+' files (remaining '+files.length+')');
+    LogProgress('Open file batch of '+batchSize+' files (remaining '+files.length+')');
 
     var pending = batchSize; 
     for (var i=0,sz=batch.length;i<sz;++i)
@@ -54,7 +59,7 @@ function OpenFiles(files,parseCallback,doneCallback)
 
 function SearchSingleDir(dir,folders,files,doneCallback)
 {
-  console.log('Searching folder '+ dir);
+  LogInfo('Searching folder '+ dir);
   fs.readdir(dir, function(err, list) {
     if (err) { doneCallback(err); return; }
     var pending = list.length;
@@ -98,7 +103,7 @@ function SearchFolder(path,parseCallback,doneCallback)
   var files = []; 
   var folders = [path];
 
-  console.log('Scanning folder ' + path + '...')
+  LogProgress('Scanning folder ' + path + '...')
 
   SearchNextFolder(folders,files,function(error){
     if(error) { doneCallback(error); }
@@ -115,6 +120,6 @@ function SaveFileStream(file,writeCallback,doneCallback)
   });
 }
 
-
+exports.SetLogFunc     = function(func){ logFunc = func; }
 exports.SearchFolder   = SearchFolder; 
 exports.SaveFileStream = SaveFileStream;

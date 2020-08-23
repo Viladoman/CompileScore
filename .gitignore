@@ -11,8 +11,8 @@
 *.orig
 
 # Visual Studio Code
-DataExtractor/.vscode/
-DataExtractor/.history
+DataExtractor/JS/.vscode/
+DataExtractor/JS/.history
 
 # VS Exports
 CompileScore/.vs/
@@ -20,7 +20,17 @@ CompileScore/bin/
 CompileScore/obj/
 
 #Temporary and binaries
-TestProject/compileData.scor
-TestProject/tmp/*
-TestProject/bin/*
-TestProject/.vs/*
+TestProjects/Clang/compileData.scor
+TestProjects/Clang/tmp/*
+TestProjects/Clang/bin/*
+TestProjects/Clang/.vs/*
+
+TestProjects/MSVC/compileData.scor
+TestProjects/MSVC/.vs/*
+
+DataExtractor/Cpp/Release/*
+DataExtractor/Cpp/Debug/*
+DataExtractor/Cpp/x64/*
+DataExtractor/Cpp/x86/*
+DataExtractor/Cpp/packages/*
+DataExtractor/Cpp/.vs/*
