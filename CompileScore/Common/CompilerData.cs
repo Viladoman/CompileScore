@@ -13,6 +13,7 @@ namespace CompileScore
     using System.Text.RegularExpressions;
     using System.Security.Permissions;
     using System.Linq;
+    using System.Windows;
 
     public delegate void Notify();  // delegate
 
@@ -67,6 +68,8 @@ namespace CompileScore
     public sealed class CompilerData
     {
         private static readonly Lazy<CompilerData> lazy = new Lazy<CompilerData>(() => new CompilerData());
+
+        const uint dataVersion = 1;
 
         //Keep this in sync with the data exporter
         public enum CompileCategory
@@ -198,7 +201,7 @@ namespace CompileScore
         private void ReadCompileUnit(BinaryReader reader, List<FullUnitValue> list)
         {
             var name = reader.ReadString();
-            var compileData = new FullUnitValue(name);
+            var compileData = new FullUnitValue(name.ToLower()); //TODO ~ ramonv ~ move this to export on next data version upgrade
 
             compileData.Source = reader.ReadUInt32();
             compileData.ParseClass = reader.ReadUInt32();
@@ -251,29 +254,37 @@ namespace CompileScore
                 using (BinaryReader reader = new BinaryReader(fileStream))
                 {
                     uint version = reader.ReadUInt32();
-
-                    // Read Units 
-                    uint unitsLength = reader.ReadUInt32();
-                    var unitList = new List<FullUnitValue>((int)unitsLength);
-                    for (uint i = 0; i < unitsLength; ++i)
+                    if (version == dataVersion)
                     {
-                        ReadCompileUnit(reader, unitList);
-                    }
-                    
-                    _unitsCollection = new ObservableCollection<FullUnitValue>(unitList);
-
-                    //Read Datasets
-                    for(int i = 0; i < Enum.GetNames(typeof(CompileCategory)).Length; ++i)
-                    {
-                        uint dataLength = reader.ReadUInt32();
-                        var thislist = new List<CompileValue>((int)dataLength);
-                        for (uint k = 0; k < dataLength; ++k)
+                        // Read Units 
+                        uint unitsLength = reader.ReadUInt32();
+                        var unitList = new List<FullUnitValue>((int)unitsLength);
+                        for (uint i = 0; i < unitsLength; ++i)
                         {
-                            ReadCompileValue(reader, thislist);
+                            ReadCompileUnit(reader, unitList);
                         }
-                        _datasets[i].collection = new ObservableCollection<CompileValue>(thislist);
+                    
+                        _unitsCollection = new ObservableCollection<FullUnitValue>(unitList);
+
+                        //Read Datasets
+                        for(int i = 0; i < Enum.GetNames(typeof(CompileCategory)).Length; ++i)
+                        {
+                            uint dataLength = reader.ReadUInt32();
+                            var thislist = new List<CompileValue>((int)dataLength);
+                            for (uint k = 0; k < dataLength; ++k)
+                            {
+                                ReadCompileValue(reader, thislist);
+                            }
+                            _datasets[i].collection = new ObservableCollection<CompileValue>(thislist);
+                        }
+                    }
+                    else
+                    {
+                        //TODO ~ ramonv ~ Notify Data version mismatch
                     }
                 }
+
+                fileStream.Close();
 
                 //Post process on read data
                 PostProcessLoadedData();

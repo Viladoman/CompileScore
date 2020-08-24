@@ -105,7 +105,7 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="100" />
             </Grid.ColumnDefinitions>
-            <TextBox   Grid.Row="0" Grid.Column="0" x:Name="SearchTextBox" TextChanged="SearchTextChangedEventHandler"/>
+            <TextBox   Grid.Row="0" Grid.Column="0" x:Name="searchTextBox" TextChanged="SearchTextChangedEventHandler"/>
             <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Path=Items.Count, ElementName=compilaDataGrid, StringFormat='Count {0}'}" />
         </Grid>
         <DataGrid x:Name="compilaDataGrid" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="Column" SelectionUnit="FullRow" Margin="0,21,0,0">

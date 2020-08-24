@@ -22,7 +22,7 @@ namespace CompileScore.Overview
     public partial class CompileDataTable : UserControl
     {
         private ICollectionView dataView;
-        private string searchTokens = "";
+
         private CompilerData.CompileCategory Category { set; get; }
 
         public CompileDataTable()
@@ -39,25 +39,30 @@ namespace CompileScore.Overview
             OnDataChanged();
         }
 
-        private static bool FilterCompileValue(CompileValue value, string tokens)
+        private static bool FilterCompileValue(CompileValue value, string filterText)
         {
-            //TODO ~ ramonv ~ handle tokens 
-            return value.Name.Contains(tokens);
+            return value.Name.Contains(filterText);
+        }
+
+        private void UpdateFilterFunction()
+        {
+            string filterText = searchTextBox.Text.ToLower();
+            this.dataView.Filter = d => FilterCompileValue((CompileValue)d, filterText);
         }
 
         private void OnDataChanged()
         {
             this.dataView = CollectionViewSource.GetDefaultView(CompilerData.Instance.GetCollection(Category));
-            this.dataView.Filter = d => FilterCompileValue((CompileValue)d, searchTokens);
+            UpdateFilterFunction();
             compilaDataGrid.ItemsSource = this.dataView;
         }
 
         private void SearchTextChangedEventHandler(object sender, TextChangedEventArgs args)
         {
-            this.searchTokens = SearchTextBox.Text.ToLower();
+            UpdateFilterFunction();
             this.dataView.Refresh();
         }
 
-       
+
     }
 }
