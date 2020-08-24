@@ -65,11 +65,45 @@ namespace CompileScore
             }
         }
 
+        private static bool IsFileLocked(FileInfo file)
+        {
+            FileStream stream = null;
+
+            try
+            {
+                stream = file.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            }
+            catch (IOException)
+            {
+                //the file is unavailable because it is:
+                //still being written to
+                //or being processed by another thread
+                //or does not exist (has already been processed)
+                return true;
+            }
+            finally
+            {
+                if (stream != null)
+                    stream.Close();
+            }
+
+            //file is not locked
+            return false;
+        }
+
         private static void OnWatchedFileChanged(object source, FileSystemEventArgs e)
         {
             DateTime lastWriteTime = File.GetLastWriteTime(_fileWatcherFullPath);
             if (lastWriteTime != _fileWatcherLastRead)
             {
+                var fileInfo = new FileInfo(_fileWatcherFullPath);
+                while (File.Exists(_fileWatcherFullPath) && IsFileLocked(fileInfo))
+                {
+                    //File is still locked, meaning the writing stream is still writing to the file,
+                    // we need to wait until that process is done before trying to refresh it here. 
+                    System.Threading.Thread.Sleep(500);
+                }
+
                 Microsoft.VisualStudio.Shell.ThreadHelper.JoinableTaskFactory.Run(async delegate {
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     FileWatchedChanged?.Invoke();
