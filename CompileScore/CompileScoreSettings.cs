@@ -22,7 +22,7 @@ namespace CompileScore
         public string OptionPath
         {
             get { return optionPath; }
-            set { optionPath = value; CompilerData.Instance.OnSettingsPathChanged(); }
+            set { optionPath = value; ThreadHelper.ThrowIfNotOnUIThread(); CompilerData.Instance.OnSettingsPathChanged(); }
         }
 
         [Category("File")]
@@ -31,7 +31,7 @@ namespace CompileScore
         public string OptionScoreFileName
         {
             get { return optionScoreFileName; }
-            set { optionScoreFileName = value; CompilerData.Instance.OnSettingsScoreFileNameChanged(); }
+            set { optionScoreFileName = value; ThreadHelper.ThrowIfNotOnUIThread(); CompilerData.Instance.OnSettingsScoreFileNameChanged(); }
         }
 
         [Category("Display")]

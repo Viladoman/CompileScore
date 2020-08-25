@@ -14,6 +14,7 @@ namespace CompileScore
     using System.Security.Permissions;
     using System.Linq;
     using System.Windows;
+    using System.Windows.Forms;
 
     public delegate void Notify();  // delegate
 
@@ -112,6 +113,8 @@ namespace CompileScore
 
         public void Initialize(CompileScorePackage package, IServiceProvider serviceProvider)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             _package = package;
             _serviceProvider = serviceProvider;
 
@@ -168,6 +171,7 @@ namespace CompileScore
             if (_path != input)
             {
                 _path = input;
+                OutputLog.Log("Settings - Score Path: " + _path);
                 return true;
             }
             return false;
@@ -178,6 +182,7 @@ namespace CompileScore
             if (_scoreFileName != input)
             {
                 _scoreFileName = input;
+                OutputLog.Log("Settings - Score File: " + _scoreFileName);
                 return true;
             }
             return false;
@@ -192,6 +197,7 @@ namespace CompileScore
 
         private void ReloadSeverities()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             string realPath = _solutionDir + _path;
 
             DocumentLifetimeManager.WatchFile(realPath, _scoreFileName);
@@ -245,11 +251,15 @@ namespace CompileScore
 
         private void LoadSeverities(string fullPath)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             _unitsCollection.Clear();
             ClearDatasets();
 
             if (File.Exists(fullPath))
             {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                
                 FileStream fileStream = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 using (BinaryReader reader = new BinaryReader(fileStream))
                 {
@@ -280,7 +290,7 @@ namespace CompileScore
                     }
                     else
                     {
-                        //TODO ~ ramonv ~ Notify Data version mismatch
+                        OutputLog.Error("Version mismatch! Expected "+version+" - Found "+dataVersion);
                     }
                 }
 
@@ -288,9 +298,15 @@ namespace CompileScore
 
                 //Post process on read data
                 PostProcessLoadedData();
+
+                watch.Stop();
+                const long TicksPerMicrosecond = (TimeSpan.TicksPerMillisecond / 1000);
+                ulong microseconds = (ulong)(watch.ElapsedTicks/TicksPerMicrosecond);
+                OutputLog.Log("Score file processed in "+ Common.UIConverters.GetTimeStr(microseconds));
             }
 
             RecomputeSeverities();
+
             ScoreDataChanged?.Invoke();
         }
 
@@ -372,11 +388,13 @@ namespace CompileScore
 
         private void OnFileWatchedChanged()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             LoadSeverities(_solutionDir + _path + _scoreFileName);
         } 
 
         public void OnSettingsPathChanged()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (SetPath(GetGeneralSettings().OptionPath))
             {
                 ReloadSeverities(); 
@@ -385,6 +403,7 @@ namespace CompileScore
 
         public void OnSettingsScoreFileNameChanged()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (SetScoreFileName(GetGeneralSettings().OptionScoreFileName))
             {
                 ReloadSeverities();

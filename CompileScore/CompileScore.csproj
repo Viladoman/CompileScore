@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="Common\CompilerData.cs" />
     <Compile Include="Common\DocumentLifeTimeManager.cs" />
+    <Compile Include="Common\OutputLog.cs" />
     <Compile Include="Common\ScoreColors.cs" />
     <Compile Include="Common\UIConverters.cs" />
     <Compile Include="Glyph\ScoreGlyphFactory.cs" />

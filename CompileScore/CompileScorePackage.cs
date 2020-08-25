@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading;
+using CompileScore.Common;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
@@ -54,6 +55,7 @@ namespace CompileScore
             // Do any initialization that requires the UI thread after switching to the UI thread.
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
+            OutputLog.Initialize(this);
             CompilerData.Instance.Initialize(this, this);
             DocumentLifetimeManager.Initialize(this);
             await CompileScore.Overview.OverviewWindowCommand.InitializeAsync(this);

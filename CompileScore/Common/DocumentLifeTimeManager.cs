@@ -21,7 +21,7 @@ namespace CompileScore
         private static FileSystemWatcher _fileWatcher = null;
         private static DateTime _fileWatcherLastRead = DateTime.MinValue;
         private static string _fileWatcherFullPath = "";
-        public static event Notify FileWatchedChanged; 
+        public static event Notify FileWatchedChanged;
 
         public static void Initialize(IServiceProvider serviceProvider)
         {
@@ -29,7 +29,6 @@ namespace CompileScore
             DTE2 applicationObject = serviceProvider.GetService(typeof(SDTE)) as DTE2;
             Assumes.Present(applicationObject);
             _events = applicationObject.Events;
-            
 
             //setup document events
             _documentEvents = _events.DocumentEvents;
@@ -94,7 +93,8 @@ namespace CompileScore
         private static void OnWatchedFileChanged(object source, FileSystemEventArgs e)
         {
             DateTime lastWriteTime = File.GetLastWriteTime(_fileWatcherFullPath);
-            if (lastWriteTime != _fileWatcherLastRead)
+
+            if ((lastWriteTime-_fileWatcherLastRead).Milliseconds > 100)
             {
                 var fileInfo = new FileInfo(_fileWatcherFullPath);
                 while (File.Exists(_fileWatcherFullPath) && IsFileLocked(fileInfo))
@@ -104,8 +104,9 @@ namespace CompileScore
                     System.Threading.Thread.Sleep(500);
                 }
 
-                Microsoft.VisualStudio.Shell.ThreadHelper.JoinableTaskFactory.Run(async delegate {
+                ThreadHelper.JoinableTaskFactory.Run(async delegate {
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    OutputLog.Log("File change detected.");
                     FileWatchedChanged?.Invoke();
                 });
 
