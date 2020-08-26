@@ -69,7 +69,7 @@
         {
             _trackingSpans = new Dictionary<ITrackingSpan, CompileValue>();
             var currentSnapshot = _buffer.CurrentSnapshot;
-            MatchCollection matches = Regex.Matches(currentSnapshot.GetText(), @"#\s*include\s*[<""]([a-zA-Z0-9\\/\.]+)[>""]");
+            MatchCollection matches = Regex.Matches(currentSnapshot.GetText(), @"#\s*include\s*[<""](.+)[>""]");
             foreach (Match match in matches)
             {
                 if (match.Success)

@@ -1,7 +1,6 @@
 ﻿
 namespace CompileScore
 {
-    using EnvDTE;
     using EnvDTE80;
     using Microsoft;
     using Microsoft.VisualStudio.Shell;
@@ -10,11 +9,7 @@ namespace CompileScore
     using System.IO;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-    using System.Text.RegularExpressions;
-    using System.Security.Permissions;
     using System.Linq;
-    using System.Windows;
-    using System.Windows.Forms;
 
     public delegate void Notify();  // delegate
 
@@ -168,6 +163,8 @@ namespace CompileScore
 
         private bool SetPath(string input)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (_path != input)
             {
                 _path = input;
@@ -179,6 +176,8 @@ namespace CompileScore
 
         private bool SetScoreFileName(string input)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (_scoreFileName != input)
             {
                 _scoreFileName = input;

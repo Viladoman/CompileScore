@@ -41,7 +41,7 @@
                     var line = triggerPoint.Value.GetContainingLine();
                     string lineStr = line.GetText();
 
-                    Match match = Regex.Match(lineStr, @"#\s*include\s*[<""]([a-zA-Z0-9\\/\.]+)[>""]");
+                    Match match = Regex.Match(lineStr, @"#\s*include\s*[<""](.+)[>""]");
                     if (match.Success)
                     {
                         string file = match.Groups[1].Value;

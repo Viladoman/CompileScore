@@ -1,11 +1,11 @@
-﻿using EnvDTE80;
-using Microsoft;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using System;
-
-namespace CompileScore
+﻿namespace CompileScore
 {
+    using EnvDTE80;
+    using Microsoft;
+    using Microsoft.VisualStudio.Shell;
+    using Microsoft.VisualStudio.Shell.Interop;
+    using System;
+
     public static class OutputLog
     {
         private static IVsOutputWindowPane pane;
@@ -20,11 +20,13 @@ namespace CompileScore
 
         public static void Log(string text)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             Write(text);
         }
 
         public static void Error(string text)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             Write("[ERROR] "+text);
         }
 

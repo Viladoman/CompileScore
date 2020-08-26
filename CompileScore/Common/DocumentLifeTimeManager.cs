@@ -1,13 +1,12 @@
-﻿using EnvDTE80;
-using Microsoft;
-using Microsoft.VisualStudio.Shell;
-
-namespace CompileScore
+﻿namespace CompileScore
 {
     using EnvDTE;
+    using EnvDTE80;
+    using Microsoft;
+    using Microsoft.VisualStudio.Shell;
+    using Microsoft.VisualStudio.Shell.Interop;
     using System;
     using System.IO;
-    using Microsoft.VisualStudio.Shell.Interop;
     using System.Security.Permissions;
 
     public delegate void NotifyFile(string filename);  // delegate

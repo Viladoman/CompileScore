@@ -1,13 +1,12 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using System.Threading;
-using CompileScore.Common;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using Task = System.Threading.Tasks.Task;
-
-namespace CompileScore
+﻿namespace CompileScore
 {
+    using System;
+    using System.Runtime.InteropServices;
+    using System.Threading;
+    using Microsoft.VisualStudio.Shell;
+    using Microsoft.VisualStudio.Shell.Interop;
+    using Task = System.Threading.Tasks.Task;
+
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.
     /// </summary>
