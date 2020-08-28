@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Extractors\MSVCScore.cpp">
+      <Filter>Extractors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extractors\ClangScore.cpp">
+      <Filter>Extractors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Common\IOStream.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Common\CommandLine.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Common\ScoreProcessor.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Common">
+      <UniqueIdentifier>{884242a2-c374-417c-81fa-3a086854f5a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Extractors">
+      <UniqueIdentifier>{03764b83-7211-4113-a3ea-d8c7a8e6cd36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="fastl">
+      <UniqueIdentifier>{60ba9a31-430c-4c55-9ecb-ac372eae92bf}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Common\BasicTypes.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Common\ScoreDefinitions.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Extractors\MSVCScore.h">
+      <Filter>Extractors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Extractors\ClangScore.h">
+      <Filter>Extractors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fastl\algorithm.h">
+      <Filter>fastl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fastl\map.h">
+      <Filter>fastl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fastl\pair.h">
+      <Filter>fastl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fastl\string.h">
+      <Filter>fastl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fastl\vector.h">
+      <Filter>fastl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fastl\unordered_map.h">
+      <Filter>fastl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Common\IOStream.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Common\CommandLine.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Common\ScoreProcessor.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

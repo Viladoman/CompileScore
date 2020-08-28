@@ -20,12 +20,13 @@ CompileScore/bin/
 CompileScore/obj/
 
 #Temporary and binaries
-TestProjects/Clang/compileData.scor
+*.etl
+*.scor
+
 TestProjects/Clang/tmp/*
 TestProjects/Clang/bin/*
 TestProjects/Clang/.vs/*
 
-TestProjects/MSVC/compileData.scor
 TestProjects/MSVC/.vs/*
 
 DataExtractor/Cpp/Release/*
