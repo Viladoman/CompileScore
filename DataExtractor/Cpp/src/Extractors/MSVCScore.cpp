@@ -3,6 +3,7 @@
 #include <chrono>
 #include <CppBuildInsights.hpp>
 
+#include "../fastl/algorithm.h"
 #include "../fastl/string.h"
 #include "../Common/CommandLine.h"
 #include "../Common/IOStream.h"
@@ -85,7 +86,6 @@ namespace MSVC
             size_t         sectionStartIndex; 
             TTimeStamp     timestampOffset;
         };
-
         using TTUContainer = fastl::unordered_map<fastl::string,TUEntry>;
 
     public: 
