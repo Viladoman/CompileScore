@@ -57,7 +57,7 @@ For the Microsoft compiler we are using [C++ Build Insights SDK](https://docs.mi
 - Open an elevated command-line prompt.
 - Run the following command: ```vcperf /start SessionName```
 - Build your C++ project from anywhere, even from within Visual Studio (vcperf collects events system-wide).
-- Run the following command: ```vcperf /stopnoanalyze ScoreDataExtractorBuild buildTraceFile.etl```
+- Run the following command: ```vcperf /stopnoanalyze SessionName buildTraceFile.etl```
 
 > :warning: **If you are doing incremental builds**: *vcperf* only tracks what is being compiled in the current session. This means that incremental builds will only display the data from the last build, not the overall project data. 
 
@@ -73,9 +73,19 @@ The Data Exporter can be build using the Visual Studio solution located at **Dat
 
 ## Running the Test Project 
 
-### Clang
+### Clang + Javascript DataExtractor
 - Install the plugin. 
-- Select 'Open Folder' in VS 2019 to the 'TestProject/Clang' folder directy. This will open VS and setup using the CMake configuration provided. 
+- Make sure you have node.js installed in your machine. 
+- Select 'Open Folder' in VS 2019 to the 'TestProject/ClangJS' folder directy. This will open VS and setup using the CMake configuration provided. 
+- Compile 'x64-Clang-Debug-Profile' in order to generate the compilation data and see the plugin in action.
+
+This setup uses the JavaScript DataExporter.
+The configurations provided with the suffix 'Profile' add the *-ftime-trace* flag to clang and extract the data once the build is finished. 
+
+### Clang + C++ DataExtractor
+- Install the plugin. 
+- Build the 'DataExtractor/Cpp' project (**x64** & **Release** configuration)
+- Select 'Open Folder' in VS 2019 to the 'TestProject/ClangCpp' folder directy. This will open VS and setup using the CMake configuration provided. 
 - Compile 'x64-Clang-Debug-Profile' in order to generate the compilation data and see the plugin in action.
 
 This setup uses the JavaScript DataExporter.
@@ -83,7 +93,7 @@ The configurations provided with the suffix 'Profile' add the *-ftime-trace* fla
 
 ### MSVC
 - Install the plugin
-- Build the 'DataExtractor/Cpp' project (**Release** configuration)
+- Build the 'DataExtractor/Cpp' project (**x64** & **Release** configuration)
 - Open the VS solution located in 'TestProject/MSVC' with Visual Studio in **Elevated** mode.
 - Compile 'Debug-Profile' in order to generate the compilation data and see the plugin in action
 
