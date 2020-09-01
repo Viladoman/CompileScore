@@ -90,7 +90,7 @@ The configurations provided with the suffix 'Profile' add the *-ftime-trace* fla
 The configurations provided with the suffix 'Profile' add the required prebuild and postbuild steps.
 
 ## References
-- Visual Studio 2019
+- [Visual Studio 2019](https://visualstudio.microsoft.com/vs/)
 - [Clang 9+](https://releases.llvm.org/download.html) ( support for -ftime-trace ) 
 - [Microsoft vcperf](https://github.com/microsoft/vcperf)
 - [Microsoft C++ Build Insights SDK](https://docs.microsoft.com/cpp/build-insights/get-started-with-cpp-build-insights)
