@@ -73,7 +73,7 @@ The Data Exporter can be build using the Visual Studio solution located at **Dat
 
 ## Running the Test Project 
 
-### Clang + Javascript DataExtractor
+### Clang & Javascript DataExtractor
 - Install the plugin. 
 - Make sure you have node.js installed in your machine. 
 - Select 'Open Folder' in VS 2019 to the 'TestProject/ClangJS' folder directy. This will open VS and setup using the CMake configuration provided. 
@@ -82,7 +82,7 @@ The Data Exporter can be build using the Visual Studio solution located at **Dat
 This setup uses the JavaScript DataExporter.
 The configurations provided with the suffix 'Profile' add the *-ftime-trace* flag to clang and extract the data once the build is finished. 
 
-### Clang + C++ DataExtractor
+### Clang & C++ DataExtractor
 - Install the plugin. 
 - Build the 'DataExtractor/Cpp' project (**x64** & **Release** configuration)
 - Select 'Open Folder' in VS 2019 to the 'TestProject/ClangCpp' folder directy. This will open VS and setup using the CMake configuration provided. 
