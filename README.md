@@ -1,4 +1,7 @@
-# CompileScore
+# CompileScore 
+
+[![Clang](https://img.shields.io/badge/Clang-Full-green)]() [![MSVC](https://img.shields.io/badge/MSVC-Partial-yellow)]()
+
 VisualStudio extension used to display and highlight compilation profiling data. Know the real compilation cost of your code directly inside Visual Studio. Keep the compile times in check. 
 
 [Download latest from the Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=RamonViladomat.CompileScore)
@@ -56,7 +59,7 @@ For the Microsoft compiler we are using [C++ Build Insights SDK](https://docs.mi
 - Build your C++ project from anywhere, even from within Visual Studio (vcperf collects events system-wide).
 - Run the following command: ```vcperf /stopnoanalyze ScoreDataExtractorBuild buildTraceFile.etl```
 
-!Warning: the vcperf trace only tracks what is being compiled in that session. This means that Incremental builds will only display the data from that, not the overall project data. 
+> :warning: **If you are doing incremental builds**: *vcperf* only tracks what is being compiled in the current session. This means that incremental builds will only display the data from the last build, not the overall project data. 
 
 #### C++ Data Exporter
 The following command will extract and pack the build data from the *.etl* trace file generated
