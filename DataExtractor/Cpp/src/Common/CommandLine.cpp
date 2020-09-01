@@ -34,7 +34,7 @@ namespace CommandLine
         //No args
         if (argc <= 1) 
         {
-            LOG_ALWAYS("No input found. Type '?' for help.\n");
+            LOG_ERROR("No arguments found. Type '?' for help.\n");
             return -1;
         }
 
@@ -64,8 +64,14 @@ namespace CommandLine
                     ++i;
                     params.output = argv[i];
                 }
-                else if (Utils::StringCompare(argValue,"-msvc") == 0){ params.source = ExportParams::Source::MSVC; }
-                else if (Utils::StringCompare(argValue,"-clang") == 0){ params.source = ExportParams::Source::Clang; }
+                else if (Utils::StringCompare(argValue,"-msvc") == 0)
+                { 
+                    params.source = ExportParams::Source::MSVC; 
+                }
+                else if (Utils::StringCompare(argValue,"-clang") == 0)
+                { 
+                    params.source = ExportParams::Source::Clang; 
+                }
 
                 //TODO ~ ramonv ~ add verbosity options
             }
@@ -76,7 +82,21 @@ namespace CommandLine
             }
         }
 
-        //TODO ~ ramonv ~ validate Params
+        if (params.input == nullptr)
+        { 
+            LOG_ERROR("No input found. Type '?' for help.\n");
+            return -1;
+        }
+
+        //TODO ~ validation and auto type deduction if not present 
+        // - .etl == MSVC 
+        // - isFolder == Clang
+        
+        if (params.source == ExportParams::Source::Invalid)
+        {
+            LOG_ERROR("Ambigous input. Define the input source using '-clang' or '-msvc'");
+            return -1;
+        }
 
         return 0;
     }

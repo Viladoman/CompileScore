@@ -2,18 +2,17 @@
 
 struct ExportParams 
 { 
-    //TODO ~ ramonv ~ have a thought about MSVC
-
     enum class Source
     { 
         Clang, 
-        MSVC
+        MSVC,
+        Invalid
     };
 
     ExportParams()
         : input(nullptr)
         , output("compileData.scor")
-        , source(Source::MSVC)
+        , source(Source::Invalid)
     {}
 
     const char* input; 

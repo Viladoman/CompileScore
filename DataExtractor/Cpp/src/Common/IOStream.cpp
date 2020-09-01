@@ -7,7 +7,7 @@
 
 constexpr U32 SCORE_VERSION = 1;
 
-namespace IOStream
+namespace IO
 { 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Logging
@@ -43,6 +43,51 @@ namespace IOStream
             va_end(argptr);
             fprintf(stderr, "\n"); // New Line 
         }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Input File
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    FileBuffer ReadFile(const char* filename)
+    {
+        FileBuffer content = nullptr; 
+
+        FILE* stream;
+        const errno_t result = fopen_s(&stream,filename,"rb");
+
+        if (result) 
+        { 
+            LOG_ERROR("Unable to open input file!");
+        }
+        else 
+        { 
+            fseek(stream, 0, SEEK_END);
+            long fsize = ftell(stream);
+            fseek(stream, 0, SEEK_SET);  // same as rewind(f);
+            
+            content = new char[(fsize+1ull)];
+            if (fread(content, 1, fsize, stream) == 0)
+            { 
+                LOG_ERROR("Something went wrong while reading the file %s.",filename);
+                DestroyBuffer(content);
+            }
+            else 
+            { 
+                content[fsize] = '\0';
+            }
+        }
+        
+        fclose(stream);
+        
+        return content;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    void DestroyBuffer(FileBuffer& buffer)
+    {
+        delete [] buffer;
+        buffer = nullptr;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////

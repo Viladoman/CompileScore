@@ -9,6 +9,7 @@
 #include "../Common/IOStream.h"
 #include "../Common/ScoreDefinitions.h"
 #include "../Common/ScoreProcessor.h"
+#include "../Common/StringUtils.h"
 
 namespace MSVC
 { 
@@ -16,42 +17,10 @@ namespace MSVC
 
     using TTimeStamp = unsigned long long;
 
-    //TODO ~ ramonv ~ move this to StringUtils and Math Utils
+    //TODO ~ ramonv ~ move this to StringUtils
     namespace Utils
     { 
-        // -----------------------------------------------------------------------------------------------------------
-        void ToPathBaseName(fastl::string& input)
-        { 
-            size_t foundIndex = fastl::string::npos;
-            for(size_t i=0u,sz=input.length();i<sz;++i)
-            { 
-                const char c = input[i];
-                if (c=='/' || c=='\\') foundIndex = i; 
-            }
-
-            if (foundIndex != fastl::string::npos)
-            {
-                input.erase(0, foundIndex + 1);
-            }
-        }
-
-        // -----------------------------------------------------------------------------------------------------------
-        inline constexpr char ToLower(char c)
-        {
-            constexpr U8 diff = ('a'-'A');
-            return (c >= 'A' && c <= 'Z')? c+diff : c;
-        }
-
-        // -----------------------------------------------------------------------------------------------------------
-        void ToLower(fastl::string& input)
-        {
-            for (size_t i = 0,sz=input.length(); i < sz; ++ i) 
-            {
-                input[i] = ToLower(input[i]);  
-            }
-        }
-
-        // -----------------------------------------------------------------------------------------------------------
+         // -----------------------------------------------------------------------------------------------------------
         const char* GetPath(const MSBI::Activities::CompilerPass& compilerPass)
         {
             //TODO ~ Ramonv ~ technically windows paths can go up to 32k 
@@ -144,8 +113,8 @@ namespace MSVC
     void Gatherer::OnCompilerPassStart(const MSBI::Activities::CompilerPass& activity)
     { 
         fastl::string path = Utils::GetPath(activity);
-        Utils::ToPathBaseName(path); 
-        Utils::ToLower(path);
+        StringUtils::ToPathBaseName(path); 
+        StringUtils::ToLower(path);
 
         m_activeTU = &(m_TUs[path]);
         m_activeTU->timestampOffset = activity.StartTimestamp();
@@ -183,8 +152,8 @@ namespace MSVC
     void Gatherer::OnIncludeEnded(const MSBI::Activities::FrontEndFile& parentActivity, const MSBI::Activities::FrontEndFile& activity)
     {   
         fastl::string path = activity.Path();
-        Utils::ToPathBaseName(path); 
-        Utils::ToLower(path);
+        StringUtils::ToPathBaseName(path); 
+        StringUtils::ToLower(path);
         AddEvent(CompileCategory::Include,activity,path);
     }
 
@@ -195,7 +164,7 @@ namespace MSVC
 
         //TODO ~ ramonv ~ undecorateName - windows function: UnDecorateSymbolName()
 
-        Utils::ToLower(name);
+        StringUtils::ToLower(name);
         AddEvent(CompileCategory::OptimizeFunction,activity,name);
 
     }
@@ -259,7 +228,7 @@ namespace MSVC
 
         if (result == 0) 
         { 
-            IOStream::Binarize(params.output, gatherer.GetScoreData());
+            IO::Binarize(params.output, gatherer.GetScoreData());
         }
 
         return result;

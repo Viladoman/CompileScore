@@ -17,6 +17,15 @@
     <ClCompile Include="src\Common\ScoreProcessor.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="src\Common\DirectoryScanner.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Common\JsonParser.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Common\StringUtils.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -70,6 +79,15 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="src\Common\ScoreProcessor.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Common\DirectoryScanner.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Common\JsonParser.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Common\StringUtils.h">
       <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>

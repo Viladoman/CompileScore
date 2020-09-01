@@ -36,8 +36,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Common\CommandLine.cpp" />
+    <ClCompile Include="src\Common\DirectoryScanner.cpp" />
     <ClCompile Include="src\Common\IOStream.cpp" />
+    <ClCompile Include="src\Common\JsonParser.cpp" />
     <ClCompile Include="src\Common\ScoreProcessor.cpp" />
+    <ClCompile Include="src\Common\StringUtils.cpp" />
     <ClCompile Include="src\Extractors\ClangScore.cpp" />
     <ClCompile Include="src\Extractors\MSVCScore.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -48,9 +51,12 @@
   <ItemGroup>
     <ClInclude Include="src\Common\BasicTypes.h" />
     <ClInclude Include="src\Common\CommandLine.h" />
+    <ClInclude Include="src\Common\DirectoryScanner.h" />
     <ClInclude Include="src\Common\IOStream.h" />
+    <ClInclude Include="src\Common\JsonParser.h" />
     <ClInclude Include="src\Common\ScoreDefinitions.h" />
     <ClInclude Include="src\Common\ScoreProcessor.h" />
+    <ClInclude Include="src\Common\StringUtils.h" />
     <ClInclude Include="src\Extractors\ClangScore.h" />
     <ClInclude Include="src\Extractors\MSVCScore.h" />
     <ClInclude Include="src\fastl\algorithm.h" />

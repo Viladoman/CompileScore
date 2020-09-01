@@ -39,7 +39,7 @@ namespace fastl
 	public:
 		StringImpl();
 		StringImpl(const char* input);
-		StringImpl(const char* input, const int length);
+		StringImpl(const char* input, const size_type length);
 
 		void clear();
 
@@ -101,7 +101,7 @@ namespace fastl
 	}
 
 	//------------------------------------------------------------------------------------------
-	template<typename TChar> StringImpl<TChar>::StringImpl(const char* input, const int length)
+	template<typename TChar> StringImpl<TChar>::StringImpl(const char* input, const size_type length)
 	{ 
 		clear();
 		Append(input, length);
