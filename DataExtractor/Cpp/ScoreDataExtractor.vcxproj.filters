@@ -26,6 +26,9 @@
     <ClCompile Include="src\Common\StringUtils.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="src\Common\Timers.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -88,6 +91,9 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="src\Common\StringUtils.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Common\Timers.h">
       <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>

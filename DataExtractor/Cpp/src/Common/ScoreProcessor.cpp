@@ -9,6 +9,7 @@ namespace CompileScore
 		template <typename T> inline constexpr T Max(const T a, const T b) { return a < b? b : a; }
 	}
 
+	// -----------------------------------------------------------------------------------------------------------
 	void ProcessTimeline(ScoreData& scoreData, const ScoreTimeline& timeline)
 	{
 		U32 overlapThreshold[ToUnderlying(CompileCategory::DisplayCount)] = {};

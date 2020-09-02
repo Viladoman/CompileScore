@@ -21,6 +21,7 @@ namespace IO
 
     void SetVerbosityLevel(const Verbosity level);
     void Log(const Verbosity level, const char* format,...);
+    void LogTime(const Verbosity level, const char* prefix, long miliseconds);
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // File Input

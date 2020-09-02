@@ -41,6 +41,7 @@
     <ClCompile Include="src\Common\JsonParser.cpp" />
     <ClCompile Include="src\Common\ScoreProcessor.cpp" />
     <ClCompile Include="src\Common\StringUtils.cpp" />
+    <ClCompile Include="src\Common\Timers.cpp" />
     <ClCompile Include="src\Extractors\ClangScore.cpp" />
     <ClCompile Include="src\Extractors\MSVCScore.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -57,6 +58,7 @@
     <ClInclude Include="src\Common\ScoreDefinitions.h" />
     <ClInclude Include="src\Common\ScoreProcessor.h" />
     <ClInclude Include="src\Common\StringUtils.h" />
+    <ClInclude Include="src\Common\Timers.h" />
     <ClInclude Include="src\Extractors\ClangScore.h" />
     <ClInclude Include="src\Extractors\MSVCScore.h" />
     <ClInclude Include="src\fastl\algorithm.h" />

@@ -2,6 +2,23 @@ var Extract = require('./src/extract.js')
 
 var verbosityLevel = 1;
 
+function FormatTime(miliseconds)
+{ 
+  var seconds = Math.floor(miliseconds/1000); 
+  miliseconds = miliseconds % 1000;
+  
+  var minutes = Math.floor(seconds/60); 
+  seconds     = seconds % 60;
+  
+  var hours   = Math.floor(minutes/60); 
+  minutes     = minutes % 60;
+  
+  if (hours > 0)        return hours       + 'h ' + minutes     + 'm';
+  else if (minutes > 0) return minutes     + 'm ' + seconds     + 's';
+  else if (seconds > 0) return seconds     + 's ' + miliseconds + 'ms';
+  else                  return miliseconds + 'ms';
+}
+
 function DisplayHelp()
 {
   console.log('Clang to Compile Score Data Extractor'); 
@@ -17,6 +34,8 @@ function Log(level,data){ if (level <= verbosityLevel) console.log(data); }
 
 function ProcessCommandLine()
 {
+  var startTime = new Date();
+
   //Setup
   Extract.SetLogFunc(Log);
 
@@ -43,7 +62,10 @@ function ProcessCommandLine()
   }
 
   //EXECUTE
-  Extract.Extract(inputFolder,outputFile,function(){});
+  Extract.Extract(inputFolder,outputFile,function()
+  {  
+    Log(1,'Execution Time: '+FormatTime(new Date() - startTime))
+  });
 
 }
 
