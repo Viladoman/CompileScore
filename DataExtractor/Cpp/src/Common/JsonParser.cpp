@@ -15,9 +15,9 @@ namespace Json
     bool Reader::NextToken(Token& token)
     { 
         //skip all whitespace and separators
-        while(*cursor == ' ' || *cursor == '\n') ++cursor;
+        while(*cursor == ' ' || *cursor == '\n' || *cursor == '\r' || *cursor == '\t') ++cursor;
         if (*cursor == ',' || *cursor == ':') ++cursor;
-        while(*cursor == ' ' || *cursor == '\n') ++cursor;
+        while (*cursor == ' ' || *cursor == '\n' || *cursor == '\r' || *cursor == '\t') ++cursor;
 
         switch(*cursor)
         { 
