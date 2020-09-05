@@ -1,4 +1,7 @@
+#include "../Common/Context.h"
 #include "../Common/ScoreDefinitions.h"
+
+#include "IOStream.h"
 
 namespace CompileScore
 { 
@@ -10,7 +13,30 @@ namespace CompileScore
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	void ProcessTimeline(ScoreData& scoreData, const ScoreTimeline& timeline)
+	CompileData& CreateGlobalEntry(ScoreData& scoreData, CompileEvent& element)
+	{ 
+		//TODO ~ ramonv ~ use hashes for this
+
+		const CompileCategoryType globalIndex = ToUnderlying(element.category);
+		TCompileDatas& global = scoreData.globals[globalIndex];
+		TCompileDataDictionary& dictionary = scoreData.globalsDictionary[globalIndex];
+		TCompileDataDictionary::iterator found = dictionary.find(element.name);
+
+		if (found == dictionary.end())
+		{ 
+			//insert new
+			element.nameId = global.size(); 
+			dictionary[element.name] = element.nameId; //double lookup not great
+			global.emplace_back();
+			return global.back();
+		} 
+
+		element.nameId = found->second;
+		return global[element.nameId];
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	void ProcessTimeline(ScoreData& scoreData, ScoreTimeline& timeline)
 	{
 		U32 overlapThreshold[ToUnderlying(CompileCategory::DisplayCount)] = {};
 
@@ -20,12 +46,12 @@ namespace CompileScore
 		unit.name = timeline.name;
 
 		//Process Timeline elements
-		for (const CompileEvent& element : timeline.events)
+		for (CompileEvent& element : timeline.events)
 		{ 
 			if (element.category < CompileCategory::GahterCount)
 			{ 
-				//Add Data to Globals
-				CompileData& compileData = scoreData.globals[ToUnderlying(element.category)][element.name];
+				CompileData& compileData = CreateGlobalEntry(scoreData,element);
+				compileData.name = element.name;
 				compileData.accumulated += element.duration;
 				compileData.min = Utils::Min(element.duration,compileData.min);
 				compileData.max = Utils::Max(element.duration,compileData.max);
@@ -41,7 +67,11 @@ namespace CompileScore
 				}
 			}
 		}
-
-		//TODO ~ ramonv ~ Export Timeline for timeline viewer 
+		/*
+		if (IO::Binarizer* binarizer = Context::Get<IO::Binarizer>()) 
+		{ 
+			binarizer->Binarize(timeline);
+		}
+		*/
 	}
 }

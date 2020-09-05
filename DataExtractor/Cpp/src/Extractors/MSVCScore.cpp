@@ -6,6 +6,7 @@
 #include "../fastl/algorithm.h"
 #include "../fastl/string.h"
 #include "../Common/CommandLine.h"
+#include "../Common/Context.h"
 #include "../Common/IOStream.h"
 #include "../Common/ScoreDefinitions.h"
 #include "../Common/ScoreProcessor.h"
@@ -17,7 +18,6 @@ namespace MSVC
 
     using TTimeStamp = unsigned long long;
 
-    //TODO ~ ramonv ~ move this to StringUtils
     namespace Utils
     { 
          // -----------------------------------------------------------------------------------------------------------
@@ -217,9 +217,10 @@ namespace MSVC
     // -----------------------------------------------------------------------------------------------------------
     int ExtractScore(const ExportParams& params)
     { 
-        //TODO ~ ramonv ~ Rethink how to avoid copying the data around
         constexpr int numberOfPasses = 1;
 
+        Context::Scoped<IO::Binarizer> binarizer(params.output);
+        
         LOG_PROGRESS("Analyzing trace file %s",params.input);
 
         Gatherer gatherer;
@@ -228,7 +229,7 @@ namespace MSVC
 
         if (result == 0) 
         { 
-            IO::Binarize(params.output, gatherer.GetScoreData());
+            binarizer.Get().Binarize(gatherer.GetScoreData());
         }
 
         return result;

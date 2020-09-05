@@ -22,6 +22,7 @@ CompileScore/obj/
 #Temporary and binaries
 *.etl
 *.scor
+*.scor.*
 
 DataExtractor/Cpp/x64/*
 DataExtractor/Cpp/x86/*

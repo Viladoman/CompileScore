@@ -20,12 +20,16 @@ namespace CommandLine
     void DisplayHelp()
     {
         ExportParams defaultParams;
-        LOG_ALWAYS("MSVC vcperf trace to Compile Score Data Extractor\n"); 
-        LOG_ALWAYS("Command Legend:\n"); 
-        LOG_ALWAYS("-input  (-i) : The path to the input folder to parse for -ftime-trace data\n"); 
-        LOG_ALWAYS("-output (-o) : The output file full path for the results ('%s' by default)\n",defaultParams.output); 
-        LOG_ALWAYS("-msvc        : Forces the system to use the MSVC importer for .etl traces\n"); 
-        LOG_ALWAYS("-clang       : Forces the system to use the Clang importer searching for .json traces in the input path\n"); 
+        LOG_ALWAYS("Compile Score Data Extractor"); 
+        LOG_ALWAYS("");
+        LOG_ALWAYS("Converts the comilers build trace data into 'scor' format."); 
+        LOG_ALWAYS("");
+        LOG_ALWAYS("Command Legend:"); 
+        LOG_ALWAYS("-input     (-i) : The path to the input folder to parse for -ftime-trace data"); 
+        LOG_ALWAYS("-output    (-o) : The output file full path for the results ('%s' by default)",defaultParams.output); 
+        LOG_ALWAYS("-msvc           : Forces the system to use the MSVC importer for .etl traces"); 
+        LOG_ALWAYS("-clang          : Forces the system to use the Clang importer searching for .json traces in the input path"); 
+        LOG_ALWAYS("-verbosity (-v) : Sets the verbosity level: 0 - only errors, 1 - progress (default), 2 - full"); 
     }
 
     // -----------------------------------------------------------------------------------------------------------
@@ -34,7 +38,7 @@ namespace CommandLine
         //No args
         if (argc <= 1) 
         {
-            LOG_ERROR("No arguments found. Type '?' for help.\n");
+            LOG_ERROR("No arguments found. Type '?' for help.");
             return -1;
         }
 
@@ -72,8 +76,15 @@ namespace CommandLine
                 { 
                     params.source = ExportParams::Source::Clang; 
                 }
-
-                //TODO ~ ramonv ~ add verbosity options
+                else if ((Utils::StringCompare(argValue,"-v")==0 || Utils::StringCompare(argValue,"-verbosity")==0) && (i+1) < argc)
+                {
+                    ++i;
+                    char digit = argv[i][0];
+                    if ( digit >= '0' || digit <= '2' )
+                    { 
+                        IO::SetVerbosityLevel(IO::Verbosity(digit-'0'));
+                    }
+                } 
             }
             else if (params.input == nullptr)
             { 
@@ -84,7 +95,7 @@ namespace CommandLine
 
         if (params.input == nullptr)
         { 
-            LOG_ERROR("No input found. Type '?' for help.\n");
+            LOG_ERROR("No input found. Type '?' for help.");
             return -1;
         }
 

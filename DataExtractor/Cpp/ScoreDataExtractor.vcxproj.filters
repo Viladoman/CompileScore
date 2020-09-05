@@ -96,5 +96,8 @@
     <ClInclude Include="src\Common\Timers.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="src\Common\Context.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -59,9 +59,6 @@ namespace fastl
     {
         return lower_bound(first, last, value, [=](const T& lhs, const T& rhs) { return lhs < rhs; });
     }
-
-
-    //TODO ~ ramonv ~ add sort
 }
 
 #else 

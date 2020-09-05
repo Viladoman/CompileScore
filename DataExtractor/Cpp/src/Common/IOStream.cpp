@@ -6,6 +6,11 @@
 #include "ScoreDefinitions.h"
 
 constexpr U32 SCORE_VERSION = 1;
+constexpr U32 TIMELINES_PER_FILE = 100;
+constexpr U32 TIMELINE_FILE_NUM_DIGITS = 4;
+
+static_assert(TIMELINES_PER_FILE > 0);
+static_assert(TIMELINE_FILE_NUM_DIGITS > 0);
 
 namespace IO
 { 
@@ -41,7 +46,6 @@ namespace IO
             va_start(argptr, format);
             vfprintf(stderr, format, argptr);
             va_end(argptr);
-            fprintf(stderr, "\n"); // New Line 
         }
     }
 
@@ -112,75 +116,199 @@ namespace IO
     // Binarization
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // -----------------------------------------------------------------------------------------------------------
-    void BinarizeString(FILE* stream, const fastl::string& str)
+    namespace Utils
     { 
-        //Perform size encoding in 7bitSize format
-        size_t strSize = str.length(); 
-        do 
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeString(FILE* stream, const fastl::string& str)
         { 
-            const U8 val = strSize < 0x80? strSize & 0x7F : (strSize & 0x7F) | 0x80;
-            fwrite(&val,sizeof(U8),1,stream);
-            strSize >>= 7;
+            //Perform size encoding in 7bitSize format
+            size_t strSize = str.length(); 
+            do 
+            { 
+                const U8 val = strSize < 0x80? strSize & 0x7F : (strSize & 0x7F) | 0x80;
+                fwrite(&val,sizeof(U8),1,stream);
+                strSize >>= 7;
+            }
+            while(strSize);
+
+            fwrite(str.c_str(),str.length(),1,stream);
         }
-        while(strSize);
 
-        fwrite(str.c_str(),str.length(),1,stream);
-    }
-
-    // -----------------------------------------------------------------------------------------------------------
-    void BinarizeU32(FILE* stream, const U32 input)
-    { 
-        fwrite(&input,sizeof(U32),1,stream);
-    }
-
-    // -----------------------------------------------------------------------------------------------------------
-    void BinarizeU64(FILE* stream, const U64 input)
-    { 
-        fwrite(&input,sizeof(U64),1,stream);
-    }
-
-    // -----------------------------------------------------------------------------------------------------------
-    void BinarizeUnit(FILE* stream, const CompileUnit unit)
-    { 
-        BinarizeString(stream,unit.name); 
-        for (U32 value : unit.values)
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeU8(FILE* stream, const U8 input)
         { 
-            BinarizeU32(stream, value);
+            fwrite(&input,sizeof(U8),1,stream);
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeU32(FILE* stream, const U32 input)
+        { 
+            fwrite(&input,sizeof(U32),1,stream);
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeU64(FILE* stream, const U64 input)
+        { 
+            fwrite(&input,sizeof(U64),1,stream);
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeUnit(FILE* stream, const CompileUnit unit)
+        { 
+            BinarizeString(stream,unit.name); 
+            for (U32 value : unit.values)
+            { 
+                BinarizeU32(stream, value);
+            }
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeUnits(FILE* stream, const TCompileUnits& units)
+        {
+            //TODO ~ ramonv ~ check for U32 overflow
+            BinarizeU32(stream,static_cast<U32>(units.size()));
+            for (const CompileUnit& unit : units)
+            { 
+                BinarizeUnit(stream,unit);
+            }
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeGlobals(FILE* stream, const TCompileDatas& globals)
+        {
+            //TODO ~ ramonv ~ check for U32 overflow
+            BinarizeU32(stream,static_cast<unsigned int>(globals.size()));
+            for (const auto& entry : globals)
+            { 
+                const CompileData& data = entry;
+                BinarizeString(stream,entry.name);
+                BinarizeU64(stream,data.accumulated);
+                BinarizeU32(stream,data.min);
+                BinarizeU32(stream,data.max);
+                BinarizeU32(stream,data.count);
+            }
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeTimelineEvents(FILE* stream, const TCompileEvents& events)
+        { 
+            BinarizeU32(stream,static_cast<unsigned int>(events.size()));
+            for (const CompileEvent& evt : events)
+            { 
+                BinarizeU32(stream,evt.start);
+                BinarizeU32(stream,evt.duration);
+                BinarizeU32(stream,static_cast<U32>(evt.nameId)); //TODO ~ ramonv ~ careful with overflows
+                BinarizeU8(stream,static_cast<CompileCategoryType>(evt.category));
+            }
         }
     }
 
-    // -----------------------------------------------------------------------------------------------------------
-    void BinarizeUnits(FILE* stream, const TCompileUnits& units)
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    class Binarizer::Impl
     {
-        //TODO ~ ramonv ~ check for U32 overflow
-        BinarizeU32(stream,static_cast<U32>(units.size()));
-        for (const CompileUnit& unit : units)
+    public: 
+        Impl(const char* _path)
+            : path(_path)
+            , timelineStream(nullptr)
+            , timelineCount(0u)
+        {}
+
+        FILE* NextTimelineStream();
+        void CloseTimelineStream();
+
+    private: 
+        bool AppendTimelineExtension(fastl::string& filename);
+
+    public: 
+        const char* path;
+
+    private:
+        FILE*  timelineStream; 
+        size_t timelineCount;
+    };
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // -----------------------------------------------------------------------------------------------------------
+    bool Binarizer::Impl::AppendTimelineExtension(fastl::string& filename)
+    { 
+        size_t extensionNumber = timelineCount / TIMELINES_PER_FILE;
+
+        char digits[TIMELINE_FILE_NUM_DIGITS];
+        for(int i=TIMELINE_FILE_NUM_DIGITS-1;i>=0;--i,extensionNumber/=10)
         { 
-            BinarizeUnit(stream,unit);
+            digits[i]= (extensionNumber % 10) + '0';
         }
+
+        if (extensionNumber > 0) 
+        { 
+            LOG_ERROR("Reached timeline file number limit");
+            return false; 
+        } 
+
+        filename += ".t"; 
+        for(int i=0;i<TIMELINE_FILE_NUM_DIGITS;++i)
+        { 
+            filename += digits[i];
+        }
+
+        return true;
     }
 
     // -----------------------------------------------------------------------------------------------------------
-    void BinarizeDictionary(FILE* stream, const TCompileDataDictionary& dictionary)
-    { 
-        //TODO ~ ramonv ~ check for U32 overflow
-        BinarizeU32(stream,static_cast<unsigned int>(dictionary.size()));
-        for (const auto& entry : dictionary)
+    FILE* Binarizer::Impl::NextTimelineStream()
+    {
+        if ((timelineCount % TIMELINES_PER_FILE) == 0)
         { 
-            BinarizeString(stream,entry.first);
-            const CompileData& data = entry.second;
+            CloseTimelineStream();
 
-            BinarizeU64(stream,data.accumulated);
-            BinarizeU32(stream,data.min);
-            BinarizeU32(stream,data.max);
-            BinarizeU32(stream,data.count);
+            fastl::string filename = path;
+            if (AppendTimelineExtension(filename))
+            { 
+                const errno_t result = fopen_s(&timelineStream,filename.c_str(),"wb");
+                if (result) 
+                { 
+                    LOG_ERROR("Unable to create output file %s",filename);
+                    timelineStream = nullptr;
+                }
+
+                //Add the file header
+                Utils::BinarizeU32(timelineStream,SCORE_VERSION);
+            }
+        }
+
+        ++timelineCount;
+        return timelineStream;
+    } 
+
+    // -----------------------------------------------------------------------------------------------------------
+    void Binarizer::Impl::CloseTimelineStream()
+    { 
+        if (timelineStream)
+        {
+            fclose(timelineStream);
+            timelineStream = nullptr;
         }
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // -----------------------------------------------------------------------------------------------------------
-    void Binarize(const char* filename, const ScoreData& data)
+    Binarizer::Binarizer(const char* path)
+        : m_impl( new Impl(path))
+    {}
+
+    // -----------------------------------------------------------------------------------------------------------
+    Binarizer::~Binarizer()
     { 
+        m_impl->CloseTimelineStream();
+        delete m_impl;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    void Binarizer::Binarize(const ScoreData& data)
+    { 
+        const char* filename = m_impl->path;
         LOG_PROGRESS("Writing to file %s",filename);
 
         FILE* stream;
@@ -192,16 +320,28 @@ namespace IO
             return;
         }
 
-        BinarizeU32(stream,SCORE_VERSION);
+        Utils::BinarizeU32(stream,SCORE_VERSION);
 
-        BinarizeUnits(stream,data.units);
+        Utils::BinarizeUnits(stream,data.units);
         for (int i=0;i<ToUnderlying(CompileCategory::GahterCount);++i)
         { 
-            BinarizeDictionary(stream,data.globals[i]);
+            Utils::BinarizeGlobals(stream,data.globals[i]);
         }    
 
         fclose(stream);
 
         LOG_PROGRESS("Done!");
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    void Binarizer::Binarize(const ScoreTimeline& timeline)
+    { 
+        //TODO ~ ramonv ~ add option to disable timeline export
+
+        if (FILE* stream = m_impl->NextTimelineStream())
+        { 
+            Utils::BinarizeTimelineEvents(stream,timeline.events);
+            LOG_INFO("Timeline for %s exported", timeline.name.c_str());
+        }
     }
 }

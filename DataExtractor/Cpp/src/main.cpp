@@ -1,4 +1,5 @@
 #include "Common/CommandLine.h"
+#include "Common/Context.h"
 #include "Common/IOStream.h"
 #include "Common/Timers.h"
 #include "Extractors/MSVCScore.h"
@@ -13,24 +14,23 @@ int main(int argc, char* argv[])
     timer.Capture();
 
     //Parse Command Line arguments
-    ExportParams params;
-    if (CommandLine::Parse(params,argc,argv) != 0) 
+    Context::Scoped<ExportParams> params;    
+    if (CommandLine::Parse(params.Get(),argc,argv) != 0) 
     {     
-        LOG_ERROR("Unable to parse the arguments!");
         return FAILURE;
     } 
 
     //Execute exporter
     int result = FAILURE;
 
-    switch(params.source)
+    switch(params.Get().source)
     { 
     case ExportParams::Source::Clang: 
-        result = Clang::ExtractScore(params); 
+        result = Clang::ExtractScore(params.Get()); 
         break;
 
     case ExportParams::Source::MSVC:  
-        result = MSVC::ExtractScore(params); 
+        result = MSVC::ExtractScore(params.Get()); 
         break;
 
     default: 

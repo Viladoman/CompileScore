@@ -1,6 +1,7 @@
 #include "ClangScore.h"
 
 #include "../Common/CommandLine.h"
+#include "../Common/Context.h"
 #include "../Common/DirectoryScanner.h"
 #include "../Common/JsonParser.h"
 #include "../Common/IOStream.h"
@@ -263,6 +264,9 @@ namespace Clang
 
 		LOG_PROGRESS("Scanning dir: %s",params.input);
 
+		Context::Scoped<IO::Binarizer> binarizer(params.output);
+
+		size_t filesFound = 0u;
 		IO::DirectoryScanner dirScan(params.input,".json");
 		while (const char* path = dirScan.SeekNext())
 		{ 
@@ -276,9 +280,11 @@ namespace Clang
 			{ 
 				LOG_ERROR("Invalid file buffer for %s", path);
 			}
+
+			IO::Log(IO::Verbosity::Progress,"Parsing... %u files\r",++filesFound);
 		}
 
-		IO::Binarize(params.output, scoreData);
+		binarizer.Get().Binarize(scoreData);
 
 		return 0;
 	} 

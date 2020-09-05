@@ -52,6 +52,7 @@
   <ItemGroup>
     <ClInclude Include="src\Common\BasicTypes.h" />
     <ClInclude Include="src\Common\CommandLine.h" />
+    <ClInclude Include="src\Common\Context.h" />
     <ClInclude Include="src\Common\DirectoryScanner.h" />
     <ClInclude Include="src\Common\IOStream.h" />
     <ClInclude Include="src\Common\JsonParser.h" />

@@ -32,6 +32,12 @@ namespace IO
     }
 
     // -----------------------------------------------------------------------------------------------------------
+    DirectoryScanner::~DirectoryScanner()
+    { 
+        delete m_impl;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
     const char* DirectoryScanner::SeekNext()
     {
         for(; m_impl->cursor != fs::recursive_directory_iterator() && m_impl->cursor->path().extension().string() != m_impl->extension; ++m_impl->cursor ){}

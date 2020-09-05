@@ -6,6 +6,8 @@ namespace IO
 	{ 
 	public:
 		DirectoryScanner(const char* pathToScan, const char* extension);
+		~DirectoryScanner();
+
 		const char* SeekNext();
 	private: 
 		 struct Impl; 
