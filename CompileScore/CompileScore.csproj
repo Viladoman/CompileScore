@@ -63,6 +63,9 @@
     <Compile Include="Overview\OverviewTable.xaml.cs">
       <DependentUpon>OverviewTable.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Overview\OverviewTotalsTable.xaml.cs">
+      <DependentUpon>OverviewTotalsTable.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Overview\OverviewWindow.cs" />
     <Compile Include="Overview\OverviewWindowCommand.cs" />
     <Compile Include="Overview\OverviewWindowControl.xaml.cs">
@@ -121,6 +124,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Overview\OverviewTable.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Overview\OverviewTotalsTable.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

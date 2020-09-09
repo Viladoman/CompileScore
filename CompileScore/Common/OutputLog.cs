@@ -9,12 +9,9 @@
     public static class OutputLog
     {
         private static IVsOutputWindowPane pane;
-
         public static void Initialize(IServiceProvider serviceProvider)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            DTE2 applicationObject = serviceProvider.GetService(typeof(SDTE)) as DTE2;
-            Assumes.Present(applicationObject);
             CreatePane(serviceProvider, new Guid(), "Compile Score", true, false);
         }
 
@@ -49,6 +46,5 @@
             // Retrieve the new pane.
             output.GetPane(ref paneGuid, out pane);
         }
-
     }
 }

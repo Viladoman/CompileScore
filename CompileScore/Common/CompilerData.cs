@@ -36,6 +36,8 @@ namespace CompileScore
 
     public class FullUnitValue
     {
+        private uint[] values = new uint[(int)CompilerData.CompileCategory.DisplayCount];
+
         public FullUnitValue(string name)
         {
             Name = name;
@@ -43,29 +45,22 @@ namespace CompileScore
 
         public string Name { get; }
 
-        //TODO ~ ramonv ~ Convert all the list below in an array for better scalability
+        public List<uint> ValuesList { get { return values.ToList(); } }
 
-        public uint Frontend { set; get; }
-        public uint Backend { set; get; }
-        public uint Source { set; get; }
-        public uint ParseClass { set; get; }
-        public uint ParseTemplate { set; get; }
-        public uint InstantiateClass { set; get; }
-        public uint InstantiateFunction { set; get; }
-        public uint PendingInstantations { set; get; }
-        public uint Codegen { set; get; }
-        public uint RunPass { set; get; }
-        public uint OptModule { set; get; }
-        public uint OptFunction { set; get; }
-        public uint Other { set; get; }
-        public uint Duration { set; get; } 
+        public void SetValue(CompilerData.CompileCategory category, uint input)
+        {
+            if (category < CompilerData.CompileCategory.DisplayCount)
+            {
+                values[(int)category] = input;
+            }
+        }
     }
 
     public sealed class CompilerData
     {
         private static readonly Lazy<CompilerData> lazy = new Lazy<CompilerData>(() => new CompilerData());
 
-        const uint dataVersion = 1;
+        public const uint VERSION = 1;
 
         //Keep this in sync with the data exporter
         public enum CompileCategory
@@ -78,7 +73,17 @@ namespace CompileScore
             CodeGeneration, 
             OptimizeModule, 
             OptimizeFunction,
-            Other
+            Other, 
+            RunPass, 
+            PendingInstantiations,
+            FrontEnd,
+            BackEnd,
+            ExecuteCompiler,
+            Invalid,
+
+            FullCount,
+            GahterCount = RunPass,
+            DisplayCount = Invalid,
         }
 
         private CompileScorePackage _package;
@@ -97,7 +102,7 @@ namespace CompileScore
             public List<uint>                         normalizedThresholds = new List<uint>();
         }
 
-        private CompileDataset[] _datasets = new CompileDataset[Enum.GetNames(typeof(CompileCategory)).Length].Select(h => new CompileDataset()).ToArray();
+        private CompileDataset[] _datasets = new CompileDataset[(uint)CompileCategory.GahterCount].Select(h => new CompileDataset()).ToArray();
 
         //events
         public event Notify ScoreDataChanged;
@@ -159,7 +164,9 @@ namespace CompileScore
         public ObservableCollection<CompileValue> GetCollection(CompileCategory category)
         {
             return _datasets[(int)category].collection;
-        } 
+        }
+
+        public string GetScoreFullPath() { return _solutionDir + _path + _scoreFileName; }
 
         private bool SetPath(string input)
         {
@@ -194,6 +201,20 @@ namespace CompileScore
             return null;
         }
 
+        public CompileValue GetValue(CompileCategory category, int index)
+        {
+            if (category < CompileCategory.GahterCount)
+            {
+                CompileDataset dataset = _datasets[(int)category];
+                return index < dataset.collection.Count ? dataset.collection[index] : null;
+            }
+            return null;
+        }
+        public FullUnitValue GetUnit(int index)
+        {
+            return index < _unitsCollection.Count ? _unitsCollection[index] : null;
+        }
+
         private void ReloadSeverities()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -206,22 +227,12 @@ namespace CompileScore
         private void ReadCompileUnit(BinaryReader reader, List<FullUnitValue> list)
         {
             var name = reader.ReadString();
-            var compileData = new FullUnitValue(name.ToLower()); //TODO ~ ramonv ~ move this to export on next data version upgrade
+            var compileData = new FullUnitValue(name);
 
-            compileData.Source = reader.ReadUInt32();
-            compileData.ParseClass = reader.ReadUInt32();
-            compileData.ParseTemplate = reader.ReadUInt32();
-            compileData.InstantiateClass = reader.ReadUInt32();
-            compileData.InstantiateFunction = reader.ReadUInt32();
-            compileData.Codegen = reader.ReadUInt32();
-            compileData.OptModule = reader.ReadUInt32();
-            compileData.OptFunction = reader.ReadUInt32();
-            compileData.Other = reader.ReadUInt32();
-            compileData.RunPass = reader.ReadUInt32();
-            compileData.PendingInstantations = reader.ReadUInt32();
-            compileData.Frontend = reader.ReadUInt32();
-            compileData.Backend = reader.ReadUInt32();
-            compileData.Duration = reader.ReadUInt32();
+            for(CompileCategory category = 0; category < CompileCategory.DisplayCount; ++category)
+            {
+                compileData.SetValue(category, reader.ReadUInt32());
+            }
 
             list.Add(compileData);
         }
@@ -239,7 +250,7 @@ namespace CompileScore
         }
         private void ClearDatasets()
         {
-            for (int i=0;i< Enum.GetNames(typeof(CompileCategory)).Length;++i)
+            for (int i=0;i< (int)CompileCategory.GahterCount;++i)
             {
                 CompileDataset dataset = _datasets[i];
                 dataset.collection.Clear();
@@ -262,8 +273,8 @@ namespace CompileScore
                 FileStream fileStream = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 using (BinaryReader reader = new BinaryReader(fileStream))
                 {
-                    uint version = reader.ReadUInt32();
-                    if (version == dataVersion)
+                    uint thisVersion = reader.ReadUInt32();
+                    if (thisVersion == VERSION)
                     {
                         // Read Units 
                         uint unitsLength = reader.ReadUInt32();
@@ -276,7 +287,7 @@ namespace CompileScore
                         _unitsCollection = new ObservableCollection<FullUnitValue>(unitList);
 
                         //Read Datasets
-                        for(int i = 0; i < Enum.GetNames(typeof(CompileCategory)).Length; ++i)
+                        for(int i = 0; i < (int)CompileCategory.GahterCount; ++i)
                         {
                             uint dataLength = reader.ReadUInt32();
                             var thislist = new List<CompileValue>((int)dataLength);
@@ -289,7 +300,7 @@ namespace CompileScore
                     }
                     else
                     {
-                        OutputLog.Error("Version mismatch! Expected "+version+" - Found "+dataVersion);
+                        OutputLog.Error("Version mismatch! Expected "+ VERSION + " - Found "+ thisVersion);
                     }
                 }
 
@@ -315,7 +326,7 @@ namespace CompileScore
             //                Only store dictionary for it for now
             const int i = (int)CompileCategory.Include;
 
-            //for(int i = 0; i < Enum.GetNames(typeof(CompileCategory)).Length; ++i)
+            //for(int i = 0; i < (int)CompileCategory.GahterCount; ++i)
             {
                 CompileDataset dataset = _datasets[i];
                 List<uint> onlyValues = new List<uint>();
@@ -359,7 +370,7 @@ namespace CompileScore
         {
             GeneralSettingsPageGrid settings = GetGeneralSettings();
 
-            for (int i = 0; i < Enum.GetNames(typeof(CompileCategory)).Length; ++i)
+            for (int i = 0; i < (int)CompileCategory.GahterCount; ++i)
             {
                 CompileDataset dataset = _datasets[(int)CompileCategory.Include];
                 List<uint> thresholdList = settings.OptionNormalizedSeverity ? dataset.normalizedThresholds : settings.GetOptionSeverities();
@@ -388,7 +399,7 @@ namespace CompileScore
         private void OnFileWatchedChanged()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            LoadSeverities(_solutionDir + _path + _scoreFileName);
+            LoadSeverities(GetScoreFullPath());
         } 
 
         public void OnSettingsPathChanged()

@@ -63,6 +63,16 @@ namespace CompileScore.Overview
             this.dataView.Refresh();
         }
 
+        private void DataGridRow_DoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            DataGridRow row = (sender as DataGridRow);
+            if (row == null) return;
+
+            CompileValue value = (row.Item as CompileValue);
+            if (value == null) return;
+
+            //TODO ~ ramonv ~ go to CompileTimeline and set it up for the timeline ( missing data for this )
+        }
 
     }
 }

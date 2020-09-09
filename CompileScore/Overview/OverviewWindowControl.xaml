@@ -50,6 +50,11 @@
 
     <Grid>
         <TabControl x:Name="tabControl" TabStripPlacement="Left">
+            <!--
+            <TabItem Header="Totals">
+                <local:OverviewTotalsTable/>
+            </TabItem>
+            -->
             <TabItem Header="Overview">
                 <local:OverviewTable/>
             </TabItem>

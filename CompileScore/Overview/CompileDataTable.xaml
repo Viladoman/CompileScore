@@ -80,6 +80,7 @@
         <Style TargetType="DataGridRow">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"/>
             <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"/>
+            <EventSetter Event="MouseDoubleClick" Handler="DataGridRow_DoubleClick"/>
         </Style>
         <Style TargetType="DataGridCell">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"/>

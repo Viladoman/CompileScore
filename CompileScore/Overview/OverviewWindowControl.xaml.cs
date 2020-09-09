@@ -22,7 +22,7 @@
         {
             this.InitializeComponent();
 
-            foreach (CompilerData.CompileCategory category in Enum.GetValues(typeof(CompilerData.CompileCategory)))
+            for (CompilerData.CompileCategory category = 0; category < CompilerData.CompileCategory.GahterCount; ++category)
             {
                 AddTab(category);
             }
