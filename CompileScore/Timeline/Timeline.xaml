@@ -1,0 +1,30 @@
+﻿<UserControl x:Class="CompileScore.Timeline.Timeline"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:CompileScore.Timeline"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Space for more controls like reset zoom, or a search bar-->
+            <local:TimelineSearch x:Name="searchBox" Grid.Column="0"/>
+
+            <Slider Grid.Column="1" x:Name="sliderZoom" Maximum="1" Width="150"/>
+        </Grid>
+        <local:CustomScrollViewer Grid.Row="1" x:Name="scrollViewer" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
+            <Canvas x:Name="canvas" VerticalAlignment="Top" HorizontalAlignment="Left" Focusable="True"/>
+        </local:CustomScrollViewer>
+    </Grid>
+</UserControl>

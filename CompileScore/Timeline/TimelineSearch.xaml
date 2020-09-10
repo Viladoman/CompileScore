@@ -1,0 +1,48 @@
+﻿<UserControl x:Class="CompileScore.Timeline.TimelineSearch"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:CompileScore.Timeline"
+             mc:Ignorable="d" >
+    
+    <UserControl.Resources>
+        <Style TargetType="ListBox">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=Items.Count}" Value="0" >
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate>
+                                <TextBlock Background="White" Foreground="Black"> -- No items found --</TextBlock>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid Margin="2">
+            <TextBox Grid.Column="0" x:Name="autoTextBox" Width="500" HorizontalAlignment="Left" TextChanged="AutoTextBox_TextChanged"/>
+            <TextBlock IsHitTestVisible="False" Text="Search Nodes" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="DarkGray">
+                <TextBlock.Style>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Text, ElementName=autoTextBox}" Value="">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        
+            <!-- TODO : Add clear serach button -->
+        
+            <Popup x:Name="autoListPopup"  Visibility="Collapsed" StaysOpen="False"  Placement="Bottom">
+                <ListBox x:Name="autoList" Visibility="Collapsed" Width="{Binding ElementName=autoTextBox,Path=Width}" MaxHeight="100" SelectionChanged="AutoList_SelectionChanged" />
+            </Popup>
+        </Grid>
+    </Grid>
+</UserControl>
