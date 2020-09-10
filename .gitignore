@@ -15,9 +15,12 @@ DataExtractor/JS/.vscode/
 DataExtractor/JS/.history
 
 # VS Exports
-CompileScore/.vs/
-CompileScore/bin/
-CompileScore/obj/
+CompileScore/VSIX/.vs/
+CompileScore/VSIX/bin/
+CompileScore/VSIX/obj/
+
+# WPF StandAlone 
+CompileScore/WPF/
 
 #Temporary and binaries
 *.etl
