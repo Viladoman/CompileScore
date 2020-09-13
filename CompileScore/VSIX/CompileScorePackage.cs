@@ -30,6 +30,7 @@
     [ProvideOptionPage(typeof(GeneralSettingsPageGrid), "Compile Score", "General", 0, 0, true)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(CompileScore.Overview.OverviewWindow))]
+    [ProvideToolWindow(typeof(CompileScore.Timeline.TimelineWindow))]
     public sealed class CompileScorePackage : AsyncPackage
     {
         /// <summary>
@@ -56,8 +57,10 @@
 
             OutputLog.Initialize(this);
             CompilerData.Instance.Initialize(this, this);
+            Timeline.CompilerTimeline.Instance.Initialize(this);
             DocumentLifetimeManager.Initialize(this);
             await CompileScore.Overview.OverviewWindowCommand.InitializeAsync(this);
+            await CompileScore.Timeline.TimelineWindowCommand.InitializeAsync(this);
         }
 
         #endregion

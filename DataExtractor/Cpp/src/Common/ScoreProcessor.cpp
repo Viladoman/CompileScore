@@ -67,11 +67,10 @@ namespace CompileScore
 				}
 			}
 		}
-		/*
+		
 		if (IO::Binarizer* binarizer = Context::Get<IO::Binarizer>()) 
 		{ 
 			binarizer->Binarize(timeline);
 		}
-		*/
 	}
 }

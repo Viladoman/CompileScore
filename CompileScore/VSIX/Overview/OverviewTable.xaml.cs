@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.Shell;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -58,8 +59,6 @@ namespace CompileScore.Overview
             switch (category)
             {
                 case CompilerData.CompileCategory.ExecuteCompiler: return "Duration";
-                case CompilerData.CompileCategory.FrontEnd:        return "Frontend";
-                case CompilerData.CompileCategory.BackEnd:         return "Backend";
                 default: return CompileScore.Common.UIConverters.ToSentenceCase(category.ToString());
             }
         }
@@ -105,13 +104,15 @@ namespace CompileScore.Overview
         }
         private void DataGridRow_DoubleClick(object sender, MouseButtonEventArgs e)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             DataGridRow row = (sender as DataGridRow);
             if (row == null) return;
 
             FullUnitValue value = (row.Item as FullUnitValue);
             if (value == null) return;
 
-            //TODO ~ ramonv ~ go to CompileTimeline and set it up for the timeline ( missing data for this )
+            Timeline.CompilerTimeline.Instance.DisplayTImeline(value);
         }
     }
 }

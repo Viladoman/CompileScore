@@ -38,12 +38,15 @@ namespace CompileScore
     {
         private uint[] values = new uint[(int)CompilerData.CompileCategory.DisplayCount];
 
-        public FullUnitValue(string name)
+        public FullUnitValue(string name, uint index)
         {
             Name = name;
+            Index = index;
         }
 
         public string Name { get; }
+
+        public uint Index { get; }
 
         public List<uint> ValuesList { get { return values.ToList(); } }
 
@@ -161,6 +164,18 @@ namespace CompileScore
             return _unitsCollection;
         }
 
+        public FullUnitValue GetUnitByName(string name)
+        {
+            foreach(FullUnitValue unit in _unitsCollection)
+            {
+                if (unit.Name == name)
+                {
+                    return unit;
+                }
+            }
+            return null;
+        }
+
         public ObservableCollection<CompileValue> GetCollection(CompileCategory category)
         {
             return _datasets[(int)category].collection;
@@ -224,10 +239,10 @@ namespace CompileScore
             LoadSeverities(realPath + _scoreFileName);
         }
 
-        private void ReadCompileUnit(BinaryReader reader, List<FullUnitValue> list)
+        private void ReadCompileUnit(BinaryReader reader, List<FullUnitValue> list, uint index)
         {
             var name = reader.ReadString();
-            var compileData = new FullUnitValue(name);
+            var compileData = new FullUnitValue(name, index);
 
             for(CompileCategory category = 0; category < CompileCategory.DisplayCount; ++category)
             {
@@ -281,7 +296,7 @@ namespace CompileScore
                         var unitList = new List<FullUnitValue>((int)unitsLength);
                         for (uint i = 0; i < unitsLength; ++i)
                         {
-                            ReadCompileUnit(reader, unitList);
+                            ReadCompileUnit(reader, unitList, i);
                         }
                     
                         _unitsCollection = new ObservableCollection<FullUnitValue>(unitList);
@@ -322,8 +337,8 @@ namespace CompileScore
 
         private void PostProcessLoadedData()
         {
-            //TODO ~ ramonv ~ for the time being we are only using Include data for this
-            //                Only store dictionary for it for now
+            //For the time being we are only using Include data for this
+            //Only store dictionary for it for now
             const int i = (int)CompileCategory.Include;
 
             //for(int i = 0; i < (int)CompileCategory.GahterCount; ++i)

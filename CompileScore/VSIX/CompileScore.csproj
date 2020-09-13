@@ -49,6 +49,7 @@
     <Compile Include="Common\DocumentLifeTimeManager.cs" />
     <Compile Include="Common\OutputLog.cs" />
     <Compile Include="Common\ScoreColors.cs" />
+    <Compile Include="Common\WindowProxy.cs" />
     <Compile Include="Common\UIConverters.cs" />
     <Compile Include="Glyph\ScoreGlyphFactory.cs" />
     <Compile Include="Glyph\ScoreGlyphFactoryProvider.cs" />
@@ -78,6 +79,21 @@
     </Compile>
     <Compile Include="QuickInfo\ScoreQuickInfoSource.cs" />
     <Compile Include="QuickInfo\ScoreQuickInfoSourceProvider.cs" />
+    <Compile Include="Timeline\CompilerTimeline.cs" />
+    <Compile Include="Timeline\Timeline.xaml.cs">
+      <DependentUpon>Timeline.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Timeline\TimelineNodeTooltip.xaml.cs">
+      <DependentUpon>TimelineNodeTooltip.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Timeline\TimelineSearch.xaml.cs">
+      <DependentUpon>TimelineSearch.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Timeline\TimelineWindow.cs" />
+    <Compile Include="Timeline\TimelineWindowCommand.cs" />
+    <Compile Include="Timeline\TimelineWindowControl.xaml.cs">
+      <DependentUpon>TimelineWindowControl.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -109,7 +125,8 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <VSCTCompile Include="Overview\CompileScorePackage.vsct">
+    <Content Include="Timeline\Resources\TimelineWindowCommand.png" />
+    <VSCTCompile Include="CompileScorePackage.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
     <Content Include="Overview\Resources\OverviewWindowCommand.png" />
@@ -132,6 +149,22 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Overview\OverviewWindowControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Timeline\Timeline.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Timeline\TimelineNodeTooltip.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Timeline\TimelineSearch.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Timeline\TimelineWindowControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

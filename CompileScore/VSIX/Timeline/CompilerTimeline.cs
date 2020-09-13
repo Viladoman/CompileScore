@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows.Media;
 
@@ -40,11 +43,24 @@ namespace CompileScore.Timeline
 
     class CompilerTimeline
     {
+        private static readonly Lazy<CompilerTimeline> lazy = new Lazy<CompilerTimeline>(() => new CompilerTimeline());
+
         const int TIMELINES_PER_FILE = 100;
         const int TIMELINE_FILE_NUM_DIGITS = 4;
+        private CompileScorePackage Package { get; set; }
 
-        static public TimelineNode LoadTimeline(uint timelineId)
+        public void Initialize(CompileScorePackage package)
         {
+            Package = package;
+        }
+
+        public static CompilerTimeline Instance { get { return lazy.Value; } }
+        public TimelineNode LoadTimeline(FullUnitValue unit)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            uint timelineId = unit.Index;
+
             //compute full path
             uint timelineFileNum = timelineId / TIMELINES_PER_FILE;
             uint timelineInFileNum = timelineId % TIMELINES_PER_FILE;
@@ -69,7 +85,6 @@ namespace CompileScore.Timeline
                         if (!ReachedEndOfStream(reader))
                         {
                             root = BuildTimelineTree(reader);
-                            //TODO ~ ramonv ~ do something with the timelineId
                         }
                     }
                     else
@@ -83,19 +98,19 @@ namespace CompileScore.Timeline
             return root;
         }
 
-        static bool ReachedEndOfStream(BinaryReader reader)
+        bool ReachedEndOfStream(BinaryReader reader)
         {
             return reader.BaseStream.Position == reader.BaseStream.Length;
         } 
 
-        static private void SkipTimeline(BinaryReader reader)
+        private void SkipTimeline(BinaryReader reader)
         {
             uint numEvents = reader.ReadUInt32();
             const uint nodeSize = 13; //4+4+4+1
             reader.ReadBytes((int)(numEvents * nodeSize));
         }
 
-        static private TimelineNode LoadNode(BinaryReader reader)
+        private TimelineNode LoadNode(BinaryReader reader)
         {
             uint start = reader.ReadUInt32();
             uint duration = reader.ReadUInt32();
@@ -104,12 +119,12 @@ namespace CompileScore.Timeline
             CompileValue value = CompilerData.Instance.GetValue(category,(int)eventId);
 
             string label = value != null ? value.Name : Common.UIConverters.ToSentenceCase(category.ToString()); 
-            label += "("+ Common.UIConverters.GetTimeStr(duration) +")" ;
+            label += " ("+ Common.UIConverters.GetTimeStr(duration) +")" ;
 
             return new TimelineNode(label, start, duration, category, value);
         }
 
-        static private TimelineNode BuildTimelineTree(BinaryReader reader)
+        private TimelineNode BuildTimelineTree(BinaryReader reader)
         {
             TimelineNode root = null;
            
@@ -136,6 +151,31 @@ namespace CompileScore.Timeline
 
             return root; 
         }
+        
+        public void DisplayTImeline(FullUnitValue unit, CompileValue value = null)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
 
+            TimelineWindow window = FocusTimelineWindow();
+            window.SetTimeline(unit,value);
+        }
+
+        public TimelineWindow FocusTimelineWindow()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            // Get the instance number 0 of this tool window. This window is single instance so this instance
+            // is actually the only one.
+            // The last flag is set to true so that if the tool window does not exists it will be created.
+            TimelineWindow window = Package.FindToolWindow(typeof(TimelineWindow), 0, true) as TimelineWindow;
+            if ((null == window) || (null == window.GetFrame()))
+            {
+                throw new NotSupportedException("Cannot create tool window");
+            }
+
+            window.ProxyShow();
+
+            return window;
+        }
     }
 }

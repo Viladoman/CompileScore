@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.Shell;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows;
@@ -124,6 +125,7 @@ namespace CompileScore.Timeline
 
         private ToolTip tooltip = new ToolTip { Content = new TimelineNodeTooltip() };
 
+        private FullUnitValue Unit { set; get; }
         private TimelineNode Root { set; get; }
         private TimelineNode Hover { set; get; }
 
@@ -132,6 +134,8 @@ namespace CompileScore.Timeline
             InitializeComponent();
 
             this.DataContext = this;
+
+            CompilerData.Instance.ScoreDataChanged += OnDataChanged;
 
             overlayBrush.Opacity = 0.5;
 
@@ -147,7 +151,22 @@ namespace CompileScore.Timeline
 
         }
 
-        public void SetData(TimelineNode root)
+        public void SetUnit(FullUnitValue unit)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            Unit = unit;
+            SetRoot(CompilerTimeline.Instance.LoadTimeline(Unit));
+        }             
+
+        private void OnDataChanged()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            SetUnit(Unit != null? CompilerData.Instance.GetUnitByName(Unit.Name) : null);
+        }
+
+        private void SetRoot(TimelineNode root)
         {
             Root = root;
             if (Root != null)
@@ -158,6 +177,7 @@ namespace CompileScore.Timeline
             searchBox.SetData(Root);
 
             SetupCanvas(); //this should set up the zoom and scroll to the element we want by default full screen
+            RefreshAll();
         }
 
         private void OnScrollViewerLoaded(object sender, RoutedEventArgs e)
