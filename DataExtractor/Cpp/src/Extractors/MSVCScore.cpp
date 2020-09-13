@@ -139,7 +139,7 @@ namespace MSVC
         }
 
         //Backend pass done -> Finalize TU and release its memory
-        if (category == CompileCategory::BackEnd)
+        if (m_activeTU && category == CompileCategory::BackEnd)
         { 
             FinalizeTU(m_activeTU->timeline.name);
         }
