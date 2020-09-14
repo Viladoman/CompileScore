@@ -36,6 +36,7 @@
             CompileDataTable content = new CompileDataTable();
             content.SetCategory(category);
             tab.Content = content;
+            tab.IsEnabled = CompilerData.Instance.GetCollection(category).Count > 0;
 
             tabControl.Items.Add(tab);
         }

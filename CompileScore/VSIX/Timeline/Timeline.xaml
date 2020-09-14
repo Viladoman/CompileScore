@@ -17,14 +17,17 @@
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Space for more controls like reset zoom, or a search bar-->
-            <local:TimelineSearch x:Name="searchBox" Grid.Column="0"/>
+            <local:TimelineSearch Grid.Column="0" x:Name="unitSearchBox" />
+            <local:TimelineSearch Grid.Column="1" x:Name="nodeSearchBox" />
 
-            <Slider Grid.Column="1" x:Name="sliderZoom" Maximum="1" Width="150"/>
+            <!-- Space for more controls like reset zoom, or a search bar-->
+
+            <Slider Grid.Column="2" x:Name="sliderZoom" Maximum="1" Width="150"/>
         </Grid>
         <local:CustomScrollViewer Grid.Row="1" x:Name="scrollViewer" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
             <Canvas x:Name="canvas" VerticalAlignment="Top" HorizontalAlignment="Left" Focusable="True"/>

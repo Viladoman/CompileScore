@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,11 +16,17 @@ using System.Windows.Shapes;
 
 namespace CompileScore.Timeline
 {
+    public delegate void TimelineSearchSelectionEventHandler(object sender, string name);
+
     /// <summary>
     /// Interaction logic for TimelineSearch.xaml
     /// </summary>
     public partial class TimelineSearch : UserControl
     {
+        public event TimelineSearchSelectionEventHandler OnSelection;
+
+        private List<string> AutoSuggestionList = new List<string>();
+
         private TimelineNode NodeData { set; get; }
 
         public TimelineSearch()
@@ -27,9 +34,22 @@ namespace CompileScore.Timeline
             InitializeComponent();
         }
 
-        public void SetData(TimelineNode root)
+        public void SetData(List<string> optionsList)
         {
-            NodeData = root;
+            AutoSuggestionList = optionsList;
+            RefreshSuggestions();
+        }
+
+        public void SetPlaceholderText(string text)
+        {
+            placeholderText.Text = text;
+        }
+
+        public void SetCurrentText(string text)
+        {
+            autoTextBox.Text = text;
+            CloseAutoSuggestionBox();
+            Keyboard.ClearFocus(); //TODO ~ ramonv ~ this does not work ( find a different solution ) 
         }
 
         private void OpenAutoSuggestionBox()
@@ -47,21 +67,8 @@ namespace CompileScore.Timeline
         }
 
         private void AutoTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        { 
-            if (string.IsNullOrEmpty(this.autoTextBox.Text))
-            {
-                // No text close the popup
-                CloseAutoSuggestionBox();
-            }
-            else
-            {
-                // Input text show suggestions
-                OpenAutoSuggestionBox();
-
-                //TODO ~ ramonv ~ this should check the Root node instead, to avoid the list 
-                // Settings.  
-                //autoList.ItemsSource = AutoSuggestionList.Where(p => p.ToLower().Contains(autoTextBox.Text.ToLower())).ToList();
-            }
+        {
+            RefreshSuggestions();
         }
 
         private void AutoList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -74,9 +81,25 @@ namespace CompileScore.Timeline
             {
                 CloseAutoSuggestionBox();
                 autoTextBox.Text = autoList.SelectedItem.ToString();
+                OnSelection.Invoke(this, autoTextBox.Text);
                 autoList.SelectedIndex = -1;
+            }
+        }
 
-                //TODO ~ Ramonv ~ Notify selection and focus on the other side 
+        private void RefreshSuggestions()
+        {
+            if (string.IsNullOrEmpty(autoTextBox.Text))
+            {
+                // No text close the popup
+                CloseAutoSuggestionBox();
+            }
+            else
+            {
+                // Input text show suggestions
+                OpenAutoSuggestionBox();
+
+                string filter = autoTextBox.Text.ToLower();
+                autoList.ItemsSource = AutoSuggestionList.Where(p => p.ToLower().Contains(filter)).ToList();
             }
         }
 

@@ -37,9 +37,35 @@ namespace CompileScore.Timeline
             if (node != null)
             {
                 headerText.Text = Common.UIConverters.ToSentenceCase(node.Category.ToString());
-                descriptionText.Text = node.Value != null ? node.Value.Name : "";
-                durationText.Text = "Duration: " + Common.UIConverters.GetTimeStr(node.Duration);
-                //TODO ~ ramonv ~ placeholder data 
+                durationText.Text = Common.UIConverters.GetTimeStr(node.Duration);
+
+                if (node.Value is CompileValue)
+                {
+                    descriptionText.Visibility = Visibility.Visible;
+                    detailsBorder.Visibility = Visibility.Visible;
+                    detailsPanel.Visibility = Visibility.Visible;
+
+                    CompileValue val = (node.Value as CompileValue);
+                    descriptionText.Text = val.Name;
+                    detailsText.Text = "Max: "+Common.UIConverters.GetTimeStr(val.Max)
+                                     +" Min: "+ Common.UIConverters.GetTimeStr(val.Min)
+                                     +" Avg: "+ Common.UIConverters.GetTimeStr(val.Mean) 
+                                     +" Count: "+ val.Count;
+                }
+                else if (node.Value is FullUnitValue)
+                {
+                    descriptionText.Visibility = Visibility.Visible;
+                    detailsBorder.Visibility = Visibility.Collapsed;
+                    detailsPanel.Visibility = Visibility.Collapsed;
+
+                    descriptionText.Text = (node.Value as FullUnitValue).Name;
+                }
+                else
+                {
+                    descriptionText.Visibility = Visibility.Collapsed;
+                    detailsBorder.Visibility = Visibility.Collapsed;
+                    detailsPanel.Visibility = Visibility.Collapsed;
+                }              
             }
         }
             

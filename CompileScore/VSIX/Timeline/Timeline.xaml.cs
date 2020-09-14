@@ -122,6 +122,7 @@ namespace CompileScore.Timeline
         private VisualHost overlayVisual = new VisualHost();
         private Brush overlayBrush = Brushes.White.Clone();
         private Pen borderPen = new Pen(Brushes.Black, 1);
+        private Typeface Font = new Typeface("Verdana");
 
         private ToolTip tooltip = new ToolTip { Content = new TimelineNodeTooltip() };
 
@@ -137,7 +138,10 @@ namespace CompileScore.Timeline
 
             CompilerData.Instance.ScoreDataChanged += OnDataChanged;
 
-            overlayBrush.Opacity = 0.5;
+            overlayBrush.Opacity = 0.3;
+
+            nodeSearchBox.SetPlaceholderText("Search Nodes");
+            unitSearchBox.SetPlaceholderText("Search Units");
 
             scrollViewer.Loaded += OnScrollViewerLoaded;
             scrollViewer.ScrollChanged += OnScrollViewerScrollChanged;
@@ -149,6 +153,10 @@ namespace CompileScore.Timeline
             scrollViewer.SizeChanged += OnScrollViewerSizeChanged;
             sliderZoom.ValueChanged += OnSliderZoomChanged;
 
+            unitSearchBox.OnSelection += OnSearchUnitSelected;
+            nodeSearchBox.OnSelection += OnSearchNodeSelected;
+
+            RefreshSearchUnitList();
         }
 
         public void SetUnit(FullUnitValue unit)
@@ -157,11 +165,61 @@ namespace CompileScore.Timeline
 
             Unit = unit;
             SetRoot(CompilerTimeline.Instance.LoadTimeline(Unit));
-        }             
+
+            unitSearchBox.SetCurrentText(Unit != null? Unit.Name : null); 
+        }
+
+        public void FocusNode(TimelineNode node)
+        {
+            if (node != null && Root != null)
+            {
+                const double margin = 10;
+
+                double viewPortWidth = scrollViewer.ViewportWidth - 2 * margin;
+                double zoom = node.Duration > 0 && viewPortWidth > 0 ? viewPortWidth / node.Duration : 0;
+                pixelToTimeRatio = Math.Max(Math.Min(zoom, GetMaxZoom()), GetMinZoom());
+                double scrollOffset = (node.Start * pixelToTimeRatio) - margin;
+
+                canvas.Width = Root.Duration * pixelToTimeRatio;
+                scrollViewer.ScrollToHorizontalOffset(scrollOffset);
+
+                RefreshZoomSlider();
+            }
+        }
+
+        public TimelineNode FindNodeByValue(object value)
+        {
+            if (value != null && Root != null)
+            {
+                return FindNodeByValueRecursive(Root, value);
+            }
+            return null;
+        }
+
+        private TimelineNode FindNodeByValueRecursive(TimelineNode node, object value)
+        {
+            if (node.Value == value)
+            {
+                return node; 
+            }
+
+            foreach(TimelineNode child in node.Children)
+            {
+                TimelineNode found = FindNodeByValueRecursive(child, value);
+                if (found != null)
+                {
+                    return found;
+                }
+            }
+
+            return null;
+        }
 
         private void OnDataChanged()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            RefreshSearchUnitList();
 
             SetUnit(Unit != null? CompilerData.Instance.GetUnitByName(Unit.Name) : null);
         }
@@ -174,10 +232,42 @@ namespace CompileScore.Timeline
                 InitializeNodeRecursive(Root);
             }
 
-            searchBox.SetData(Root);
+            nodeSearchBox.SetData(ComputeFlatNameList());
 
             SetupCanvas(); //this should set up the zoom and scroll to the element we want by default full screen
             RefreshAll();
+        }
+
+        private List<string> ComputeFlatNameList()
+        {
+            List<string> list = new List<string>();
+            if (Root != null)
+            {
+                ComputeFlatNameListRecursive(list,Root);
+            }
+            list.Sort();
+            return list;
+        }
+
+        private void ComputeFlatNameListRecursive(List<string> list, TimelineNode node)
+        {
+            list.Add(node.Label);
+            foreach (TimelineNode child in node.Children)
+            {
+                ComputeFlatNameListRecursive(list, child);
+            }
+        }
+
+        private void RefreshSearchUnitList()
+        {
+            List<string> list = new List<string>();
+            var units = CompilerData.Instance.GetUnits();
+            foreach (FullUnitValue element in units)
+            {
+                list.Add(element.Name);
+            }
+            list.Sort();
+            unitSearchBox.SetData(list);
         }
 
         private void OnScrollViewerLoaded(object sender, RoutedEventArgs e)
@@ -281,24 +371,6 @@ namespace CompileScore.Timeline
             }
         }
 
-        private void FocusNode(TimelineNode node)
-        { 
-            if (node != null && Root != null)
-            {
-                const double margin = 10;
-
-                double viewPortWidth = scrollViewer.ViewportWidth - 2 * margin;
-                double zoom = node.Duration > 0 && viewPortWidth > 0? viewPortWidth / node.Duration : 0;
-                pixelToTimeRatio = Math.Max(Math.Min(zoom, GetMaxZoom()), GetMinZoom());
-                double scrollOffset = (node.Start * pixelToTimeRatio)-margin;
-
-                canvas.Width = Root.Duration * pixelToTimeRatio;
-                scrollViewer.ScrollToHorizontalOffset(scrollOffset);
-
-                RefreshZoomSlider();
-            }
-        }
-
         private double GetMinZoom()
         {
             return Root != null && Root.Duration > 0 && scrollViewer.ViewportWidth > 0 ? scrollViewer.ViewportWidth/ Root.Duration : 1;
@@ -333,7 +405,7 @@ namespace CompileScore.Timeline
             node.DepthLevel = node.Parent == null ? 0 : node.Parent.DepthLevel+1;
             node.MaxDepthLevel = node.DepthLevel;
 
-            node.UIColor = Brushes.Aquamarine; //TODO ~ ramonv define color based on category
+            node.UIColor = Common.UIColors.GetCategoryBackground(node.Category); 
 
             foreach (TimelineNode child in node.Children)
             {
@@ -371,8 +443,7 @@ namespace CompileScore.Timeline
             double width = TimeToPixel(node.Duration);
             double posY = DepthToPixel(node.DepthLevel);
 
-            var brush = Brushes.Black;
-            drawingContext.DrawRectangle(brush, null, new Rect(posX, posY, width, NodeHeight * (1 + node.MaxDepthLevel - node.DepthLevel)));
+            drawingContext.DrawRectangle(this.Foreground, null, new Rect(posX, posY, width, NodeHeight * (1 + node.MaxDepthLevel - node.DepthLevel)));
         }
 
         private void RenderNodeSingle(DrawingContext drawingContext, TimelineNode node, Brush brush, double clipTimeStart, double clipTimeEnd)
@@ -387,7 +458,7 @@ namespace CompileScore.Timeline
             //Render text
             if (screenWidth > 30)
             {
-                var UIText = new FormattedText(node.Label, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Verdana"), 12, Brushes.Black, VisualTreeHelper.GetDpi(this).PixelsPerDip);
+                var UIText = new FormattedText(node.Label, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, Font, 12, Common.UIColors.GetCategoryForeground(), VisualTreeHelper.GetDpi(this).PixelsPerDip);
                 UIText.MaxTextWidth = Math.Min(screenWidth, UIText.Width);
                 UIText.MaxTextHeight = NodeHeight;
 
@@ -415,6 +486,8 @@ namespace CompileScore.Timeline
         {
             if (Root != null)
             {
+                borderPen.Brush = this.Foreground;
+
                 double clipTimeStart = PixelToTime(scrollViewer.HorizontalOffset);
                 double clipTimeEnd   = PixelToTime(scrollViewer.HorizontalOffset + scrollViewer.ViewportWidth);
                 uint   clipDepth     = PixelToDepth(scrollViewer.VerticalOffset + scrollViewer.ViewportHeight);
@@ -494,7 +567,44 @@ namespace CompileScore.Timeline
                 double anchorPosX = scrollViewer.ViewportWidth * 0.5;
                 ApplyHorizontalZoom(targetRatio, anchorPosX);
             }
-            
         }
+
+        private void OnSearchUnitSelected(object sender, string name)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (!string.IsNullOrEmpty(name) && (Unit == null || name != Unit.Name))
+            {
+                SetUnit(CompilerData.Instance.GetUnitByName(name));
+            }
+        }
+
+        private void OnSearchNodeSelected(object sender, string name)
+        {
+            if (Root != null && !string.IsNullOrEmpty(name))
+            {
+                FocusNode(FindNodeByNameRecursive(Root, name));
+            }
+        } 
+        
+        TimelineNode FindNodeByNameRecursive(TimelineNode node, string name)
+        {
+            if (node.Label == name)
+            {
+                return node; 
+            }
+
+            foreach ( TimelineNode child in node.Children)
+            {
+                TimelineNode found = FindNodeByNameRecursive(child, name);
+                if (found != null)
+                {
+                    return found;
+                }
+            }
+
+            return null;
+        }
+
     }
 }

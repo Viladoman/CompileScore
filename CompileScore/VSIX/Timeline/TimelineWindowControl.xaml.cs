@@ -23,8 +23,7 @@
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             timeline.SetUnit(unit);
-
-            //TODO ~ Ramonv ~ Find value and locate it in the timeline
+            timeline.FocusNode(timeline.FindNodeByValue(value));
         }
     }
 }

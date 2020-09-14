@@ -316,6 +316,14 @@ namespace CompileScore
                     else
                     {
                         OutputLog.Error("Version mismatch! Expected "+ VERSION + " - Found "+ thisVersion);
+                        if (VERSION > thisVersion)
+                        {
+                            OutputLog.Error("Please update the Compile Score Data Exporter");
+                        }
+                        else
+                        {
+                            OutputLog.Error("Please update the Compile Score Extension to match the scor file version.");
+                        }
                     }
                 }
 

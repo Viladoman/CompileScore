@@ -3,11 +3,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
              xmlns:local="clr-namespace:CompileScore.Timeline"
+             Background="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"
+             Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
              mc:Ignorable="d" >
     
     <UserControl.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"/>
+        </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"/>
+        </Style>
         <Style TargetType="ListBox">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=Items.Count}" Value="0" >
                     <Setter Property="Template">
@@ -24,8 +37,8 @@
 
     <Grid>
         <Grid Margin="2">
-            <TextBox Grid.Column="0" x:Name="autoTextBox" Width="500" HorizontalAlignment="Left" TextChanged="AutoTextBox_TextChanged"/>
-            <TextBlock IsHitTestVisible="False" Text="Search Nodes" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="DarkGray">
+            <TextBox Grid.Column="0" x:Name="autoTextBox" HorizontalAlignment="Stretch" TextChanged="AutoTextBox_TextChanged"/>
+            <TextBlock x:Name="placeholderText" IsHitTestVisible="False" Text="Search Nodes" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="DarkGray">
                 <TextBlock.Style>
                     <Style TargetType="{x:Type TextBlock}">
                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -41,7 +54,7 @@
             <!-- TODO : Add clear serach button -->
         
             <Popup x:Name="autoListPopup"  Visibility="Collapsed" StaysOpen="False"  Placement="Bottom">
-                <ListBox x:Name="autoList" Visibility="Collapsed" Width="{Binding ElementName=autoTextBox,Path=Width}" MaxHeight="100" SelectionChanged="AutoList_SelectionChanged" />
+                <ListBox x:Name="autoList" Visibility="Collapsed" Width="{Binding ElementName=autoTextBox,Path=ActualWidth}" MaxHeight="250" SelectionChanged="AutoList_SelectionChanged" />
             </Popup>
         </Grid>
     </Grid>

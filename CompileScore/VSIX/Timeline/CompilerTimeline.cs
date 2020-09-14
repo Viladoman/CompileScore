@@ -9,7 +9,7 @@ namespace CompileScore.Timeline
 {
     public class TimelineNode
     {
-        public TimelineNode(string label, uint start, uint duration, CompilerData.CompileCategory category, CompileValue compileValue = null)
+        public TimelineNode(string label, uint start, uint duration, CompilerData.CompileCategory category, object compileValue = null)
         {
             Label = label;
             Start = start;
@@ -19,10 +19,10 @@ namespace CompileScore.Timeline
             Category = category;
         }
 
-        public string Label { get; }
+        public string Label { set; get; }
         public CompilerData.CompileCategory Category { get; }
 
-        public CompileValue Value { set; get; }       
+        public object Value { set; get; }       
 
         public uint Start { get; }
         public uint Duration { get; }
@@ -59,6 +59,8 @@ namespace CompileScore.Timeline
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            if (unit == null) { return null; }
+
             uint timelineId = unit.Index;
 
             //compute full path
@@ -85,6 +87,7 @@ namespace CompileScore.Timeline
                         if (!ReachedEndOfStream(reader))
                         {
                             root = BuildTimelineTree(reader);
+                            FinializeRoot(root, unit);
                         }
                     }
                     else
@@ -151,7 +154,16 @@ namespace CompileScore.Timeline
 
             return root; 
         }
-        
+
+        private void FinializeRoot(TimelineNode root, FullUnitValue unit)
+        {
+            if (root.Category == CompilerData.CompileCategory.ExecuteCompiler)
+            {
+                root.Value = unit;
+                root.Label = unit.Name + " (" + Common.UIConverters.GetTimeStr(root.Duration) + ")";
+            }
+        }
+
         public void DisplayTImeline(FullUnitValue unit, CompileValue value = null)
         {
             ThreadHelper.ThrowIfNotOnUIThread();

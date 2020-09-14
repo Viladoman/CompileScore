@@ -71,7 +71,8 @@ namespace CompileScore.Overview
             CompileValue value = (row.Item as CompileValue);
             if (value == null) return;
 
-            //TODO ~ ramonv ~ go to CompileTimeline and set it up for the timeline ( missing data for this )
+            // TODO ~ RAmonv ~ get unit from value - missing MAX index from export ( update to version 3 ) 
+            //Timeline.CompilerTimeline.Instance.DisplayTImeline(unit,value);
         }
 
     }
