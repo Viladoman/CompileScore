@@ -21,11 +21,14 @@
         public OverviewWindowControl()
         {
             this.InitializeComponent();
+            CompilerData.Instance.ScoreDataChanged += RefreshTabs;
 
+            //Initialize Tabs
             for (CompilerData.CompileCategory category = 0; category < CompilerData.CompileCategory.GahterCount; ++category)
             {
                 AddTab(category);
             }
+            RefreshTabs();
         }
 
         private void AddTab(CompilerData.CompileCategory category)
@@ -36,9 +39,22 @@
             CompileDataTable content = new CompileDataTable();
             content.SetCategory(category);
             tab.Content = content;
-            tab.IsEnabled = CompilerData.Instance.GetCollection(category).Count > 0;
-
             tabControl.Items.Add(tab);
         }
+
+        public void RefreshTabs()
+        {
+            int baseIndex = tabControl.Items.Count - (int)CompilerData.CompileCategory.GahterCount;
+            if (baseIndex >= 0)
+            {
+                //We assume the last tabs are the one for the categories
+                for (CompilerData.CompileCategory category = 0; category < CompilerData.CompileCategory.GahterCount; ++category)
+                {
+                    int index = baseIndex + (int)category;
+                    (tabControl.Items[index] as TabItem).IsEnabled = CompilerData.Instance.GetCollection(category).Count > 0;
+                }
+            }
+        }
+
     }
 }

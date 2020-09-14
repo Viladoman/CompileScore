@@ -24,9 +24,6 @@
 
             <local:TimelineSearch Grid.Column="0" x:Name="unitSearchBox" />
             <local:TimelineSearch Grid.Column="1" x:Name="nodeSearchBox" />
-
-            <!-- Space for more controls like reset zoom, or a search bar-->
-
             <Slider Grid.Column="2" x:Name="sliderZoom" Maximum="1" Width="150"/>
         </Grid>
         <local:CustomScrollViewer Grid.Row="1" x:Name="scrollViewer" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
