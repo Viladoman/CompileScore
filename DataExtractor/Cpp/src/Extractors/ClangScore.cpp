@@ -195,7 +195,11 @@ namespace Clang
 	{ 
 		//inject in a sorted position
 		TCompileEvents& events = timeline.events; 
-		TCompileEvents::iterator found = fastl::lower_bound(events.begin(),events.end(),compileEvent.start,[=](const CompileEvent& input, U32 value){ return value >= input.start; });
+		TCompileEvents::iterator found = fastl::lower_bound(events.begin(),events.end(),compileEvent,
+			[=](const CompileEvent& input, const CompileEvent& value)
+			{ 
+				return (value.start == input.start)? value.duration <= input.duration : value.start >= input.start; 
+			});
 		TCompileEvents::iterator elem = events.emplace(found,compileEvent);    
 	}
 
