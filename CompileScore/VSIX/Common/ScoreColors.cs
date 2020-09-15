@@ -33,6 +33,10 @@
                 case CompilerData.CompileCategory.OptimizeModule: return OptModuleBrush;
                 case CompilerData.CompileCategory.OptimizeFunction: return OptFunctionBrush;
                 case CompilerData.CompileCategory.RunPass: return RunPassBrush;
+                case CompilerData.CompileCategory.CodeGenPasses: return CodeGenBrush; //repeated color
+                case CompilerData.CompileCategory.PerModulePasses: return RunPassBrush; //repeated color
+                case CompilerData.CompileCategory.DebugType: return OtherBrush; //repeated color
+                case CompilerData.CompileCategory.DebugGlobalVariable: return OtherBrush; //repeated color
                 case CompilerData.CompileCategory.FrontEnd: return FrontEndBrush;
                 case CompilerData.CompileCategory.BackEnd: return BackEndBrush;
                 case CompilerData.CompileCategory.ExecuteCompiler: return ExecuteCompilerBrush;
