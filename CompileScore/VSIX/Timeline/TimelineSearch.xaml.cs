@@ -45,11 +45,10 @@ namespace CompileScore.Timeline
             placeholderText.Text = text;
         }
 
-        public void SetCurrentText(string text)
+        public void SetText(string text)
         {
             autoTextBox.Text = text;
             CloseAutoSuggestionBox();
-            Keyboard.ClearFocus(); //TODO ~ ramonv ~ this does not work ( find a different solution ) 
         }
 
         private void OpenAutoSuggestionBox()
@@ -80,8 +79,9 @@ namespace CompileScore.Timeline
             else
             {
                 CloseAutoSuggestionBox();
-                autoTextBox.Text = autoList.SelectedItem.ToString();
-                OnSelection.Invoke(this, autoTextBox.Text);
+                //Those are used for searching only so clear the text
+                OnSelection.Invoke(this, autoList.SelectedItem.ToString());
+                autoTextBox.Text = null; //autoList.SelectedItem.ToString();
                 autoList.SelectedIndex = -1;
             }
         }

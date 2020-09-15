@@ -5,7 +5,7 @@
 
 #include "ScoreDefinitions.h"
 
-constexpr U32 SCORE_VERSION = 1;
+constexpr U32 SCORE_VERSION = 3;
 constexpr U32 TIMELINES_PER_FILE = 100;
 constexpr U32 TIMELINE_FILE_NUM_DIGITS = 4;
 
@@ -186,6 +186,7 @@ namespace IO
                 BinarizeU32(stream,data.min);
                 BinarizeU32(stream,data.max);
                 BinarizeU32(stream,data.count);
+                BinarizeU32(stream,data.maxId);
             }
         }
 

@@ -58,7 +58,7 @@
                 <local:OverviewTotalsTable/>
             </TabItem>
             -->
-            <TabItem Header="Overview">
+            <TabItem Header="Units">
                 <local:OverviewTable/>
             </TabItem>
         </TabControl>

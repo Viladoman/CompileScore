@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.Shell;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -65,14 +66,15 @@ namespace CompileScore.Overview
 
         private void DataGridRow_DoubleClick(object sender, MouseButtonEventArgs e)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             DataGridRow row = (sender as DataGridRow);
             if (row == null) return;
 
             CompileValue value = (row.Item as CompileValue);
             if (value == null) return;
 
-            // TODO ~ RAmonv ~ get unit from value - missing MAX index from export ( update to version 3 ) 
-            //Timeline.CompilerTimeline.Instance.DisplayTImeline(unit,value);
+            Timeline.CompilerTimeline.Instance.DisplayTimeline(value.MaxUnit,value);
         }
 
     }

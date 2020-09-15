@@ -116,7 +116,9 @@ namespace CompileScore.Timeline
         const double zoomIncreaseRatio = 1.1;
         const double FakeWidth = 3;
 
-        private double pixelToTimeRatio = 1.0;
+        private double pixelToTimeRatio = -1.0;
+        private double restoreScrollX = -1.0;
+        private double restoreScrollY = -1.0;
         private bool zoomSliderLock = false; //used to avoid slider event feedback on itself 
         private VisualHost baseVisual = new VisualHost();
         private VisualHost overlayVisual = new VisualHost();
@@ -129,6 +131,7 @@ namespace CompileScore.Timeline
         private FullUnitValue Unit { set; get; }
         private TimelineNode Root { set; get; }
         private TimelineNode Hover { set; get; }
+        private TimelineNode FocusPending { set; get; }
 
         public Timeline()
         {
@@ -165,11 +168,15 @@ namespace CompileScore.Timeline
 
             Unit = unit;
             SetRoot(CompilerTimeline.Instance.LoadTimeline(Unit));
-
-            unitSearchBox.SetCurrentText(Unit != null? Unit.Name : null); 
         }
 
-        public void FocusNode(TimelineNode node)
+        public void FocusNode(CompileValue value)
+        {
+            FocusPending = FindNodeByValue(value);
+            FocusNode(FocusPending);
+        }
+
+        private void FocusNode(TimelineNode node)
         {
             if (node != null && Root != null)
             {
@@ -187,7 +194,7 @@ namespace CompileScore.Timeline
             }
         }
 
-        public TimelineNode FindNodeByValue(object value)
+        private TimelineNode FindNodeByValue(object value)
         {
             if (value != null && Root != null)
             {
@@ -234,7 +241,10 @@ namespace CompileScore.Timeline
 
             nodeSearchBox.SetData(ComputeFlatNameList());
 
-            SetupCanvas(); //this should set up the zoom and scroll to the element we want by default full screen
+            pixelToTimeRatio = -1.0;
+            restoreScrollX = -1.0;
+            restoreScrollY = -1.0;
+            SetupCanvas();
             RefreshAll();
         }
 
@@ -273,11 +283,15 @@ namespace CompileScore.Timeline
         private void OnScrollViewerLoaded(object sender, RoutedEventArgs e)
         {
             SetupCanvas();
+            FocusNode(FocusPending);
+            FocusPending = null;
             RefreshAll();
         }
 
         private void OnScrollViewerScrollChanged(object sender, ScrollChangedEventArgs e)
         {
+            restoreScrollX = scrollViewer.HorizontalOffset;
+            restoreScrollY = scrollViewer.VerticalOffset;
             RefreshAll();
         }
 
@@ -392,9 +406,19 @@ namespace CompileScore.Timeline
         {
             if (Root != null)
             {
-                pixelToTimeRatio = GetMinZoom();
+                pixelToTimeRatio = pixelToTimeRatio > 0? pixelToTimeRatio : GetMinZoom();
                 canvas.Width = Root.Duration*pixelToTimeRatio;
                 canvas.Height = (Root.MaxDepthLevel+1) * NodeHeight;
+
+                if (restoreScrollX >= 0)
+                {
+                    scrollViewer.ScrollToHorizontalOffset(restoreScrollX);
+                }
+
+                if (restoreScrollY >= 0)
+                {
+                    scrollViewer.ScrollToVerticalOffset(restoreScrollY);
+                }
 
                 RefreshZoomSlider();
             }
@@ -405,7 +429,7 @@ namespace CompileScore.Timeline
             node.DepthLevel = node.Parent == null ? 0 : node.Parent.DepthLevel+1;
             node.MaxDepthLevel = node.DepthLevel;
 
-            node.UIColor = Common.UIColors.GetCategoryBackground(node.Category); 
+            node.UIColor = Common.Colors.GetCategoryBackground(node.Category); 
 
             foreach (TimelineNode child in node.Children)
             {
@@ -458,7 +482,7 @@ namespace CompileScore.Timeline
             //Render text
             if (screenWidth > 30)
             {
-                var UIText = new FormattedText(node.Label, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, Font, 12, Common.UIColors.GetCategoryForeground(), VisualTreeHelper.GetDpi(this).PixelsPerDip);
+                var UIText = new FormattedText(node.Label, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, Font, 12, Common.Colors.GetCategoryForeground(), VisualTreeHelper.GetDpi(this).PixelsPerDip);
                 UIText.MaxTextWidth = Math.Min(screenWidth, UIText.Width);
                 UIText.MaxTextHeight = NodeHeight;
 

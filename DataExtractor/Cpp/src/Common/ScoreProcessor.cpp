@@ -25,7 +25,7 @@ namespace CompileScore
 		if (found == dictionary.end())
 		{ 
 			//insert new
-			element.nameId = global.size(); 
+			element.nameId = static_cast<U32>(global.size()); //TODO ~ ramonv ~ careful with overflow
 			dictionary[element.name] = element.nameId; //double lookup not great
 			global.emplace_back();
 			return global.back();
@@ -41,6 +41,7 @@ namespace CompileScore
 		U32 overlapThreshold[ToUnderlying(CompileCategory::DisplayCount)] = {};
 
 		//Create new unit
+		const U32 unitId = static_cast<U32>(scoreData.units.size());
 		scoreData.units.emplace_back();
 		CompileUnit& unit = scoreData.units.back();
 		unit.name = timeline.name;
@@ -54,7 +55,13 @@ namespace CompileScore
 				compileData.name = element.name;
 				compileData.accumulated += element.duration;
 				compileData.min = Utils::Min(element.duration,compileData.min);
-				compileData.max = Utils::Max(element.duration,compileData.max);
+
+				if (element.duration > compileData.max)
+				{ 
+					compileData.max = element.duration;
+					compileData.maxId = unitId;
+				}
+
 				++compileData.count;
 			}
 

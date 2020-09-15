@@ -23,7 +23,7 @@
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             timeline.SetUnit(unit);
-            timeline.FocusNode(timeline.FindNodeByValue(value));
+            timeline.FocusNode(value);
         }
     }
 }

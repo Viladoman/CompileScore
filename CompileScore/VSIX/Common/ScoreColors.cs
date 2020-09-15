@@ -4,6 +4,49 @@
 
     class Colors
     {
+        static Brush IncludeBrush = new SolidColorBrush(Color.FromArgb(255, 85, 0, 85));
+        static Brush ParseClassBrush = new SolidColorBrush(Color.FromArgb(255, 170, 115, 0));
+        static Brush ParseTemplateBrush = new SolidColorBrush(Color.FromArgb(255, 170, 115, 51));
+        static Brush InstantiateClassBrush = new SolidColorBrush(Color.FromArgb(255, 0, 119, 0));
+        static Brush InstantiateFuncBrush = new SolidColorBrush(Color.FromArgb(255, 0, 119, 51));
+        static Brush CodeGenBrush = new SolidColorBrush(Color.FromArgb(255, 3, 71, 54));
+        static Brush PendingInstantiationBrush = new SolidColorBrush(Color.FromArgb(255, 0, 0, 119));
+        static Brush OptModuleBrush = new SolidColorBrush(Color.FromArgb(255, 119, 51, 17));
+        static Brush OptFunctionBrush = new SolidColorBrush(Color.FromArgb(255, 45, 66, 98));
+        static Brush RunPassBrush = new SolidColorBrush(Color.FromArgb(255, 0, 85, 85));
+        static Brush FrontEndBrush = new SolidColorBrush(Color.FromArgb(255, 136, 136, 0));
+        static Brush BackEndBrush = new SolidColorBrush(Color.FromArgb(255, 136, 81, 0));
+        static Brush ExecuteCompilerBrush = new SolidColorBrush(Color.FromArgb(255, 51, 119, 102));
+        static Brush OtherBrush = new SolidColorBrush(Color.FromArgb(255, 119, 0, 0));
+
+        static public Brush GetCategoryBackground(CompilerData.CompileCategory category)
+        {
+            switch (category)
+            {
+                case CompilerData.CompileCategory.Include: return IncludeBrush;
+                case CompilerData.CompileCategory.ParseClass: return ParseClassBrush;
+                case CompilerData.CompileCategory.ParseTemplate: return ParseTemplateBrush;
+                case CompilerData.CompileCategory.InstanceClass: return InstantiateClassBrush;
+                case CompilerData.CompileCategory.InstanceFunction: return InstantiateFuncBrush;
+                case CompilerData.CompileCategory.CodeGeneration: return CodeGenBrush;
+                case CompilerData.CompileCategory.PendingInstantiations: return PendingInstantiationBrush;
+                case CompilerData.CompileCategory.OptimizeModule: return OptModuleBrush;
+                case CompilerData.CompileCategory.OptimizeFunction: return OptFunctionBrush;
+                case CompilerData.CompileCategory.RunPass: return RunPassBrush;
+                case CompilerData.CompileCategory.FrontEnd: return FrontEndBrush;
+                case CompilerData.CompileCategory.BackEnd: return BackEndBrush;
+                case CompilerData.CompileCategory.ExecuteCompiler: return ExecuteCompilerBrush;
+                case CompilerData.CompileCategory.Other: return OtherBrush;
+            }
+
+            return OtherBrush;
+        }
+
+        static public Brush GetCategoryForeground()
+        {
+            return Brushes.White;
+        }
+
         public static Brush GetSeverityBrush(uint severity)
         {
             switch (severity)

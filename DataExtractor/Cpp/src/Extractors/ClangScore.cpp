@@ -84,10 +84,15 @@ namespace Clang
 		constexpr Json::Token tagPendingInstantiations = Utils::CreateLiteralToken("PerformPendingInstantiations");
 		constexpr Json::Token tagOptModule             = Utils::CreateLiteralToken("OptModule");
 		constexpr Json::Token tagOptFunction           = Utils::CreateLiteralToken("OptFunction");
-		constexpr Json::Token tagRunPass               = Utils::CreateLiteralToken("RunPass");
 		constexpr Json::Token tagFrontend              = Utils::CreateLiteralToken("Frontend");
 		constexpr Json::Token tagBackend               = Utils::CreateLiteralToken("Backend");
 		constexpr Json::Token tagTotal                 = Utils::CreateLiteralToken("ExecuteCompiler");
+
+		constexpr Json::Token tagRunPass               = Utils::CreateLiteralToken("RunPass");
+		constexpr Json::Token tagCodeGenPasses         = Utils::CreateLiteralToken("CodeGenPasses");
+		constexpr Json::Token tagDebugType             = Utils::CreateLiteralToken("DebugType");
+		constexpr Json::Token tagDebugGlobalVariable   = Utils::CreateLiteralToken("DebugGlobalVariable");
+		constexpr Json::Token tagPerModulePasses       = Utils::CreateLiteralToken("PerModulePasses");
 
 		//Invalid Tags
 		constexpr Json::Token tagInvalidA              = Utils::CreateLiteralToken("process_name");
@@ -103,9 +108,13 @@ namespace Clang
 			if (Utils::EqualTokens(token,tagInstantiateFunction))   return CompileCategory::InstantiateFunction; 
 			if (Utils::EqualTokens(token,tagCodeGenFunction))       return CompileCategory::CodeGenFunction; 
 			if (Utils::EqualTokens(token,tagPendingInstantiations)) return CompileCategory::PendingInstantiations; 
-			if (Utils::EqualTokens(token,tagOptModule))             return CompileCategory::OptimizeModule; 
 			if (Utils::EqualTokens(token,tagOptFunction))           return CompileCategory::OptimizeFunction; 
+			if (Utils::EqualTokens(token,tagOptModule))             return CompileCategory::OptimizeModule; 
 			if (Utils::EqualTokens(token,tagRunPass))               return CompileCategory::RunPass; 
+			if (Utils::EqualTokens(token,tagCodeGenPasses))         return CompileCategory::CodeGenPasses; 
+			if (Utils::EqualTokens(token,tagPerModulePasses))       return CompileCategory::PerModulePasses; 
+			if (Utils::EqualTokens(token,tagDebugType))             return CompileCategory::DebugType; 
+			if (Utils::EqualTokens(token,tagDebugGlobalVariable))   return CompileCategory::DebugGlobalVariable; 
 			if (Utils::EqualTokens(token,tagFrontend))              return CompileCategory::FrontEnd; 
 			if (Utils::EqualTokens(token,tagBackend))               return CompileCategory::BackEnd; 
 			if (Utils::EqualTokens(token,tagTotal))                 return CompileCategory::ExecuteCompiler; 

@@ -17,19 +17,27 @@ enum class CompileCategory : CompileCategoryType
     InstantiateClass, 
     InstantiateFunction, 
     CodeGenFunction, 
-    OptimizeModule, 
     OptimizeFunction, 
-    Other,
-    RunPass,
+    //Gather End
+
     PendingInstantiations,
+    OptimizeModule, 
     FrontEnd,
     BackEnd,
     ExecuteCompiler,
+    Other,
+    //Display End
+
+    RunPass,
+    CodeGenPasses,
+    PerModulePasses,
+    DebugType,
+    DebugGlobalVariable,
     Invalid,
 
     FullCount, 
-    GahterCount = RunPass,
-    DisplayCount = Invalid,
+    GahterCount = PendingInstantiations,
+    DisplayCount = RunPass,
 };
 
 constexpr CompileCategoryType ToUnderlying(CompileCategory input){ return static_cast<CompileCategoryType>(input);}
@@ -46,6 +54,7 @@ struct CompileData
         : accumulated(0u)
         , min(0xffffffff)
         , max(0u)
+        , maxId(InvalidCompileId)
         , count(0u)
     {}
 
@@ -53,6 +62,7 @@ struct CompileData
     U64           accumulated; 
     U32           min; 
     U32           max; 
+    U32           maxId; //filled by the ScoreProcessor
     U32           count;
 };
 
@@ -74,13 +84,13 @@ struct CompileEvent
     {}
 
     fastl::string   name; 
-    size_t          nameId; //filled by the ScoreProcessor
+    U32             nameId; //filled by the ScoreProcessor
     U32             start; 
     U32             duration;
     CompileCategory category; 
 };
 
-using TCompileDataDictionary  = fastl::unordered_map<fastl::string,size_t>;
+using TCompileDataDictionary  = fastl::unordered_map<fastl::string,U32>;
 using TCompileDatas  = fastl::vector<CompileData>;
 using TCompileUnits  = fastl::vector<CompileUnit>;
 using TCompileEvents = fastl::vector<CompileEvent>;

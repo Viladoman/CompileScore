@@ -35,7 +35,6 @@ namespace CompileScore.Overview
             CompilerData.CompileCategory.InstanceFunction,
             CompilerData.CompileCategory.PendingInstantiations,
             CompilerData.CompileCategory.CodeGeneration,
-            CompilerData.CompileCategory.RunPass,
             CompilerData.CompileCategory.OptimizeModule,
             CompilerData.CompileCategory.OptimizeFunction,
             CompilerData.CompileCategory.Other,
@@ -112,7 +111,7 @@ namespace CompileScore.Overview
             FullUnitValue value = (row.Item as FullUnitValue);
             if (value == null) return;
 
-            Timeline.CompilerTimeline.Instance.DisplayTImeline(value);
+            Timeline.CompilerTimeline.Instance.DisplayTimeline(value);
         }
     }
 }

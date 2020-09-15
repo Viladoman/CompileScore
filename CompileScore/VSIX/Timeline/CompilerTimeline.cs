@@ -92,7 +92,7 @@ namespace CompileScore.Timeline
                     }
                     else
                     {
-                        OutputLog.Error("Version mismatch! Expected " + CompilerData.VERSION + " - Found " + thisVersion);
+                        OutputLog.Error("Version mismatch! Expected " + CompilerData.VERSION + " - Found " + thisVersion + " - Please export again with matching Data Exporter");
                     }
                 }
 
@@ -122,7 +122,7 @@ namespace CompileScore.Timeline
             CompileValue value = CompilerData.Instance.GetValue(category,(int)eventId);
 
             string label = value != null ? value.Name : Common.UIConverters.ToSentenceCase(category.ToString()); 
-            label += " ("+ Common.UIConverters.GetTimeStr(duration) +")" ;
+            label += " ( "+ Common.UIConverters.GetTimeStr(duration) +" )" ;
 
             return new TimelineNode(label, start, duration, category, value);
         }
@@ -160,11 +160,11 @@ namespace CompileScore.Timeline
             if (root.Category == CompilerData.CompileCategory.ExecuteCompiler)
             {
                 root.Value = unit;
-                root.Label = unit.Name + " (" + Common.UIConverters.GetTimeStr(root.Duration) + ")";
+                root.Label = unit.Name + " ( " + Common.UIConverters.GetTimeStr(root.Duration) + " )";
             }
         }
 
-        public void DisplayTImeline(FullUnitValue unit, CompileValue value = null)
+        public void DisplayTimeline(FullUnitValue unit, CompileValue value = null)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 

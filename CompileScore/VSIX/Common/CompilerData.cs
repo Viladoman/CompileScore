@@ -15,13 +15,14 @@ namespace CompileScore
 
     public class CompileValue
     {
-        public CompileValue(string name, ulong accumulated, uint min, uint max, uint count)
+        public CompileValue(string name, ulong accumulated, uint min, uint max, uint count, FullUnitValue maxUnit)
         {
             Name = name;
             Accumulated = accumulated;
             Min = min;
             Max = max;
             Count = count;
+            MaxUnit = maxUnit; 
             Severity = 0;
         }
 
@@ -32,6 +33,7 @@ namespace CompileScore
         public uint Mean { get { return (uint)(Accumulated / Count); }  }
         public uint Count { get; }
         public uint Severity { set; get; }
+        public FullUnitValue MaxUnit { get; }
     }
 
     public class FullUnitValue
@@ -63,7 +65,7 @@ namespace CompileScore
     {
         private static readonly Lazy<CompilerData> lazy = new Lazy<CompilerData>(() => new CompilerData());
 
-        public const uint VERSION = 1;
+        public const uint VERSION = 3;
 
         //Keep this in sync with the data exporter
         public enum CompileCategory
@@ -74,19 +76,25 @@ namespace CompileScore
             InstanceClass, 
             InstanceFunction,
             CodeGeneration, 
-            OptimizeModule, 
             OptimizeFunction,
-            Other, 
-            RunPass, 
+            
             PendingInstantiations,
+            OptimizeModule, 
             FrontEnd,
             BackEnd,
             ExecuteCompiler,
+            Other, 
+
+            RunPass,
+            CodeGenPasses,
+            PerModulePasses,
+            DebugType,
+            DebugGlobalVariable,
             Invalid,
 
             FullCount,
-            GahterCount = RunPass,
-            DisplayCount = Invalid,
+            GahterCount = PendingInstantiations,
+            DisplayCount = RunPass,
         }
 
         private CompileScorePackage _package;
@@ -162,6 +170,11 @@ namespace CompileScore
         public ObservableCollection<FullUnitValue> GetUnits()
         {
             return _unitsCollection;
+        }
+
+        public FullUnitValue GetUnitByIndex(uint index)
+        {
+            return index < _unitsCollection.Count ? _unitsCollection[(int)index] : null;
         }
 
         public FullUnitValue GetUnitByName(string name)
@@ -259,8 +272,9 @@ namespace CompileScore
             uint min = reader.ReadUInt32();
             uint max = reader.ReadUInt32();
             uint count = reader.ReadUInt32();
+            FullUnitValue maxUnit = GetUnitByIndex(reader.ReadUInt32());
 
-            var compileData = new CompileValue(name, acc, min, max, count);
+            var compileData = new CompileValue(name, acc, min, max, count, maxUnit);
             list.Add(compileData);
         }
         private void ClearDatasets()
@@ -315,15 +329,7 @@ namespace CompileScore
                     }
                     else
                     {
-                        OutputLog.Error("Version mismatch! Expected "+ VERSION + " - Found "+ thisVersion);
-                        if (VERSION > thisVersion)
-                        {
-                            OutputLog.Error("Please update the Compile Score Data Exporter");
-                        }
-                        else
-                        {
-                            OutputLog.Error("Please update the Compile Score Extension to match the scor file version.");
-                        }
+                        OutputLog.Error("Version mismatch! Expected "+ VERSION + " - Found "+ thisVersion + " - Please export again with matching Data Exporter");
                     }
                 }
 
