@@ -3,7 +3,11 @@ var Bin    = require('./binary.js');
 
 var path = require('path');
 
-const version = 1;
+const VERSION = 3;
+const TIMELINES_PER_FILE = 100;
+const TIMELINE_FILE_NUM_DIGITS = 4;
+
+const maxU32 = 0xffffffff;
 
 var NodeNature = {
   SOURCE:                0,
@@ -12,20 +16,27 @@ var NodeNature = {
   INSTANTIATECLASS:      3,
   INSTANTIATEFUNCTION:   4,
   CODEGENFUNCTION:       5,
-  OPTMODULE:             6,
-  OPTFUNCTION:           7,
-  OTHER:                 8,
-  RUNPASS:               9,
-  PENDINGINSTANTIATIONS: 10,
-  FRONTEND:              11,
-  BACKEND:               12,
-  EXECUTECOMPILER:       13,
-  INVALID:               14,
+  OPTFUNCTION:           6,
+  
+  PENDINGINSTANTIATIONS: 7,
+  OPTMODULE:             8,
+  FRONTEND:              9,
+  BACKEND:               10,
+  EXECUTECOMPILER:       11,
+  OTHER:                 12,
+
+  RUNPASS:               13,
+  CODEGENPASSES:         14,
+  PERMODULEPASSES:       15,
+  DEBUGTYPE:             16,
+  DEBUGGLOBALVARIABLE:   17,
+
+  INVALID:               18,
 }
 
 var NodeNatureData = {
-  GLOBAL_GATHER_THRESHOLD:  NodeNature.RUNPASS,
-  GLOBAL_DISPLAY_THRESHOLD: NodeNature.INVALID,
+  GLOBAL_GATHER_THRESHOLD:  NodeNature.PENDINGINSTANTIATIONS,
+  GLOBAL_DISPLAY_THRESHOLD: NodeNature.RUNPASS,
   COUNT:                    NodeNature.INVALID
 }
 
@@ -47,10 +58,17 @@ function NodeNatureFromString(natureName)
   else if (natureName == 'OptModule')                   { return NodeNature.OPTMODULE; }
   else if (natureName == 'OptFunction')                 { return NodeNature.OPTFUNCTION; }
   else if (natureName == 'RunPass')                     { return NodeNature.RUNPASS; }
+  else if (natureName == 'CodeGenPasses')               { return NodeNature.CODEGENPASSES; }
+  else if (natureName == 'PerModulePasses')             { return NodeNature.PERMODULEPASSES; }
+  else if (natureName == 'DebugType')                   { return NodeNature.DEBUGTYPE; }
+  else if (natureName == 'DebugGlobalVariable')         { return NodeNature.DEBUGGLOBALVARIABLE; }
   else if (natureName == 'Frontend')                    { return NodeNature.FRONTEND; }
   else if (natureName == 'Backend')                     { return NodeNature.BACKEND; }
   else if (natureName == 'ExecuteCompiler')             { return NodeNature.EXECUTECOMPILER; }
   else if (natureName == 'Other')                       { return NodeNature.OTHER; }
+
+  if (natureName == 'process_name' || natureName == 'thread_name' || natureName.startsWith('Total')) { return NodeNature.INVALID; }
+
   return NodeNature.OTHER;
 }
 
@@ -70,94 +88,91 @@ function CreateArrayArray(size)
   return ret;
 }
 
-var globals = CreateObjectArray(NodeNatureData.GLOBAL_GATHER_THRESHOLD);
+var globals = CreateArrayArray(NodeNatureData.GLOBAL_GATHER_THRESHOLD);
+var globalsDictionary = CreateObjectArray(NodeNatureData.GLOBAL_GATHER_THRESHOLD);
 var units = [];
 
-function FillDatabaseData(collection,name,duration)
-{
-  var label = name.toLowerCase();
-  var found = collection[label];
-  if (found == undefined)
-  {
-    collection[label] = {min: duration, max: duration, acc: duration, num: 1};
-  }
-  else
-  {
-    found.min = Math.min(found.min,duration);
-    found.max = Math.max(found.max,duration);
-    found.acc += duration; 
-    ++found.num;
-  }
-}
+var activeBundle = undefined;
+var nextBundleNumber = 0;
+var bundleBasePath = '';
 
-function FinalizeDatabaseData(container, targetContainer)
-{
-  for (var key in container)
-  {
-    var entry = container[key];
-    targetContainer.push({ name: key, min: entry.min, max: entry.max, num: entry.num, acc: entry.acc });
-  }
-}
-
-function ComputeUnit(filename,nodes)
+function GetGlobal(nature, name)
 { 
-  var ret = { name: path.basename(filename).replace(/\.[^/.]+$/, ""), totals: Array(NodeNatureData.GLOBAL_DISPLAY_THRESHOLD).fill(0)};
-  
-  for (var i=0;i<NodeNatureData.GLOBAL_DISPLAY_THRESHOLD;i++)
+  var dict = globalsDictionary[nature];
+  var found = dict[name];
+  if (found != undefined)
   {
-    var thisNodes = nodes[i];
-    thisNodes.sort(function(a,b){ return a.start == b.start? b.duration - a.duration : a.start - b.start; });
+    return found;
+  }
 
-    var nodesLength = thisNodes.length;
-    if (nodesLength > 0)
-    { 
-      var first = thisNodes[0];
-      var total = first.duration;
-      var threshold = first.start + total;
-      for (var k=1;k<nodesLength;++k)
+  //create new entry 
+  var newObj = {name: name, nameId: globals[nature].length, min: maxU32, max: 0, acc: 0, num: 0};
+  globals[nature].push(newObj);
+  dict[name] = newObj;
+  return newObj;
+}
+
+function ProcessTimeline(filename, timeline)
+{ 
+  var unitId = units.length; 
+  var unit = { name: path.basename(filename).replace(/\.[^/.]+$/, ""), totals: Array(NodeNatureData.GLOBAL_DISPLAY_THRESHOLD).fill(0)};
+  units.push(unit);
+
+  var overlapThreshold = Array(NodeNatureData.GLOBAL_DISPLAY_THRESHOLD).fill(-1);
+
+  for (var i=0,sz=timeline.length;i<sz;++i)
+  {
+    var element = timeline[i];
+    if (element.category < NodeNatureData.GLOBAL_GATHER_THRESHOLD) 
+    {
+      var global = GetGlobal(element.category,element.name);
+
+      element.nameId = global.nameId;
+
+      global.acc += element.duration;
+      global.min = Math.min(element.duration,global.min);
+      if (element.duration > global.max)
       { 
-        var element = thisNodes[k];
-        if ( element.start >= threshold ) //remove overlapping nodes with the same nature
-        { 
-          threshold = element.start + element.duration;
-          total += element.duration;
-        }
+        global.maxId = unitId;
+        global.max = element.duration;
       }
+      ++(global.num);
+    }
 
-      ret.totals[i] = total;
+    if (element.category < NodeNatureData.GLOBAL_DISPLAY_THRESHOLD)
+    { 
+      if (element.start >= overlapThreshold[element.category])
+      { 
+        unit.totals[element.category] += element.duration;
+        overlapThreshold[element.category] = element.start+element.duration;
+      }
     }
   }
 
-  return ret;
+  ExportTimeline(timeline);
 }
 
 function AddToDatabase(filename,events)
-{ 
-  var nodes = CreateArrayArray(NodeNatureData.GLOBAL_DISPLAY_THRESHOLD);
+{  
+  var timeline = [];
 
-  var refernceTid = events.length > 0? events[0].tid : 0;
-  
   for (var i=0,sz=events.length;i<sz;++i)
-  {
+  { 
     var element = events[i];
-    if (element.tid == refernceTid && element.name != 'process_name' && element.name != 'thread_name')
+    var nature = NodeNatureFromString(element.name);
+    if (nature != NodeNature.INVALID)
     { 
-      var nature = NodeNatureFromString(element.name);
-      if (nature < NodeNatureData.GLOBAL_GATHER_THRESHOLD) 
-      {
-        var name = element.args == undefined? element.name : element.args.detail;
-        name = nature == NodeNature.SOURCE || nature == NodeNature.OPTMODULE? path.basename(name) : name;
-        FillDatabaseData(globals[nature],name,element.dur); 
-      }
-
-      if (nature < NodeNatureData.GLOBAL_DISPLAY_THRESHOLD)
-      { 
-        nodes[nature].push({start: element.ts, duration: element.dur});
-      }
+      var name = element.args == undefined? element.name : element.args.detail;
+      name = nature == NodeNature.SOURCE? path.basename(name) : name;
+      timeline.push({name: name.toLowerCase(), nameId: maxU32, start: element.ts, duration: element.dur, category: nature});
     }
   }
-
-  units.push(ComputeUnit(filename,nodes));
+  
+  //sort timeline
+  timeline.sort(function(a,b){ return a.start == b.start? b.duration - a.duration : a.start - b.start; });
+  
+  //Process timeline
+  ProcessTimeline(filename,timeline);
 }
 
 function ParseFile(file,content)
@@ -183,18 +198,105 @@ function BinarizeUnit(unit)
 
 function BinarizeEntry(entry)
 { 
-  return Bin.Concat(Bin.Str(entry.name),Bin.Concat(Bin.Concat(Bin.Num(entry.acc,8),Bin.Num(entry.min,4)),Bin.Concat(Bin.Num(entry.max,4),Bin.Num(entry.num,4))));
+  return Bin.Concat
+  (
+    Bin.Str(entry.name),
+    Bin.Concat(
+      Bin.Concat(
+        Bin.Concat(
+          Bin.Num(entry.acc,8),
+          Bin.Num(entry.min,4)
+        ),
+        Bin.Concat(
+          Bin.Num(entry.max,4),
+          Bin.Num(entry.num,4)
+        )
+      ),
+      Bin.Num(entry.maxId,4)
+    )
+  );
+}
+
+function BinarizeTimelineEvent(timelineEvent)
+{ 
+  return Bin.Concat(
+    Bin.Concat(
+      Bin.Num(timelineEvent.start,4), 
+      Bin.Num(timelineEvent.duration,4)
+    ),
+    Bin.Concat(
+      Bin.Num(timelineEvent.nameId,4),
+      Bin.Num(timelineEvent.category,1)
+    )
+  );
+}
+
+function WriteTimeline(stream, timeline)
+{ 
+  stream.write(Bin.Num(timeline.length,4));
+  for (var i=0,sz=timeline.length;i<sz;++i)
+  { 
+    stream.write(BinarizeTimelineEvent(timeline[i]));
+  }
+}
+
+function ExportBundle(bundle)
+{ 
+  FileIO.SaveFileStream(bundle.filename,function(stream){
+    stream.write(Bin.Num(VERSION,4));
+    for (var i=0,sz=bundle.timelines.length;i<sz;++i)
+    { 
+      WriteTimeline(stream,bundle.timelines[i]);
+    }
+  },function(){});
+}
+
+function NextTimelineBundle()
+{ 
+  //check if current bundle is empty and create
+  if (activeBundle == undefined)
+  { 
+    var zeroStr = '';
+    for (var i=1;i<TIMELINE_FILE_NUM_DIGITS;++i) zeroStr += '0';
+
+    var extension = '.t'+(zeroStr+nextBundleNumber).slice(-TIMELINE_FILE_NUM_DIGITS);
+    activeBundle = { filename: bundleBasePath+extension, timelines: [] };
+    ++nextBundleNumber;
+  }
+  return activeBundle;
+}
+
+function AddToBundle(bundle, timeline)
+{ 
+  bundle.timelines.push(timeline);
+
+  if (bundle.timelines.length >= TIMELINES_PER_FILE)
+  { 
+    ExportBundle(activeBundle);
+    activeBundle = undefined; 
+  }
+}
+
+function ExportTimeline(timeline)
+{
+  AddToBundle(NextTimelineBundle(),timeline);
 }
 
 function Extract(inputFolder,outputFile,doneCallback)
 { 
+  bundleBasePath = outputFile;
+
   FileIO.SearchFolder(inputFolder,ParseFile,function(error){
     if (error) { LogError(error); doneCallback(error); }
     else
     { 
+      //Write the last timeline file
+      if (activeBundle) ExportBundle(activeBundle);
+
+      //Write final report
       FileIO.SaveFileStream(outputFile,function(stream){
 
-        stream.write(Bin.Num(version,4));
+        stream.write(Bin.Num(VERSION,4));
 
         //Export units
         stream.write(Bin.Num(units.length,4));
@@ -206,8 +308,7 @@ function Extract(inputFolder,outputFile,doneCallback)
         //Export entries
         for (var i=0;i<NodeNatureData.GLOBAL_GATHER_THRESHOLD;++i)
         { 
-          var finalList = [];
-          FinalizeDatabaseData(globals[i],finalList); 
+          var finalList = globals[i];
           stream.write(Bin.Num(finalList.length,4));
           for (var k=0;k<finalList.length;++k)
           { 
