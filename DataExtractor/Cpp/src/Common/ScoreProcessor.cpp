@@ -27,7 +27,7 @@ namespace CompileScore
 			//insert new
 			element.nameId = static_cast<U32>(global.size()); //TODO ~ ramonv ~ careful with overflow
 			dictionary[element.name] = element.nameId; //double lookup not great
-			global.emplace_back();
+			global.emplace_back(element.name);
 			return global.back();
 		} 
 
@@ -52,7 +52,6 @@ namespace CompileScore
 			if (element.category < CompileCategory::GahterCount)
 			{ 
 				CompileData& compileData = CreateGlobalEntry(scoreData,element);
-				compileData.name = element.name;
 				compileData.accumulated += element.duration;
 				compileData.min = Utils::Min(element.duration,compileData.min);
 
