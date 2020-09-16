@@ -1,4 +1,4 @@
-# CompileScore [![DataVersion](https://img.shields.io/badge/Data_Version-3-green)]() 
+# CompileScore
 
 [![Clang](https://img.shields.io/badge/Clang-Full-green)]() [![MSVC](https://img.shields.io/badge/MSVC-Partial-yellow)]() 
 
