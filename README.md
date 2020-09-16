@@ -8,7 +8,7 @@ VisualStudio extension used to display and highlight compilation profiling data.
 
 ## Motivation
 
-Compile times are one of the most important things that affect productivity and iterations while developing in C/C++. Slow compile times can be very frustrating, as they are usual case scenarios in big code productions. Being able to identify which pieces are expensive in the same place you code is key in order to keep tech debt in check.
+Compile times are one of the most important things that affect productivity and iterations while developing in C/C++. Slow compile times can be very frustrating, as they are usual case scenarios in big code productions. Being able to identify which pieces are expensive in the same place you code is key in order to keep tech debt under control.
 
 ## Features
 
