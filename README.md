@@ -1,6 +1,6 @@
-# CompileScore 
+# CompileScore [![DataVersion](https://img.shields.io/badge/Data_Version-3-green)]() 
 
-[![Clang](https://img.shields.io/badge/Clang-Full-green)]() [![MSVC](https://img.shields.io/badge/MSVC-Partial-yellow)]()
+[![Clang](https://img.shields.io/badge/Clang-Full-green)]() [![MSVC](https://img.shields.io/badge/MSVC-Partial-yellow)]() 
 
 VisualStudio extension used to display and highlight compilation profiling data. Know the real compilation cost of your code directly inside Visual Studio. Keep the compile times in check. 
 
@@ -22,6 +22,14 @@ Compile times are one of the most important things that affect productivity and 
 
 #### Include data
 ![Includes screenshot](https://github.com/Viladoman/CompileScore/wiki/data/includes.png?raw=true)
+
+### Detailed Timeline Graph for each translation unit
+![Timeline screenshot](https://github.com/Viladoman/CompileScore/wiki/data/timeline.png?raw=true)
+
+Double-click any entry in the compile score window to open its timeline. 
+Navigation controls:
+- Zoom: Control + Mouse Wheel
+- Scroll: Middle mouse press and drag
 
 ## How it works
 
