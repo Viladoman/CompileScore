@@ -25,10 +25,10 @@ namespace CommandLine
         LOG_ALWAYS("Converts the comilers build trace data into 'scor' format."); 
         LOG_ALWAYS("");
         LOG_ALWAYS("Command Legend:"); 
-        LOG_ALWAYS("-input     (-i) : The path to the input folder to parse for -ftime-trace data"); 
+        LOG_ALWAYS("-input     (-i) : The path to the input folder to parse for -ftime-trace data or the direct path to the .etl file"); 
         LOG_ALWAYS("-output    (-o) : The output file full path for the results ('%s' by default)",defaultParams.output); 
-        LOG_ALWAYS("-msvc           : Forces the system to use the MSVC importer for .etl traces"); 
-        LOG_ALWAYS("-clang          : Forces the system to use the Clang importer searching for .json traces in the input path"); 
+        LOG_ALWAYS("-msvc           : Sets the system to use the MSVC importer for .etl traces"); 
+        LOG_ALWAYS("-clang          : Sets the system to use the Clang importer searching for .json traces in the input path"); 
         LOG_ALWAYS("-verbosity (-v) : Sets the verbosity level: 0 - only errors, 1 - progress (default), 2 - full"); 
     }
 
