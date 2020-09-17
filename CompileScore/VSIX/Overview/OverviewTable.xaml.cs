@@ -24,22 +24,6 @@ namespace CompileScore.Overview
     {
         private ICollectionView dataView;
 
-        private static CompilerData.CompileCategory[] columnDisplay = new CompilerData.CompileCategory[] { 
-            CompilerData.CompileCategory.ExecuteCompiler,
-            CompilerData.CompileCategory.FrontEnd,
-            CompilerData.CompileCategory.BackEnd,
-            CompilerData.CompileCategory.Include,
-            CompilerData.CompileCategory.ParseClass,
-            CompilerData.CompileCategory.ParseTemplate,
-            CompilerData.CompileCategory.InstanceClass,
-            CompilerData.CompileCategory.InstanceFunction,
-            CompilerData.CompileCategory.PendingInstantiations,
-            CompilerData.CompileCategory.CodeGeneration,
-            CompilerData.CompileCategory.OptimizeModule,
-            CompilerData.CompileCategory.OptimizeFunction,
-            CompilerData.CompileCategory.Other,
-        };
-
         public OverviewTable()
         {
             InitializeComponent();
@@ -47,24 +31,15 @@ namespace CompileScore.Overview
             OnDataChanged();
             CompilerData.Instance.ScoreDataChanged += OnDataChanged;
 
-            foreach (CompilerData.CompileCategory category in columnDisplay)
+            foreach (CompilerData.CompileCategory category in Common.Order.CategoryDisplay)
             {
                 CreateColumn(category);
             }
         }
 
-        private string GetHeaderStr(CompilerData.CompileCategory category)
-        {
-            switch (category)
-            {
-                case CompilerData.CompileCategory.ExecuteCompiler: return "Duration";
-                default: return CompileScore.Common.UIConverters.ToSentenceCase(category.ToString());
-            }
-        }
-
         private void CreateColumn(CompilerData.CompileCategory category)
         {
-            string header = GetHeaderStr(category);
+            string header = Common.UIConverters.GetHeaderStr(category);
             string bindingText = "ValuesList[" + (int)category + "]";
             
             Binding binding = new Binding(bindingText);
@@ -78,7 +53,7 @@ namespace CompileScore.Overview
             compileDataGrid.Columns.Add(textColumn);
         }
 
-        private static bool FilterCompileValue(FullUnitValue value, string filterText)
+        private static bool FilterCompileValue(UnitValue value, string filterText)
         {
             return value.Name.Contains(filterText);
         }
@@ -86,7 +61,7 @@ namespace CompileScore.Overview
         private void UpdateFilterFunction()
         {
             string filterText = searchTextBox.Text.ToLower();
-            this.dataView.Filter = d => FilterCompileValue((FullUnitValue)d, filterText);
+            this.dataView.Filter = d => FilterCompileValue((UnitValue)d, filterText);
         }
 
         private void OnDataChanged()
@@ -108,7 +83,7 @@ namespace CompileScore.Overview
             DataGridRow row = (sender as DataGridRow);
             if (row == null) return;
 
-            FullUnitValue value = (row.Item as FullUnitValue);
+            UnitValue value = (row.Item as UnitValue);
             if (value == null) return;
 
             Timeline.CompilerTimeline.Instance.DisplayTimeline(value);

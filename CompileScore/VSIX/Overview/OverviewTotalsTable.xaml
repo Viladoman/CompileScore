@@ -3,17 +3,52 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
              xmlns:local="clr-namespace:CompileScore.Overview"
+             xmlns:commonUtils="clr-namespace:CompileScore.Common"
+             Background="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"
+             Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+
+    <UserControl.Resources>
+        <commonUtils:CategoryStrConverter x:Key="categoryStrConverter"/>
+        <commonUtils:CategoryColorConverter x:Key="categoryColorConverter"/>
+        <commonUtils:UITimeConverter x:Key="uiTimeConverter"/>
+        <commonUtils:RatioToPercentConverter x:Key="ratioToPercentConverter"/>
+        <Style TargetType="GridViewColumnHeader">
+            <Setter Property="Visibility" Value="Collapsed" />
+        </Style>
+        <Style TargetType="ProgressBar">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTabSelectedTabKey}}"/>
+        </Style>
+        <Style TargetType="ListView">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"/>
+        </Style>
+        <Style TargetType="ListViewItem">
+            <Setter Property="Focusable" Value="false"/>
+        </Style>
+    </UserControl.Resources>
+
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        
-        <!-- Think how to display this data --> 
-        
+        <ListView x:Name="listview">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Width="150" DisplayMemberBinding="{Binding Category, Converter={StaticResource categoryStrConverter}}"/>
+                    <GridViewColumn Width="90" DisplayMemberBinding="{Binding Total,  Converter={StaticResource uiTimeConverter}}"/>
+                    <GridViewColumn x:Name="header" Width="250" >
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <ProgressBar Foreground="{Binding Category, Converter={StaticResource categoryColorConverter}}" Height="10" Width="{Binding Path=ActualWidth, ElementName=header, Mode=OneWay}" Minimum="0" Maximum="1" Value="{Binding Ratio}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Width="65" DisplayMemberBinding="{Binding Ratio,  Converter={StaticResource ratioToPercentConverter}}"/>
+                </GridView>
+            </ListView.View>
+       
+        </ListView>
     </Grid>
 </UserControl>

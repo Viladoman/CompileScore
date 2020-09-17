@@ -31,7 +31,7 @@
             this.Content = new TimelineWindowControl();
         }
 
-        public void SetTimeline(FullUnitValue unit, CompileValue value = null)
+        public void SetTimeline(UnitValue unit, CompileValue value = null)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 

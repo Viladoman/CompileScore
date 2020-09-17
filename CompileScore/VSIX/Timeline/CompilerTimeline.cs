@@ -55,7 +55,7 @@ namespace CompileScore.Timeline
         }
 
         public static CompilerTimeline Instance { get { return lazy.Value; } }
-        public TimelineNode LoadTimeline(FullUnitValue unit)
+        public TimelineNode LoadTimeline(UnitValue unit)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -155,7 +155,7 @@ namespace CompileScore.Timeline
             return root; 
         }
 
-        private void FinializeRoot(TimelineNode root, FullUnitValue unit)
+        private void FinializeRoot(TimelineNode root, UnitValue unit)
         {
             if (root.Category == CompilerData.CompileCategory.ExecuteCompiler)
             {
@@ -164,7 +164,7 @@ namespace CompileScore.Timeline
             }
         }
 
-        public void DisplayTimeline(FullUnitValue unit, CompileValue value = null)
+        public void DisplayTimeline(UnitValue unit, CompileValue value = null)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 

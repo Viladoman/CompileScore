@@ -107,9 +107,9 @@
                 <ColumnDefinition Width="100" />
             </Grid.ColumnDefinitions>
             <TextBox   Grid.Row="0" Grid.Column="0" x:Name="searchTextBox" TextChanged="SearchTextChangedEventHandler"/>
-            <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Path=Items.Count, ElementName=compilaDataGrid, StringFormat='Count {0}'}" />
+            <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Path=Items.Count, ElementName=compileDataGrid, StringFormat='Count {0}'}" />
         </Grid>
-        <DataGrid x:Name="compilaDataGrid" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="Column" SelectionUnit="FullRow" Margin="0,21,0,0">
+        <DataGrid x:Name="compileDataGrid" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="Column" SelectionUnit="FullRow" Margin="0,21,0,0">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Name"         Binding="{Binding Name}" IsReadOnly="True" Width="300"/>
                 <DataGridTextColumn Header="Count"        Binding="{Binding Count}" IsReadOnly="True" Width="50"/>

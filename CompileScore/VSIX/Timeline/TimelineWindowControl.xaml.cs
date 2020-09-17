@@ -19,7 +19,7 @@
             this.InitializeComponent();
         }
 
-        public void SetTimeline(FullUnitValue unit, CompileValue value = null)
+        public void SetTimeline(UnitValue unit, CompileValue value = null)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             timeline.SetUnit(unit);

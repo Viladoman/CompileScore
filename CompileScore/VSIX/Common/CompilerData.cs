@@ -15,7 +15,7 @@ namespace CompileScore
 
     public class CompileValue
     {
-        public CompileValue(string name, ulong accumulated, uint min, uint max, uint count, FullUnitValue maxUnit)
+        public CompileValue(string name, ulong accumulated, uint min, uint max, uint count, UnitValue maxUnit)
         {
             Name = name;
             Accumulated = accumulated;
@@ -33,14 +33,35 @@ namespace CompileScore
         public uint Mean { get { return (uint)(Accumulated / Count); }  }
         public uint Count { get; }
         public uint Severity { set; get; }
-        public FullUnitValue MaxUnit { get; }
+        public UnitValue MaxUnit { get; }
     }
 
-    public class FullUnitValue
+    public class UnitTotal
+    {
+        public UnitTotal(CompilerData.CompileCategory category)
+        {
+            Category = category;
+            Total = 0;
+        }
+
+        public CompilerData.CompileCategory Category { get; }
+        public ulong  Total { set; get; }
+        public double Ratio 
+        {
+            set {}
+            get 
+            {
+                UnitTotal compilerTotal = CompilerData.Instance.GetTotal(CompilerData.CompileCategory.ExecuteCompiler);
+                return compilerTotal != null && compilerTotal.Total > 0? ((double)Total)/compilerTotal.Total : 0;
+            } 
+        }
+    }
+
+    public class UnitValue
     {
         private uint[] values = new uint[(int)CompilerData.CompileCategory.DisplayCount];
 
-        public FullUnitValue(string name, uint index)
+        public UnitValue(string name, uint index)
         {
             Name = name;
             Index = index;
@@ -103,12 +124,14 @@ namespace CompileScore
         private string _path = "";
         private string _scoreFileName = "";
         private string _solutionDir = "";
+        private bool _relativeToSolution = true;
 
-        public ObservableCollection<FullUnitValue> _unitsCollection = new ObservableCollection<FullUnitValue>();
+        private List<UnitValue> _unitsCollection = new List<UnitValue>();
+        private List<UnitTotal> _totals = new List<UnitTotal>(new UnitTotal[(int)CompileCategory.DisplayCount]);
 
         public class CompileDataset
         {
-            public ObservableCollection<CompileValue> collection = new ObservableCollection<CompileValue>();
+            public List<CompileValue>                 collection = new List<CompileValue>();
             public Dictionary<string, CompileValue>   dictionary = new Dictionary<string, CompileValue>();
             public List<uint>                         normalizedThresholds = new List<uint>();
         }
@@ -151,7 +174,7 @@ namespace CompileScore
 
                     //Get the information from the settings
                     GeneralSettingsPageGrid settings = GetGeneralSettings();
-                    if (SetPath(settings.OptionPath) || SetScoreFileName(settings.OptionScoreFileName))
+                    if (SetPath(settings.OptionPath) || SetScoreFileName(settings.OptionScoreFileName) || SetRelativeToSolution(settings.OptionPathRelativeToSolution))
                     {
                         ReloadSeverities();
                     }
@@ -166,20 +189,29 @@ namespace CompileScore
         {
             return _package == null? null : _package.GetGeneralSettings();
         }
+        public List<UnitTotal> GetTotals()
+        {
+            return _totals;
+        } 
 
-        public ObservableCollection<FullUnitValue> GetUnits()
+        public UnitTotal GetTotal(CompileCategory category)
+        {
+            return category < CompileCategory.DisplayCount ? _totals[(int)category] : null;
+        }
+
+        public List<UnitValue> GetUnits()
         {
             return _unitsCollection;
         }
 
-        public FullUnitValue GetUnitByIndex(uint index)
+        public UnitValue GetUnitByIndex(uint index)
         {
             return index < _unitsCollection.Count ? _unitsCollection[(int)index] : null;
         }
 
-        public FullUnitValue GetUnitByName(string name)
+        public UnitValue GetUnitByName(string name)
         {
-            foreach(FullUnitValue unit in _unitsCollection)
+            foreach(UnitValue unit in _unitsCollection)
             {
                 if (unit.Name == name)
                 {
@@ -189,12 +221,27 @@ namespace CompileScore
             return null;
         }
 
-        public ObservableCollection<CompileValue> GetCollection(CompileCategory category)
+        public List<CompileValue> GetCollection(CompileCategory category)
         {
             return _datasets[(int)category].collection;
         }
 
-        public string GetScoreFullPath() { return _solutionDir + _path + _scoreFileName; }
+        public string GetScoreFullPath() { return GetRealPath() + _scoreFileName; }
+
+        private string GetRealPath() { return _relativeToSolution ? _solutionDir + _path : _path; }
+
+        private bool SetRelativeToSolution(bool input)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (_relativeToSolution != input)
+            {
+                _relativeToSolution = input;
+                OutputLog.Log(_relativeToSolution? "Path is relative To Solution" : "Path is Global");
+                return true;
+            }
+            return false;
+        }
 
         private bool SetPath(string input)
         {
@@ -238,7 +285,7 @@ namespace CompileScore
             }
             return null;
         }
-        public FullUnitValue GetUnit(int index)
+        public UnitValue GetUnit(int index)
         {
             return index < _unitsCollection.Count ? _unitsCollection[index] : null;
         }
@@ -246,16 +293,16 @@ namespace CompileScore
         private void ReloadSeverities()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            string realPath = _solutionDir + _path;
+            string realPath = GetRealPath();
 
             DocumentLifetimeManager.WatchFile(realPath, _scoreFileName);
             LoadSeverities(realPath + _scoreFileName);
         }
 
-        private void ReadCompileUnit(BinaryReader reader, List<FullUnitValue> list, uint index)
+        private void ReadCompileUnit(BinaryReader reader, List<UnitValue> list, uint index)
         {
             var name = reader.ReadString();
-            var compileData = new FullUnitValue(name, index);
+            var compileData = new UnitValue(name, index);
 
             for(CompileCategory category = 0; category < CompileCategory.DisplayCount; ++category)
             {
@@ -272,7 +319,7 @@ namespace CompileScore
             uint min = reader.ReadUInt32();
             uint max = reader.ReadUInt32();
             uint count = reader.ReadUInt32();
-            FullUnitValue maxUnit = GetUnitByIndex(reader.ReadUInt32());
+            UnitValue maxUnit = GetUnitByIndex(reader.ReadUInt32());
 
             var compileData = new CompileValue(name, acc, min, max, count, maxUnit);
             list.Add(compileData);
@@ -307,13 +354,13 @@ namespace CompileScore
                     {
                         // Read Units 
                         uint unitsLength = reader.ReadUInt32();
-                        var unitList = new List<FullUnitValue>((int)unitsLength);
+                        var unitList = new List<UnitValue>((int)unitsLength);
                         for (uint i = 0; i < unitsLength; ++i)
                         {
                             ReadCompileUnit(reader, unitList, i);
                         }
                     
-                        _unitsCollection = new ObservableCollection<FullUnitValue>(unitList);
+                        _unitsCollection = new List<UnitValue>(unitList);
 
                         //Read Datasets
                         for(int i = 0; i < (int)CompileCategory.GahterCount; ++i)
@@ -324,7 +371,7 @@ namespace CompileScore
                             {
                                 ReadCompileValue(reader, thislist);
                             }
-                            _datasets[i].collection = new ObservableCollection<CompileValue>(thislist);
+                            _datasets[i].collection = new List<CompileValue>(thislist);
                         }
                     }
                     else
@@ -366,6 +413,25 @@ namespace CompileScore
                 }
                 ComputeNormalizedThresholds(dataset.normalizedThresholds, onlyValues);
             }
+
+            //Process Totals
+            _totals = new List<UnitTotal>();
+            for (int k = 0; k < (int)CompileCategory.DisplayCount; ++k)
+            {
+                _totals.Add(new UnitTotal((CompileCategory)k));
+            }
+            
+            foreach (UnitValue unit in _unitsCollection)
+            {  
+                
+                for(int k = 0; k < (int)CompileCategory.DisplayCount;++k)
+                {
+                    _totals[k].Total += unit.ValuesList[k];
+                }
+            }
+
+            //Process totals ratios
+            //TODO ~ ramonv ~ to be implemented
         }
 
         private void ComputeNormalizedThresholds(List<uint> normalizedThresholds, List<uint> inputList)
@@ -430,6 +496,15 @@ namespace CompileScore
             ThreadHelper.ThrowIfNotOnUIThread();
             LoadSeverities(GetScoreFullPath());
         } 
+
+        public void OnSettingsRelativePathChanged()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            if (SetRelativeToSolution(GetGeneralSettings().OptionPathRelativeToSolution))
+            {
+                ReloadSeverities();
+            }
+        }
 
         public void OnSettingsPathChanged()
         {

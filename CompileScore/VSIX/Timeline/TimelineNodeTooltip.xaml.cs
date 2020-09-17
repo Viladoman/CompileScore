@@ -52,13 +52,13 @@ namespace CompileScore.Timeline
                                      +" Avg: "+ Common.UIConverters.GetTimeStr(val.Mean) 
                                      +" Count: "+ val.Count;
                 }
-                else if (node.Value is FullUnitValue)
+                else if (node.Value is UnitValue)
                 {
                     descriptionText.Visibility = Visibility.Visible;
                     detailsBorder.Visibility = Visibility.Collapsed;
                     detailsPanel.Visibility = Visibility.Collapsed;
 
-                    descriptionText.Text = (node.Value as FullUnitValue).Name;
+                    descriptionText.Text = (node.Value as UnitValue).Name;
                 }
                 else
                 {

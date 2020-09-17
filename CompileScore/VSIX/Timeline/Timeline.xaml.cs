@@ -128,7 +128,7 @@ namespace CompileScore.Timeline
 
         private ToolTip tooltip = new ToolTip { Content = new TimelineNodeTooltip() };
 
-        private FullUnitValue Unit { set; get; }
+        private UnitValue Unit { set; get; }
         private TimelineNode Root { set; get; }
         private TimelineNode Hover { set; get; }
         private TimelineNode FocusPending { set; get; }
@@ -162,7 +162,7 @@ namespace CompileScore.Timeline
             RefreshSearchUnitList();
         }
 
-        public void SetUnit(FullUnitValue unit)
+        public void SetUnit(UnitValue unit)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -272,7 +272,7 @@ namespace CompileScore.Timeline
         {
             List<string> list = new List<string>();
             var units = CompilerData.Instance.GetUnits();
-            foreach (FullUnitValue element in units)
+            foreach (UnitValue element in units)
             {
                 list.Add(element.Name);
             }

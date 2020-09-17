@@ -55,7 +55,7 @@ namespace CompileScore.Overview
         {
             this.dataView = CollectionViewSource.GetDefaultView(CompilerData.Instance.GetCollection(Category));
             UpdateFilterFunction();
-            compilaDataGrid.ItemsSource = this.dataView;
+            compileDataGrid.ItemsSource = this.dataView;
         }
 
         private void SearchTextChangedEventHandler(object sender, TextChangedEventArgs args)

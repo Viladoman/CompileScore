@@ -9,12 +9,22 @@ namespace CompileScore
     {
         private string optionPath = @"";
         private string optionScoreFileName = @"compileData.scor";
+        private bool optionPathRelativeToSolution = true;
         private bool optionNormalizedSeverity = true;
         private bool optionHighlightEnabled = true;
         private bool optionTooltipEnabled = true; 
         private List<uint> optionSeverities = new List<uint> { 250u, 1000u, 25000u, 100000u, 500000u };
 
         public List<uint> GetOptionSeverities() { return optionSeverities; }
+
+        [Category("File")]
+        [DisplayName("Relative Path To Solution")]
+        [Description("Is the Input Path Relative to the the Solution")]
+        public bool OptionPathRelativeToSolution
+        {
+            get { return optionPathRelativeToSolution; }
+            set { optionPathRelativeToSolution = value; ThreadHelper.ThrowIfNotOnUIThread(); CompilerData.Instance.OnSettingsRelativePathChanged(); }
+        }
 
         [Category("File")]
         [DisplayName("Input Path")]
