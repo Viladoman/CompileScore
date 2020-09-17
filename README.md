@@ -27,6 +27,7 @@ Compile times are one of the most important things that affect productivity and 
 ![Timeline screenshot](https://github.com/Viladoman/CompileScore/wiki/data/timeline.png?raw=true)
 
 Double-click any entry in the compile score window to open its timeline. 
+
 Navigation controls:
 - Zoom: Control + Mouse Wheel
 - Scroll: Middle mouse press and drag
@@ -75,9 +76,22 @@ The following command will extract and pack the build data from the *.etl* trace
 ScoreDataExtractor.exe -msvc -i buildTraceFile.etl -o compileData.scor
 ```
 
-## Building the C++ Data Exporter
+## Building the C++ Data Extractor
 
-The Data Exporter can be build using the Visual Studio solution located at **DataExtractor/Cpp/ScoreDataExtractor.sln**. This solution contains the extractors for both pipelines (Clang and MSVC). 
+The Data Extractor can be build using the Visual Studio solution located at **DataExtractor/Cpp/ScoreDataExtractor.sln**. This solution contains the extractors for both pipelines (Clang and MSVC). 
+
+## Data Extractor Options
+
+| Executable Flag  | Arguments and description |
+|------------------|---------------------------|
+| `-clang`         | Sets the system to use the Clang importer searching for .json traces in the input path |
+| `-msvc`          | Sets the system to use the MSVC importer for .etl traces  |
+| `-input` (`-i`)  | `Path to Input File`      |
+|                  | The path to the input folder to parse for -ftime-trace data or .etl file |
+| `-output` (`-o`) | `Output file`            |
+|                  | The output file full path for the results (**compileData.scor** by default) |
+| `-verbosity` (`-v`) | `Level`            |
+|                  | Sets the verbosity level: 0 - only errors, 1 - progress (default), 2 - full" |
 
 ## Running the Test Project 
 
