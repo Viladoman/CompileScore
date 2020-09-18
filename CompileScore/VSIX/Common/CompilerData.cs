@@ -127,7 +127,7 @@ namespace CompileScore
         private bool _relativeToSolution = true;
 
         private List<UnitValue> _unitsCollection = new List<UnitValue>();
-        private List<UnitTotal> _totals = new List<UnitTotal>(new UnitTotal[(int)CompileCategory.DisplayCount]);
+        private List<UnitTotal> _totals = new List<UnitTotal>();
 
         public class CompileDataset
         {
@@ -196,7 +196,7 @@ namespace CompileScore
 
         public UnitTotal GetTotal(CompileCategory category)
         {
-            return category < CompileCategory.DisplayCount ? _totals[(int)category] : null;
+            return category < CompileCategory.DisplayCount && (int)category < _totals.Count? _totals[(int)category] : null;
         }
 
         public List<UnitValue> GetUnits()
@@ -340,6 +340,7 @@ namespace CompileScore
             ThreadHelper.ThrowIfNotOnUIThread();
 
             _unitsCollection.Clear();
+            _totals.Clear();
             ClearDatasets();
 
             if (File.Exists(fullPath))
