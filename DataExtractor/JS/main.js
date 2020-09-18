@@ -1,6 +1,9 @@
 var Extract = require('./src/extract.js')
 
 var verbosityLevel = 1;
+var exportDetail = 3;
+
+var params = { detail: 3, timeline: true};
 
 function FormatTime(miliseconds)
 { 
@@ -21,11 +24,27 @@ function FormatTime(miliseconds)
 
 function DisplayHelp()
 {
-  console.log('Clang to Compile Score Data Extractor'); 
-  console.log('Command Legend:'); 
-  console.log('-input  (-i): The path to the input folder to parse for -ftime-trace data'); 
-  console.log('-output (-o): The output file full path for the results (\'compileData.scor\' by default)'); 
-  console.log('-verbosity (-v): Set the level of verbosity - 0: silent - 1: progress - 2: full (default is 0)')
+  console.log("Compile Score Data Extractor"); 
+  console.log("");
+  console.log("Converts the compiler build trace data into 'scor' format."); 
+  console.log("");
+  console.log("Command Legend:"); 
+
+  console.log("-input       (-i) : The path to the input folder to parse for -ftime-trace data or the direct path to the .etl file"); 
+  console.log("-output      (-o) : The output file full path for the results (\'compileData.scor\' by default)"); 
+
+  console.log("-detail      (-d) : Sets the level of detail exported - example: '-d 1'"); 
+  console.log("\t0 - None"); 
+  console.log("\t1 - Basic - w/ include"); 
+  console.log("\t2 - FrontEnd - w/ include, parse, instantiate"); 
+  console.log("\t3 - Full (default)"); 
+
+  console.log("-notimeline (-nt) : No timeline files will be generated"); 
+
+  console.log("-verbosity   (-v) : Sets the verbosity level - example: '-v 1'"); 
+  console.log("\t0 - Silent"); 
+  console.log("\t1 - Progress (default)"); 
+  console.log("\t2 - Full"); 
 
   process.exit(0);
 }
@@ -49,20 +68,29 @@ function ProcessCommandLine()
 
   for (var i=0;i<args.length;++i)
   { 
-    if ((i+1) < args.length)
+    if (args[i] == '-nt' || args[i] == '-notimeline') 
+    {
+      params.timeline = false;
+    }
+    else if ((i+1) < args.length)
     { 
       if (args[i] == '-i' || args[i] == '-input') inputFolder = args[i+1];
       if (args[i] == '-o' || args[i] == '-output') outputFile = args[i+1];
+      if (args[i] == '-d' || args[i] == '-detail')
+      { 
+        var level = Number(args[i+1]);
+        params.detail = isNaN(level)? params.detail : Math.max(0,level);
+      }
       if (args[i] == '-v' || args[i] == '-verbosity') 
       {
         var level = Number(args[i+1]);
-        verbosityLevel = isNaN(level)? 0 : Math.max(0,level);
+        verbosityLevel = isNaN(level)? verbosityLevel : Math.max(0,level);
       }
     }
   }
 
   //EXECUTE
-  Extract.Extract(inputFolder,outputFile,function()
+  Extract.Extract(inputFolder,outputFile,params,function()
   {  
     Log(1,'Execution Time: '+FormatTime(new Date() - startTime))
   });

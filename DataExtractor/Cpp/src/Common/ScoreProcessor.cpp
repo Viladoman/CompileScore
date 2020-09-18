@@ -2,6 +2,7 @@
 #include "../Common/ScoreDefinitions.h"
 
 #include "IOStream.h"
+#include "CommandLine.h"
 
 namespace CompileScore
 { 
@@ -36,9 +37,28 @@ namespace CompileScore
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
+	CompileCategory GetGatherLimit()
+	{ 
+		if (ExportParams* exportParams = Context::Get<ExportParams>()) 
+		{ 
+			switch(exportParams->detail)
+			{ 
+				case ExportParams::Detail::None:     return CompileCategory::GatherNone;
+				case ExportParams::Detail::Basic:    return CompileCategory::GatherBasic;
+				case ExportParams::Detail::FrontEnd: return CompileCategory::GatherFrontEnd; 
+				default: return CompileCategory::GatherFull;
+			}
+		}
+
+		return CompileCategory::GatherFull; 
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
 	void ProcessTimeline(ScoreData& scoreData, ScoreTimeline& timeline)
 	{
 		U32 overlapThreshold[ToUnderlying(CompileCategory::DisplayCount)] = {};
+
+		const CompileCategory gatherLimit = GetGatherLimit(); 
 
 		//Create new unit
 		const U32 unitId = static_cast<U32>(scoreData.units.size());
@@ -49,7 +69,7 @@ namespace CompileScore
 		//Process Timeline elements
 		for (CompileEvent& element : timeline.events)
 		{ 
-			if (element.category < CompileCategory::GahterCount)
+			if (element.category < gatherLimit)
 			{ 
 				CompileData& compileData = CreateGlobalEntry(scoreData,element);
 				compileData.accumulated += element.duration;
@@ -74,7 +94,10 @@ namespace CompileScore
 			}
 		}
 		
-		if (IO::Binarizer* binarizer = Context::Get<IO::Binarizer>()) 
+		IO::Binarizer* binarizer = Context::Get<IO::Binarizer>(); 
+		ExportParams* exportParams = Context::Get<ExportParams>(); 
+
+		if (binarizer && exportParams && exportParams->timeline == ExportParams::Timeline::Enabled) 
 		{ 
 			binarizer->Binarize(timeline);
 		}

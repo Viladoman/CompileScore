@@ -324,7 +324,7 @@ namespace IO
         Utils::BinarizeU32(stream,SCORE_VERSION);
 
         Utils::BinarizeUnits(stream,data.units);
-        for (int i=0;i<ToUnderlying(CompileCategory::GahterCount);++i)
+        for (int i=0;i<ToUnderlying(CompileCategory::GatherFull);++i)
         { 
             Utils::BinarizeGlobals(stream,data.globals[i]);
         }    

@@ -22,14 +22,27 @@ namespace CommandLine
         ExportParams defaultParams;
         LOG_ALWAYS("Compile Score Data Extractor"); 
         LOG_ALWAYS("");
-        LOG_ALWAYS("Converts the comilers build trace data into 'scor' format."); 
+        LOG_ALWAYS("Converts the compiler build trace data into 'scor' format."); 
         LOG_ALWAYS("");
         LOG_ALWAYS("Command Legend:"); 
-        LOG_ALWAYS("-input     (-i) : The path to the input folder to parse for -ftime-trace data or the direct path to the .etl file"); 
-        LOG_ALWAYS("-output    (-o) : The output file full path for the results ('%s' by default)",defaultParams.output); 
-        LOG_ALWAYS("-msvc           : Sets the system to use the MSVC importer for .etl traces"); 
-        LOG_ALWAYS("-clang          : Sets the system to use the Clang importer searching for .json traces in the input path"); 
-        LOG_ALWAYS("-verbosity (-v) : Sets the verbosity level: 0 - only errors, 1 - progress (default), 2 - full"); 
+
+        LOG_ALWAYS("-input       (-i) : The path to the input folder to parse for -ftime-trace data or the direct path to the .etl file"); 
+        LOG_ALWAYS("-output      (-o) : The output file full path for the results ('%s' by default)",defaultParams.output); 
+
+        LOG_ALWAYS("-clang  |  -msvc  : Sets the system to use the Clang (.json traces) or MSVC (.etl traces) importer"); 
+
+        LOG_ALWAYS("-detail      (-d) : Sets the level of detail exported - example: '-d 1'"); 
+        LOG_ALWAYS("\t0 - None"); 
+        LOG_ALWAYS("\t1 - Basic - w/ include"); 
+        LOG_ALWAYS("\t2 - FrontEnd - w/ include, parse, instantiate"); 
+        LOG_ALWAYS("\t3 - Full (default)"); 
+
+        LOG_ALWAYS("-notimeline (-nt) : No timeline files will be generated"); 
+
+        LOG_ALWAYS("-verbosity   (-v) : Sets the verbosity level - example: '-v 1'"); 
+        LOG_ALWAYS("\t0 - Silent"); 
+        LOG_ALWAYS("\t1 - Progress (default)"); 
+        LOG_ALWAYS("\t2 - Full"); 
     }
 
     // -----------------------------------------------------------------------------------------------------------
@@ -75,6 +88,19 @@ namespace CommandLine
                 else if (Utils::StringCompare(argValue,"-clang") == 0)
                 { 
                     params.source = ExportParams::Source::Clang; 
+                }
+                else if ((Utils::StringCompare(argValue,"-nt")==0 || Utils::StringCompare(argValue,"-notimeline")==0))
+                {
+                    params.timeline = ExportParams::Timeline::Disabled;
+                }
+                else if ((Utils::StringCompare(argValue,"-d")==0 || Utils::StringCompare(argValue,"-detail")==0) && (i+1) < argc)
+                { 
+                    ++i;
+                    char digit = argv[i][0];
+                    if ( digit >= '0' || digit <= '3' )
+                    { 
+                        params.detail = ExportParams::Detail(digit-'0');
+                    }
                 }
                 else if ((Utils::StringCompare(argValue,"-v")==0 || Utils::StringCompare(argValue,"-verbosity")==0) && (i+1) < argc)
                 {

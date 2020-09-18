@@ -35,9 +35,12 @@ enum class CompileCategory : CompileCategoryType
     DebugGlobalVariable,
     Invalid,
 
-    FullCount, 
-    GahterCount = PendingInstantiations,
-    DisplayCount = RunPass,
+    FullCount,
+    GatherNone     = Include, 
+    GatherBasic    = ParseClass, 
+    GatherFrontEnd = CodeGenFunction,
+    GatherFull     = PendingInstantiations,
+    DisplayCount   = RunPass,
 };
 
 constexpr CompileCategoryType ToUnderlying(CompileCategory input){ return static_cast<CompileCategoryType>(input);}
@@ -113,7 +116,7 @@ struct ScoreTimeline
 struct ScoreData
 { 
     TCompileUnits units;
-    TCompileDatas globals[ToUnderlying(CompileCategory::GahterCount)];
-    TCompileDataDictionary globalsDictionary[ToUnderlying(CompileCategory::GahterCount)];
+    TCompileDatas globals[ToUnderlying(CompileCategory::GatherFull)];
+    TCompileDataDictionary globalsDictionary[ToUnderlying(CompileCategory::GatherFull)];
 };
 

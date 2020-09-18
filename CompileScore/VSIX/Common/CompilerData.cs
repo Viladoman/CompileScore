@@ -114,7 +114,7 @@ namespace CompileScore
             Invalid,
 
             FullCount,
-            GahterCount = PendingInstantiations,
+            GatherCount = PendingInstantiations,
             DisplayCount = RunPass,
         }
 
@@ -136,7 +136,7 @@ namespace CompileScore
             public List<uint>                         normalizedThresholds = new List<uint>();
         }
 
-        private CompileDataset[] _datasets = new CompileDataset[(uint)CompileCategory.GahterCount].Select(h => new CompileDataset()).ToArray();
+        private CompileDataset[] _datasets = new CompileDataset[(uint)CompileCategory.GatherCount].Select(h => new CompileDataset()).ToArray();
 
         //events
         public event Notify ScoreDataChanged;
@@ -278,16 +278,16 @@ namespace CompileScore
 
         public CompileValue GetValue(CompileCategory category, int index)
         {
-            if (category < CompileCategory.GahterCount)
+            if (category < CompileCategory.GatherCount)
             {
                 CompileDataset dataset = _datasets[(int)category];
-                return index < dataset.collection.Count ? dataset.collection[index] : null;
+                return index >= 0 && index < dataset.collection.Count ? dataset.collection[index] : null;
             }
             return null;
         }
         public UnitValue GetUnit(int index)
         {
-            return index < _unitsCollection.Count ? _unitsCollection[index] : null;
+            return index >= 0 && index < _unitsCollection.Count ? _unitsCollection[index] : null;
         }
 
         private void ReloadSeverities()
@@ -326,7 +326,7 @@ namespace CompileScore
         }
         private void ClearDatasets()
         {
-            for (int i=0;i< (int)CompileCategory.GahterCount;++i)
+            for (int i=0;i< (int)CompileCategory.GatherCount; ++i)
             {
                 CompileDataset dataset = _datasets[i];
                 dataset.collection.Clear();
@@ -363,7 +363,7 @@ namespace CompileScore
                         _unitsCollection = new List<UnitValue>(unitList);
 
                         //Read Datasets
-                        for(int i = 0; i < (int)CompileCategory.GahterCount; ++i)
+                        for(int i = 0; i < (int)CompileCategory.GatherCount; ++i)
                         {
                             uint dataLength = reader.ReadUInt32();
                             var thislist = new List<CompileValue>((int)dataLength);
@@ -429,9 +429,6 @@ namespace CompileScore
                     _totals[k].Total += unit.ValuesList[k];
                 }
             }
-
-            //Process totals ratios
-            //TODO ~ ramonv ~ to be implemented
         }
 
         private void ComputeNormalizedThresholds(List<uint> normalizedThresholds, List<uint> inputList)
@@ -465,9 +462,13 @@ namespace CompileScore
         {
             GeneralSettingsPageGrid settings = GetGeneralSettings();
 
-            for (int i = 0; i < (int)CompileCategory.GahterCount; ++i)
+            //For the time being we are only using Include data for this
+            //Only compute it for include for now 
+            const int i = (int)CompileCategory.Include;
+
+            //for (int i = 0; i < (int)CompileCategory.GatherCount; ++i)
             {
-                CompileDataset dataset = _datasets[(int)CompileCategory.Include];
+                CompileDataset dataset = _datasets[i];
                 List<uint> thresholdList = settings.OptionNormalizedSeverity ? dataset.normalizedThresholds : settings.GetOptionSeverities();
                 foreach (CompileValue entry in dataset.collection)
                 {

@@ -125,7 +125,8 @@
         {
             try
             {
-                return ((double)value * 100).ToString("F1") + '%';
+                double val = (double)value;
+                return val <= 0? "-" : (val * 100).ToString("F1") + '%';
             }
             catch (Exception e)
             {

@@ -139,6 +139,7 @@ namespace MSVC
         }
 
         //Backend pass done -> Finalize TU and release its memory
+        //TODO ~ Ramonv ~ allow for multiple passes of this
         if (m_activeTU && category == CompileCategory::BackEnd)
         { 
             FinalizeTU(m_activeTU->timeline.name);
@@ -191,6 +192,11 @@ namespace MSVC
             TCompileEvents::iterator found = fastl::lower_bound(startSearch,events.end(),startTime,[=](const CompileEvent& input, U32 value){ return value >= input.start; });
             TCompileEvents::iterator elem = events.emplace(found,CompileEvent(category,startTime,ConvertDuration(activity.Duration()),name));    
             return &(*elem);
+        }
+        else 
+        { 
+            //TODO ~ ramonv ~ Investigate
+            //This is a linker code generation and we lost all context - count it but as independent element.
         }
 
         return nullptr;

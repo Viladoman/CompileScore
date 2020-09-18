@@ -3,6 +3,8 @@ var Bin    = require('./binary.js');
 
 var path = require('path');
 
+var exportParams = {};
+
 const VERSION = 3;
 const TIMELINES_PER_FILE = 100;
 const TIMELINE_FILE_NUM_DIGITS = 4;
@@ -35,7 +37,11 @@ var NodeNature = {
 }
 
 var NodeNatureData = {
-  GLOBAL_GATHER_THRESHOLD:  NodeNature.PENDINGINSTANTIATIONS,
+
+  GLOBAL_GATHER_NONE:       NodeNature.SOURCE, 
+  GLOBAL_GATHER_BASIC:      NodeNature.PARSECLASS,
+  GLOBAL_GATHER_FRONTEND:   NodeNature.CODEGENFUNCTION,
+  GLOBAL_GATHER_FULL:       NodeNature.PENDINGINSTANTIATIONS,
   GLOBAL_DISPLAY_THRESHOLD: NodeNature.RUNPASS,
   COUNT:                    NodeNature.INVALID
 }
@@ -88,8 +94,8 @@ function CreateArrayArray(size)
   return ret;
 }
 
-var globals = CreateArrayArray(NodeNatureData.GLOBAL_GATHER_THRESHOLD);
-var globalsDictionary = CreateObjectArray(NodeNatureData.GLOBAL_GATHER_THRESHOLD);
+var globals = CreateArrayArray(NodeNatureData.GLOBAL_GATHER_FULL);
+var globalsDictionary = CreateObjectArray(NodeNatureData.GLOBAL_GATHER_FULL);
 var units = [];
 
 var activeBundle = undefined;
@@ -112,6 +118,22 @@ function GetGlobal(nature, name)
   return newObj;
 }
 
+function GetGatherLimit()
+{ 
+  if (exportParams.detail != undefined)
+  { 
+    switch(exportParams.detail)
+    { 
+      case 0: return NodeNatureData.GLOBAL_GATHER_NONE;
+      case 1: return NodeNatureData.GLOBAL_GATHER_BASIC;
+      case 2: return NodeNatureData.GLOBAL_GATHER_FRONTEND; 
+      default: return NodeNatureData.GLOBAL_GATHER_FULL;
+    }
+  }
+
+  return NodeNatureData.GLOBAL_GATHER_FULL;
+}
+
 function ProcessTimeline(filename, timeline)
 { 
   var unitId = units.length; 
@@ -119,11 +141,12 @@ function ProcessTimeline(filename, timeline)
   units.push(unit);
 
   var overlapThreshold = Array(NodeNatureData.GLOBAL_DISPLAY_THRESHOLD).fill(-1);
+  var gatherLimit = GetGatherLimit();
 
   for (var i=0,sz=timeline.length;i<sz;++i)
   {
     var element = timeline[i];
-    if (element.category < NodeNatureData.GLOBAL_GATHER_THRESHOLD) 
+    if (element.category < gatherLimit) 
     {
       var global = GetGlobal(element.category,element.name);
 
@@ -279,11 +302,15 @@ function AddToBundle(bundle, timeline)
 
 function ExportTimeline(timeline)
 {
-  AddToBundle(NextTimelineBundle(),timeline);
+  if (exportParams.timeline == true)
+  { 
+    AddToBundle(NextTimelineBundle(),timeline);
+  }
 }
 
-function Extract(inputFolder,outputFile,doneCallback)
+function Extract(inputFolder,outputFile,params,doneCallback)
 { 
+  exportParams = params;
   bundleBasePath = outputFile;
 
   FileIO.SearchFolder(inputFolder,ParseFile,function(error){
@@ -306,7 +333,7 @@ function Extract(inputFolder,outputFile,doneCallback)
         }
 
         //Export entries
-        for (var i=0;i<NodeNatureData.GLOBAL_GATHER_THRESHOLD;++i)
+        for (var i=0;i<NodeNatureData.GLOBAL_GATHER_FULL;++i)
         { 
           var finalList = globals[i];
           stream.write(Bin.Num(finalList.length,4));
