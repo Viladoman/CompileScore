@@ -86,6 +86,7 @@ namespace MSVC
         void OnIncludeEnded(const MSBI::Activities::FrontEndFile& activity);
         void OnFunctionEnded(const MSBI::Activities::Function& activity);
         void OnCodeGenerationEnded(const MSBI::Activities::CodeGeneration& activity);
+        void OnBackEndThreadEnded(const MSBI::Activities::Thread& activity);
 
         const ScoreData& GetScoreData(){ return m_scoreData; }
 
@@ -175,7 +176,6 @@ namespace MSVC
         MSBI::MatchEventInMemberFunction(eventStack.Back(), this, &Gatherer::OnCompilerPassEnded);
 
         //Specifics
-        //MSBI::MatchEventStackInMemberFunction(eventStack, this, &Gatherer::OnIncludeEnded);
         MSBI::MatchEventInMemberFunction(eventStack.Back(), this, &Gatherer::OnIncludeEnded);
         MSBI::MatchEventInMemberFunction(eventStack.Back(), this, &Gatherer::OnFunctionEnded);
         MSBI::MatchEventInMemberFunction(eventStack.Back(), this, &Gatherer::OnCodeGenerationEnded);
@@ -194,7 +194,6 @@ namespace MSVC
 
         process.ActivateTU(path);
 
-        //process.activeTU = &(process.TUs[path]);
         TUEntry* activeTU = process.GetActiveTU();
 
         activeTU->timestampOffset = activity.StartTimestamp();
@@ -234,12 +233,6 @@ namespace MSVC
     }
 
     // -----------------------------------------------------------------------------------------------------------
-    void Gatherer::OnCodeGenerationEnded(const MSBI::Activities::CodeGeneration& activity)
-    { 
-        AddEvent(GetProcess(activity.ProcessId()).GetActiveTU(),CompileCategory::CodeGenPasses,activity);
-    }
-
-    // -----------------------------------------------------------------------------------------------------------
     void Gatherer::OnIncludeEnded(const MSBI::Activities::FrontEndFile& activity)
     {   
         fastl::string path = activity.Path();
@@ -262,6 +255,18 @@ namespace MSVC
         StringUtils::ToLower(name);
         AddEvent(GetProcess(activity.ProcessId()).GetActiveTU(),CompileCategory::CodeGenFunction,activity,name);
 
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    void Gatherer::OnCodeGenerationEnded(const MSBI::Activities::CodeGeneration& activity)
+    { 
+        AddEvent(GetProcess(activity.ProcessId()).GetActiveTU(),CompileCategory::CodeGenPasses,activity);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    void Gatherer::OnBackEndThreadEnded(const MSBI::Activities::Thread& activity)
+    { 
+        //AddEvent(GetProcess(activity.ProcessId()).GetActiveTU(),CompileCategory::CodeGenPasses,activity);
     }
 
     // -----------------------------------------------------------------------------------------------------------
