@@ -39,7 +39,7 @@ namespace CompileScore.Overview
             foreach (CompilerData.CompileCategory category in Common.Order.CategoryDisplay)
             {
                 UnitTotal total = CompilerData.Instance.GetTotal(category);
-                if (total != null)
+                if (total != null && total.Total > 0)
                 {
                     totals.Add(total);
                 }

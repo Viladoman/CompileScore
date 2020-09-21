@@ -24,17 +24,21 @@ namespace CompileScore.Overview
     {
         private ICollectionView dataView;
 
+        private int originalColumns = 0;
+
         public OverviewTable()
         {
             InitializeComponent();
 
-            OnDataChanged();
-            CompilerData.Instance.ScoreDataChanged += OnDataChanged;
+            originalColumns = compileDataGrid.Columns.Count;
 
             foreach (CompilerData.CompileCategory category in Common.Order.CategoryDisplay)
             {
                 CreateColumn(category);
             }
+            
+            OnDataChanged();
+            CompilerData.Instance.ScoreDataChanged += OnDataChanged;
         }
 
         private void CreateColumn(CompilerData.CompileCategory category)
@@ -53,6 +57,17 @@ namespace CompileScore.Overview
             compileDataGrid.Columns.Add(textColumn);
         }
 
+        private void RefreshColumns()
+        {
+            int index = originalColumns;
+            foreach (CompilerData.CompileCategory category in Common.Order.CategoryDisplay)
+            {
+                UnitTotal total = CompilerData.Instance.GetTotal(category);
+                compileDataGrid.Columns[index].Visibility = total != null && total.Total > 0 ? Visibility.Visible : Visibility.Collapsed;
+                ++index;
+            }
+        }
+
         private static bool FilterCompileValue(UnitValue value, string filterText)
         {
             return value.Name.Contains(filterText);
@@ -66,6 +81,7 @@ namespace CompileScore.Overview
 
         private void OnDataChanged()
         {
+            RefreshColumns();
             this.dataView = CollectionViewSource.GetDefaultView(CompilerData.Instance.GetUnits());
             UpdateFilterFunction();
             compileDataGrid.ItemsSource = this.dataView;
