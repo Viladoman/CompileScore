@@ -2,7 +2,7 @@
 
 #ifdef USE_FASTL
 
-//Strangely the model std::vector I took for reference uses the assignment operator for moving elements on erase
+//The model std::vector I took for reference uses the assignment operator for moving elements on erase
 //#define FASTL_VECTOR_ERASE_WITH_ASSIGNMENT
 
 //Forward declare the placement new in order to avoid #include <new> 

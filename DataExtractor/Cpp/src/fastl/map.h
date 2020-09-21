@@ -14,7 +14,7 @@ namespace fastl
 	class map
 	{
 	private: 
-		typedef vector<pair<const TKey, TValue>> TData;
+		typedef vector<pair<TKey, TValue>> TData;
 
 	public:
 		typedef typename TData::iterator       iterator; 

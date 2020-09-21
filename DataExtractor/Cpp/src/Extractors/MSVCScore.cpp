@@ -23,7 +23,7 @@ namespace MSVC
          // -----------------------------------------------------------------------------------------------------------
         const char* GetPath(const MSBI::Activities::CompilerPass& compilerPass)
         {
-            //TODO ~ Ramonv ~ technically windows paths can go up to 32k 
+            //TODO ~ ramonv ~ technically windows paths can go up to 32k 
             //TODO ~ ramonv ~ check for overflow
             constexpr size_t BUFF_SIZE = 2048;
             static char* str = new char[BUFF_SIZE];
@@ -42,6 +42,8 @@ namespace MSVC
     class Gatherer : public MSBI::IAnalyzer
     {
     private: 
+        enum { InvalidIndex = 0xffffffff };
+
         struct TUEntry
         { 
             TUEntry()
@@ -55,7 +57,24 @@ namespace MSVC
             size_t         sectionStartIndex; 
             TTimeStamp     timestampOffset;
         };
-        using TTUContainer = fastl::unordered_map<fastl::string,TUEntry>;
+        using TTUCollection = fastl::vector<TUEntry>;
+        using TTUDictionary = fastl::unordered_map<fastl::string,U32>;
+
+        struct TUProcess
+        { 
+            TUProcess(const unsigned long _processId = 0u);
+
+            TUEntry* GetActiveTU();         
+            void ActivateTU(const fastl::string& path);
+            void ClearActiveTU();
+            void DeactivateTU();
+
+            TTUCollection data; 
+            TTUDictionary dict;
+            unsigned long processId; 
+            U32 activeIndex;
+        };
+        using TUProcessContainer = fastl::vector<TUProcess>;
 
     public: 
 
@@ -64,20 +83,22 @@ namespace MSVC
         MSBI::AnalysisControl OnStopActivity(const MSBI::EventStack& eventStack) override;    
         void OnCompilerPassStart(const MSBI::Activities::CompilerPass& activity);
         void OnCompilerPassEnded(const MSBI::Activities::CompilerPass& activity);
-        void OnIncludeEnded(const MSBI::Activities::FrontEndFile& parentActivity, const MSBI::Activities::FrontEndFile& activity);
+        void OnIncludeEnded(const MSBI::Activities::FrontEndFile& activity);
         void OnFunctionEnded(const MSBI::Activities::Function& activity);
+        void OnCodeGenerationEnded(const MSBI::Activities::CodeGeneration& activity);
 
         const ScoreData& GetScoreData(){ return m_scoreData; }
 
     private: 
         U32 ConvertDuration(std::chrono::nanoseconds nanos);
-        CompileEvent* AddEvent(const CompileCategory category, const MSBI::Activities::Activity& activity, const fastl::string& name = "");
-        void FinalizeTU(const fastl::string& path);
+        CompileEvent* AddEvent(TUEntry* activeTU, const CompileCategory category, const MSBI::Activities::Activity& activity, const fastl::string& name = "");
+        void FinalizeActiveTU(TUProcess& process);
+
+        TUProcess& GetProcess(unsigned long processId);
 
     private:
-        TTUContainer m_TUs;
-        TUEntry* m_activeTU;
-        ScoreData m_scoreData;
+        TUProcessContainer m_processes;
+        ScoreData          m_scoreData;
     };
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,9 +106,60 @@ namespace MSVC
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // -----------------------------------------------------------------------------------------------------------
-    Gatherer::Gatherer()
-        : m_activeTU(nullptr)
+    Gatherer::TUProcess::TUProcess(const unsigned long _processId)
+        : processId(_processId)
+        , activeIndex(InvalidIndex)
     {}
+
+    // -----------------------------------------------------------------------------------------------------------
+    Gatherer::TUEntry* Gatherer::TUProcess::GetActiveTU() 
+    { 
+        return activeIndex < data.size()? &data[activeIndex] : nullptr; 
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    void Gatherer::TUProcess::ActivateTU(const fastl::string& path)
+    {
+        activeIndex = InvalidIndex;
+        TTUDictionary::iterator found = dict.find(path);
+        if (found == dict.end())
+        { 
+            activeIndex = static_cast<U32>(data.size()); 
+            dict[path] = activeIndex;
+            data.emplace_back();
+        }
+        else 
+        { 
+            activeIndex = found->second;
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    void Gatherer::TUProcess::ClearActiveTU()
+    { 
+        if (TUEntry* activeTU = GetActiveTU())
+        { 
+            //remove entry from dictionary 
+            dict.erase(activeTU->timeline.name);
+
+            //remove suballocation on activetU but keep to not destroy the dictionary indices
+            activeTU->timeline.events.clear();
+            activeTU->timeline.name.clear();
+
+            DeactivateTU();
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    void Gatherer::TUProcess::DeactivateTU() 
+    { 
+        activeIndex = InvalidIndex; 
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // -----------------------------------------------------------------------------------------------------------
+    Gatherer::Gatherer(){}
 
     // -----------------------------------------------------------------------------------------------------------
     MSBI::AnalysisControl Gatherer::OnStartActivity(const MSBI::EventStack& eventStack)
@@ -103,8 +175,10 @@ namespace MSVC
         MSBI::MatchEventInMemberFunction(eventStack.Back(), this, &Gatherer::OnCompilerPassEnded);
 
         //Specifics
-        MSBI::MatchEventStackInMemberFunction(eventStack, this, &Gatherer::OnIncludeEnded);
+        //MSBI::MatchEventStackInMemberFunction(eventStack, this, &Gatherer::OnIncludeEnded);
+        MSBI::MatchEventInMemberFunction(eventStack.Back(), this, &Gatherer::OnIncludeEnded);
         MSBI::MatchEventInMemberFunction(eventStack.Back(), this, &Gatherer::OnFunctionEnded);
+        MSBI::MatchEventInMemberFunction(eventStack.Back(), this, &Gatherer::OnCodeGenerationEnded);
 
         return MSBI::AnalysisControl::CONTINUE;
     }
@@ -116,13 +190,19 @@ namespace MSVC
         StringUtils::ToPathBaseName(path); 
         StringUtils::ToLower(path);
 
-        m_activeTU = &(m_TUs[path]);
-        m_activeTU->timestampOffset = activity.StartTimestamp();
+        TUProcess& process = GetProcess(activity.ProcessId());
 
-        if (m_activeTU->timeline.events.empty())
+        process.ActivateTU(path);
+
+        //process.activeTU = &(process.TUs[path]);
+        TUEntry* activeTU = process.GetActiveTU();
+
+        activeTU->timestampOffset = activity.StartTimestamp();
+
+        if (activeTU->timeline.events.empty())
         {
-            m_activeTU->timeline.name = path;
-            m_activeTU->timeline.events.emplace_back(CompileEvent(CompileCategory::ExecuteCompiler,0u,0u,path));
+            activeTU->timeline.name = path;
+            activeTU->timeline.events.emplace_back(CompileEvent(CompileCategory::ExecuteCompiler,0u,0u,path));
         }
     }
 
@@ -131,42 +211,56 @@ namespace MSVC
     {
         const CompileCategory category = activity.PassCode() == MSBI::Activities::CompilerPass::PassCode::BACK_END? CompileCategory::BackEnd : CompileCategory::FrontEnd;
 
+        unsigned long threadId = activity.ThreadId();
+        unsigned long processId = activity.ProcessId();
+
+        TUProcess& process = GetProcess(activity.ProcessId());
+        TUEntry* activeTU = process.GetActiveTU();
+
         //Close current section and prepare for future ones
-        if (CompileEvent* newEvent = AddEvent(category,activity)) 
+        if (CompileEvent* newEvent = AddEvent(activeTU,category,activity)) 
         { 
-            m_activeTU->timeSectionAccumulator = (newEvent->start + newEvent->duration)+1;
-            m_activeTU->sectionStartIndex = m_activeTU->timeline.events.size();
+            activeTU->timeSectionAccumulator = (newEvent->start + newEvent->duration)+1;
+            activeTU->sectionStartIndex = activeTU->timeline.events.size();
         }
 
-        //Backend pass done -> Finalize TU and release its memory
-        //TODO ~ Ramonv ~ allow for multiple passes of this
-        if (m_activeTU && category == CompileCategory::BackEnd)
+        if (category == CompileCategory::BackEnd)
         { 
-            FinalizeTU(m_activeTU->timeline.name);
+            FinalizeActiveTU(process);
         }
 
         //Disable active TU
-        m_activeTU = nullptr;
+        process.DeactivateTU();
     }
 
     // -----------------------------------------------------------------------------------------------------------
-    void Gatherer::OnIncludeEnded(const MSBI::Activities::FrontEndFile& parentActivity, const MSBI::Activities::FrontEndFile& activity)
+    void Gatherer::OnCodeGenerationEnded(const MSBI::Activities::CodeGeneration& activity)
+    { 
+        AddEvent(GetProcess(activity.ProcessId()).GetActiveTU(),CompileCategory::CodeGenPasses,activity);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    void Gatherer::OnIncludeEnded(const MSBI::Activities::FrontEndFile& activity)
     {   
         fastl::string path = activity.Path();
         StringUtils::ToPathBaseName(path); 
         StringUtils::ToLower(path);
-        AddEvent(CompileCategory::Include,activity,path);
+
+        AddEvent(GetProcess(activity.ProcessId()).GetActiveTU(),CompileCategory::Include,activity,path);
     }
 
     // -----------------------------------------------------------------------------------------------------------
     void Gatherer::OnFunctionEnded(const MSBI::Activities::Function& activity)
     {
+        //TODO ~ ramonv ~ we need to fix threadId multitimeline export first ( better no data than bad data ) 
+        return;
+
         fastl::string name = activity.Name();
 
         //TODO ~ ramonv ~ undecorateName - windows function: UnDecorateSymbolName()
 
         StringUtils::ToLower(name);
-        AddEvent(CompileCategory::OptimizeFunction,activity,name);
+        AddEvent(GetProcess(activity.ProcessId()).GetActiveTU(),CompileCategory::CodeGenFunction,activity,name);
 
     }
 
@@ -179,43 +273,49 @@ namespace MSVC
     }
 
     // -----------------------------------------------------------------------------------------------------------
-    CompileEvent* Gatherer::AddEvent(const CompileCategory category, const MSBI::Activities::Activity& activity, const fastl::string& name)
+    CompileEvent* Gatherer::AddEvent(TUEntry* activeTU, const CompileCategory category, const MSBI::Activities::Activity& activity, const fastl::string& name)
     { 
-        if (m_activeTU)
+        if (activeTU)
         { 
-            TCompileEvents& events = m_activeTU->timeline.events;
+            TCompileEvents& events = activeTU->timeline.events;
 
-            auto startDelta = std::chrono::nanoseconds{MSBI::Internal::ConvertTickPrecision(activity.StartTimestamp()-m_activeTU->timestampOffset, activity.TickFrequency(), std::chrono::nanoseconds::period::den)}; 
-            const U32 startTime = m_activeTU->timeSectionAccumulator + ConvertDuration(startDelta);
+            auto startDelta = std::chrono::nanoseconds{MSBI::Internal::ConvertTickPrecision(activity.StartTimestamp()-activeTU->timestampOffset, activity.TickFrequency(), std::chrono::nanoseconds::period::den)}; 
+            const U32 startTime = activeTU->timeSectionAccumulator + ConvertDuration(startDelta);
 
-            TCompileEvents::iterator startSearch = events.begin()+m_activeTU->sectionStartIndex;
+            TCompileEvents::iterator startSearch = events.begin()+activeTU->sectionStartIndex;
             TCompileEvents::iterator found = fastl::lower_bound(startSearch,events.end(),startTime,[=](const CompileEvent& input, U32 value){ return value >= input.start; });
             TCompileEvents::iterator elem = events.emplace(found,CompileEvent(category,startTime,ConvertDuration(activity.Duration()),name));    
             return &(*elem);
-        }
-        else 
-        { 
-            //TODO ~ ramonv ~ Investigate
-            //This is a linker code generation and we lost all context - count it but as independent element.
         }
 
         return nullptr;
     }
 
     // -----------------------------------------------------------------------------------------------------------
-    void Gatherer::FinalizeTU(const fastl::string& path)
+    void Gatherer::FinalizeActiveTU(TUProcess& process)
     { 
         //Combine front end with 
-        TTUContainer::iterator found = m_TUs.find(path);
-        if (found != m_TUs.end())
+        if (TUEntry* tu = process.GetActiveTU())
         { 
-            TUEntry& entry = found->second;
+            TUEntry& entry = *tu;
             entry.timeline.events[0].duration = entry.timeSectionAccumulator; //Fix the root node
 
             CompileScore::ProcessTimeline(m_scoreData,entry.timeline);
 
-            m_TUs.erase(found);           
+            process.ClearActiveTU();
         }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    Gatherer::TUProcess& Gatherer::GetProcess(unsigned long processId)
+    { 
+        TUProcessContainer::iterator found = fastl::lower_bound(m_processes.begin(),m_processes.end(),processId,[](const TUProcess& process, const unsigned long processId){ return processId > process.processId; });
+        if (found == m_processes.end() || found->processId != processId)
+        {
+            found = m_processes.insert(found,processId);
+        }
+
+        return *found; 
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
