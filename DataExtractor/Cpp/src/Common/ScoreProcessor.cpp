@@ -75,7 +75,7 @@ namespace CompileScore
 				compileData.accumulated += element.duration;
 				compileData.min = Utils::Min(element.duration,compileData.min);
 
-				if (element.duration > compileData.max)
+				if (element.duration >= compileData.max)
 				{ 
 					compileData.max = element.duration;
 					compileData.maxId = unitId;
