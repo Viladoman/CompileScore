@@ -30,7 +30,7 @@
         {
             return Regex.Replace(str, "[a-z][A-Z]", m => $"{m.Value[0]} {m.Value[1]}");
         }
-        static public string GetTimeStr(ulong uSeconds)
+        static public string GetTimeStr(ulong uSeconds, bool allowZero = false)
         {
             ulong ms = uSeconds / 1000;
             ulong us = uSeconds - (ms * 1000);
@@ -46,7 +46,7 @@
             if (sec > 0)  { return sec  + "." + ms.ToString().PadLeft(4, '0') + " s"; }
             if (ms > 0)   { return ms + "." + us.ToString().PadLeft(4, '0')+" ms"; }
             if (us > 0)   { return us + " μs"; }
-            return "-";
+            return allowZero? "-" : "< 1 μs";
         }
         public static string GetHeaderStr(CompilerData.CompileCategory category)
         {
@@ -98,7 +98,6 @@
         }
     }
 
-
     public class UITimeConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -119,6 +118,26 @@
         }
     }
 
+    public class UITimeConverterZero : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            try
+            {
+                return value is uint ? UIConverters.GetTimeStr((uint)value,true) : UIConverters.GetTimeStr((ulong)value,true);
+            }
+            catch (Exception e)
+            {
+                return e.ToString();
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
     public class RatioToPercentConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -126,7 +145,8 @@
             try
             {
                 double val = (double)value;
-                return val <= 0? "-" : (val * 100).ToString("F1") + '%';
+                double percent = val * 100; 
+                return val <= 0? "-" : (percent < 0.1? "<0.1" : percent.ToString("F1")) + '%';
             }
             catch (Exception e)
             {

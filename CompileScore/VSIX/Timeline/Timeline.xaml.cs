@@ -183,12 +183,15 @@ namespace CompileScore.Timeline
                 const double margin = 10;
 
                 double viewPortWidth = scrollViewer.ViewportWidth - 2 * margin;
-                double zoom = node.Duration > 0 && viewPortWidth > 0 ? viewPortWidth / node.Duration : 0;
+                double zoom = node.Duration == 0? GetMaxZoom() : (viewPortWidth > 0 ? viewPortWidth / node.Duration : 0);
                 pixelToTimeRatio = Math.Max(Math.Min(zoom, GetMaxZoom()), GetMinZoom());
                 double scrollOffset = (node.Start * pixelToTimeRatio) - margin;
 
+                double verticalOffset = ((node.DepthLevel + 0.5) * NodeHeight) - (scrollViewer.ViewportHeight * 0.5);
+
                 canvas.Width = Root.Duration * pixelToTimeRatio;
                 scrollViewer.ScrollToHorizontalOffset(scrollOffset);
+                scrollViewer.ScrollToVerticalOffset(verticalOffset);
 
                 RefreshZoomSlider();
             }
@@ -392,7 +395,7 @@ namespace CompileScore.Timeline
         
         private double GetMaxZoom()
         {
-            return 5.0;
+            return 10.0;
         }
 
         private double PixelToTime(double pixels) { return pixels / pixelToTimeRatio; }
@@ -441,7 +444,7 @@ namespace CompileScore.Timeline
         private void RenderNodeRecursive(DrawingContext drawingContext, TimelineNode node, double clipTimeStart, double clipTimeEnd, double clipDepth, double fakeDurationThreshold)
         {
             //Clipping and LODs
-            if (node.Start > clipTimeEnd || (node.Start + node.Duration) < clipTimeStart || node.DepthLevel > clipDepth)
+            if (node.Duration == 0 || node.Start > clipTimeEnd || (node.Start + node.Duration) < clipTimeStart || node.DepthLevel > clipDepth)
             {
                 return;
             }

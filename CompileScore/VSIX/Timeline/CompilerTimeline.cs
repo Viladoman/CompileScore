@@ -143,12 +143,12 @@ namespace CompileScore.Timeline
                     TimelineNode newNode = LoadNode(reader);
 
                     //Find parent node 
-                    while (parent != null && newNode.Start >= (parent.Start+ parent.Duration) ){ parent = parent.Parent; }
+                    while (parent != null && (newNode.Start >= (parent.Start+parent.Duration))){ parent = parent.Parent; }
 
                     if (parent == null) root = newNode; 
                     else parent.AddChild(newNode);
 
-                    parent = newNode;
+                    parent = newNode.Duration == 0? parent : newNode;
                 }
             }
 

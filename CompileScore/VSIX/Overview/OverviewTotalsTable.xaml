@@ -14,7 +14,7 @@
     <UserControl.Resources>
         <commonUtils:CategoryStrConverter x:Key="categoryStrConverter"/>
         <commonUtils:CategoryColorConverter x:Key="categoryColorConverter"/>
-        <commonUtils:UITimeConverter x:Key="uiTimeConverter"/>
+        <commonUtils:UITimeConverterZero x:Key="uiTimeConverter"/>
         <commonUtils:RatioToPercentConverter x:Key="ratioToPercentConverter"/>
         <Style TargetType="GridViewColumnHeader">
             <Setter Property="Visibility" Value="Collapsed" />

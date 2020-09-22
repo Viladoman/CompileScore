@@ -10,14 +10,8 @@
     using System.Windows.Controls;
     using System.Windows.Data;
 
-    /// <summary>
-    /// Interaction logic for OverviewWindowControl.
-    /// </summary>
     public partial class OverviewWindowControl : UserControl
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OverviewWindowControl"/> class.
-        /// </summary>
         public OverviewWindowControl()
         {
             this.InitializeComponent();
@@ -51,7 +45,7 @@
                 for (CompilerData.CompileCategory category = 0; category < CompilerData.CompileCategory.GatherCount; ++category)
                 {
                     int index = baseIndex + (int)category;
-                    (tabControl.Items[index] as TabItem).IsEnabled = CompilerData.Instance.GetCollection(category).Count > 0;
+                    (tabControl.Items[index] as TabItem).Visibility = CompilerData.Instance.GetCollection(category).Count > 0? Visibility.Visible : Visibility.Collapsed;
                 }
             }
         }
