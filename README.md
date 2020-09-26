@@ -64,7 +64,7 @@ For the Microsoft compiler we are using [C++ Build Insights SDK](https://docs.mi
 
 #### Generate the ETL build trace
 - Open an elevated command-line prompt.
-- Run the following command: ```vcperf /start SessionName```
+- Run the following command: ```vcperf /start SessionName``` (Add ```/level3``` to gather template instance data).
 - Build your C++ project from anywhere, even from within Visual Studio (vcperf collects events system-wide).
 - Run the following command: ```vcperf /stopnoanalyze SessionName buildTraceFile.etl```
 
