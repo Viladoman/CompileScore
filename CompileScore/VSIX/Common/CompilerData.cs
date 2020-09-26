@@ -86,7 +86,7 @@ namespace CompileScore
     {
         private static readonly Lazy<CompilerData> lazy = new Lazy<CompilerData>(() => new CompilerData());
 
-        public const uint VERSION = 3;
+        public const uint VERSION = 4;
 
         //Keep this in sync with the data exporter
         public enum CompileCategory
@@ -96,6 +96,8 @@ namespace CompileScore
             ParseTemplate,
             InstanceClass, 
             InstanceFunction,
+            InstanceVariable, 
+            InstanceConcept,
             CodeGeneration, 
             OptimizeFunction,
             
@@ -350,9 +352,13 @@ namespace CompileScore
                 FileStream fileStream = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 using (BinaryReader reader = new BinaryReader(fileStream))
                 {
+                    // Read version
                     uint thisVersion = reader.ReadUInt32();
                     if (thisVersion == VERSION)
                     {
+                        // Read Header
+                        Timeline.CompilerTimeline.Instance.TimelinePacking = reader.ReadUInt32();
+
                         // Read Units 
                         uint unitsLength = reader.ReadUInt32();
                         var unitList = new List<UnitValue>((int)unitsLength);

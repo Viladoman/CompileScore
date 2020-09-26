@@ -6,6 +6,7 @@ struct ExportParams
     { 
         Clang, 
         MSVC,
+
         Invalid
     };
 
@@ -15,6 +16,8 @@ struct ExportParams
         Basic,
         FrontEnd, 
         Full,
+
+        Invalid
     };
 
     enum class Timeline
@@ -23,19 +26,14 @@ struct ExportParams
         Disabled,
     };
 
-    ExportParams()
-        : input(nullptr)
-        , output("compileData.scor")
-        , source(Source::Invalid)
-        , detail(Detail::Full)
-        , timeline(Timeline::Enabled)
-    {}
+    ExportParams();
 
-    const char* input; 
-    const char* output;
-    Source      source; 
-    Detail      detail;
-    Timeline    timeline;
+    const char*  input; 
+    const char*  output;
+    Source       source; 
+    Detail       detail;
+    Timeline     timeline;
+    unsigned int timelinePacking;
 };
 
 namespace CommandLine

@@ -16,6 +16,8 @@ enum class CompileCategory : CompileCategoryType
     ParseTemplate,
     InstantiateClass, 
     InstantiateFunction, 
+    InstantiateVariable,
+    InstantiateConcept,
     CodeGenFunction, 
     OptimizeFunction, 
     //Gather End

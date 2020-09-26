@@ -277,7 +277,7 @@ namespace Clang
 
 		LOG_PROGRESS("Scanning dir: %s",params.input);
 
-		Context::Scoped<IO::Binarizer> binarizer(params.output);
+		Context::Scoped<IO::Binarizer> binarizer(params.output,params.timelinePacking);
 
 		size_t filesFound = 0u;
 		IO::DirectoryScanner dirScan(params.input,".json");

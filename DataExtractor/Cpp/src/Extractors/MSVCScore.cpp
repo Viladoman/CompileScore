@@ -287,16 +287,13 @@ namespace MSVC
 
         switch(activity.Kind())
         { 
-        case MSBI::Activities::TemplateInstantiation::Kind::CLASS: category = CompileCategory::InstantiateClass; break;
+        case MSBI::Activities::TemplateInstantiation::Kind::CLASS:    category = CompileCategory::InstantiateClass; break;
         case MSBI::Activities::TemplateInstantiation::Kind::FUNCTION: category = CompileCategory::InstantiateFunction; break;
 
         //TODO ~ ramonv ~ add once we move to next data version so we can expand the categories
-        //case MSBI::Activities::TemplateInstantiation::Kind::VARIABLE: category = CompileCategory::DebugGlobalVariable; break; 
-        //case MSBI::Activities::TemplateInstantiation::Kind::CONCEPT: category = CompileCategory::DebugType; break;
+        case MSBI::Activities::TemplateInstantiation::Kind::VARIABLE: category = CompileCategory::InstantiateVariable; break; 
+        case MSBI::Activities::TemplateInstantiation::Kind::CONCEPT:  category = CompileCategory::InstantiateConcept; break;
         }
-             
-
-        //TODO ~ ramonv ~ Get real names / store and wait for the simple events with the resolved names to push these in 
 
         if (category != CompileCategory::Invalid)
         { 
@@ -423,7 +420,7 @@ namespace MSVC
     { 
         constexpr int numberOfPasses = 1;
 
-        Context::Scoped<IO::Binarizer> binarizer(params.output);
+        Context::Scoped<IO::Binarizer> binarizer(params.output,params.timelinePacking);
         
         LOG_PROGRESS("Analyzing trace file %s",params.input);
 

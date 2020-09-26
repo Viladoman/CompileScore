@@ -45,9 +45,12 @@ namespace CompileScore.Timeline
     {
         private static readonly Lazy<CompilerTimeline> lazy = new Lazy<CompilerTimeline>(() => new CompilerTimeline());
 
-        const int TIMELINES_PER_FILE = 100;
         const int TIMELINE_FILE_NUM_DIGITS = 4;
+        private uint timelinePacking = 100;
+
         private CompileScorePackage Package { get; set; }
+
+        public uint TimelinePacking { get { return timelinePacking; } set { timelinePacking = Math.Max(1, value); } }
 
         public void Initialize(CompileScorePackage package)
         {
@@ -64,8 +67,8 @@ namespace CompileScore.Timeline
             uint timelineId = unit.Index;
 
             //compute full path
-            uint timelineFileNum = timelineId / TIMELINES_PER_FILE;
-            uint timelineInFileNum = timelineId % TIMELINES_PER_FILE;
+            uint timelineFileNum = timelineId / timelinePacking;
+            uint timelineInFileNum = timelineId % timelinePacking;
             string fullPath = CompilerData.Instance.GetScoreFullPath() + ".t" + timelineFileNum.ToString().PadLeft(TIMELINE_FILE_NUM_DIGITS, '0');
 
             TimelineNode root = null;

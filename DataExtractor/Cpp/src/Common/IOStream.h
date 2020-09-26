@@ -17,7 +17,9 @@ namespace IO
     { 
         Always, 
         Progress,
-        Info
+        Info, 
+
+        Invalid
     };
 
     void SetVerbosityLevel(const Verbosity level);
@@ -38,7 +40,7 @@ namespace IO
     class Binarizer
     { 
     public: 
-        Binarizer(const char* baseFileName);
+        Binarizer(const char* baseFileName, unsigned int timelinePacking);
         ~Binarizer();
         
         void Binarize(const ScoreData& data);

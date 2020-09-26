@@ -5,11 +5,9 @@
 
 #include "ScoreDefinitions.h"
 
-constexpr U32 SCORE_VERSION = 3;
-constexpr U32 TIMELINES_PER_FILE = 100;
+constexpr U32 SCORE_VERSION = 4;
 constexpr U32 TIMELINE_FILE_NUM_DIGITS = 4;
 
-static_assert(TIMELINES_PER_FILE > 0);
 static_assert(TIMELINE_FILE_NUM_DIGITS > 0);
 
 namespace IO
@@ -209,14 +207,17 @@ namespace IO
     class Binarizer::Impl
     {
     public: 
-        Impl(const char* _path)
+        Impl(const char* _path, unsigned int _timelinesPerFile)
             : path(_path)
+            , timelinesPerFile(_timelinesPerFile)
             , timelineStream(nullptr)
             , timelineCount(0u)
         {}
 
         FILE* NextTimelineStream();
         void CloseTimelineStream();
+
+        U32 GetTimelinesPerFile() const { return timelinesPerFile; }
 
     private: 
         bool AppendTimelineExtension(fastl::string& filename);
@@ -225,8 +226,9 @@ namespace IO
         const char* path;
 
     private:
-        FILE*  timelineStream; 
-        size_t timelineCount;
+        FILE*       timelineStream; 
+        size_t      timelineCount;
+        U32         timelinesPerFile;
     };
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -234,7 +236,7 @@ namespace IO
     // -----------------------------------------------------------------------------------------------------------
     bool Binarizer::Impl::AppendTimelineExtension(fastl::string& filename)
     { 
-        size_t extensionNumber = timelineCount / TIMELINES_PER_FILE;
+        size_t extensionNumber = timelineCount / timelinesPerFile;
 
         char digits[TIMELINE_FILE_NUM_DIGITS];
         for(int i=TIMELINE_FILE_NUM_DIGITS-1;i>=0;--i,extensionNumber/=10)
@@ -260,7 +262,7 @@ namespace IO
     // -----------------------------------------------------------------------------------------------------------
     FILE* Binarizer::Impl::NextTimelineStream()
     {
-        if ((timelineCount % TIMELINES_PER_FILE) == 0)
+        if ((timelineCount % timelinesPerFile) == 0)
         { 
             CloseTimelineStream();
 
@@ -295,8 +297,8 @@ namespace IO
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // -----------------------------------------------------------------------------------------------------------
-    Binarizer::Binarizer(const char* path)
-        : m_impl( new Impl(path))
+    Binarizer::Binarizer(const char* path, unsigned int timelinesPacking)
+        : m_impl( new Impl(path, timelinesPacking))
     {}
 
     // -----------------------------------------------------------------------------------------------------------
@@ -321,7 +323,9 @@ namespace IO
             return;
         }
 
+        //Header
         Utils::BinarizeU32(stream,SCORE_VERSION);
+        Utils::BinarizeU32(stream,m_impl->GetTimelinesPerFile());
 
         Utils::BinarizeUnits(stream,data.units);
         for (int i=0;i<ToUnderlying(CompileCategory::GatherFull);++i)
