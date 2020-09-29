@@ -110,6 +110,7 @@ namespace CompileScore
 
             RunPass,
             CodeGenPasses,
+            PerFunctionPasses,
             PerModulePasses,
             DebugType,
             DebugGlobalVariable,

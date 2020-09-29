@@ -75,29 +75,30 @@ namespace Clang
 	CompileCategory ToCompileCategory(const Json::Token token)
 	{ 
 		//Accepted Tags
-		constexpr Json::Token tagInclude               = Utils::CreateLiteralToken("Source");
-		constexpr Json::Token tagParseClass            = Utils::CreateLiteralToken("ParseClass");
-		constexpr Json::Token tagParseTemplate         = Utils::CreateLiteralToken("ParseTemplate");
-		constexpr Json::Token tagInstantiateClass      = Utils::CreateLiteralToken("InstantiateClass");
-		constexpr Json::Token tagInstantiateFunction   = Utils::CreateLiteralToken("InstantiateFunction");
-		constexpr Json::Token tagCodeGenFunction       = Utils::CreateLiteralToken("CodeGen Function");
-		constexpr Json::Token tagPendingInstantiations = Utils::CreateLiteralToken("PerformPendingInstantiations");
-		constexpr Json::Token tagOptModule             = Utils::CreateLiteralToken("OptModule");
-		constexpr Json::Token tagOptFunction           = Utils::CreateLiteralToken("OptFunction");
-		constexpr Json::Token tagFrontend              = Utils::CreateLiteralToken("Frontend");
-		constexpr Json::Token tagBackend               = Utils::CreateLiteralToken("Backend");
-		constexpr Json::Token tagTotal                 = Utils::CreateLiteralToken("ExecuteCompiler");
+		constexpr static Json::Token tagInclude               = Utils::CreateLiteralToken("Source");
+		constexpr static Json::Token tagParseClass            = Utils::CreateLiteralToken("ParseClass");
+		constexpr static Json::Token tagParseTemplate         = Utils::CreateLiteralToken("ParseTemplate");
+		constexpr static Json::Token tagInstantiateClass      = Utils::CreateLiteralToken("InstantiateClass");
+		constexpr static Json::Token tagInstantiateFunction   = Utils::CreateLiteralToken("InstantiateFunction");
+		constexpr static Json::Token tagCodeGenFunction       = Utils::CreateLiteralToken("CodeGen Function");
+		constexpr static Json::Token tagPendingInstantiations = Utils::CreateLiteralToken("PerformPendingInstantiations");
+		constexpr static Json::Token tagOptModule             = Utils::CreateLiteralToken("OptModule");
+		constexpr static Json::Token tagOptFunction           = Utils::CreateLiteralToken("OptFunction");
+		constexpr static Json::Token tagFrontend              = Utils::CreateLiteralToken("Frontend");
+		constexpr static Json::Token tagBackend               = Utils::CreateLiteralToken("Backend");
+		constexpr static Json::Token tagTotal                 = Utils::CreateLiteralToken("ExecuteCompiler");
 
-		constexpr Json::Token tagRunPass               = Utils::CreateLiteralToken("RunPass");
-		constexpr Json::Token tagCodeGenPasses         = Utils::CreateLiteralToken("CodeGenPasses");
-		constexpr Json::Token tagDebugType             = Utils::CreateLiteralToken("DebugType");
-		constexpr Json::Token tagDebugGlobalVariable   = Utils::CreateLiteralToken("DebugGlobalVariable");
-		constexpr Json::Token tagPerModulePasses       = Utils::CreateLiteralToken("PerModulePasses");
+		constexpr static Json::Token tagRunPass               = Utils::CreateLiteralToken("RunPass");
+		constexpr static Json::Token tagCodeGenPasses         = Utils::CreateLiteralToken("CodeGenPasses");
+		constexpr static Json::Token tagDebugType             = Utils::CreateLiteralToken("DebugType");
+		constexpr static Json::Token tagDebugGlobalVariable   = Utils::CreateLiteralToken("DebugGlobalVariable");
+		constexpr static Json::Token tagPerFunctionPasses     = Utils::CreateLiteralToken("PerFunctionPasses");
+		constexpr static Json::Token tagPerModulePasses       = Utils::CreateLiteralToken("PerModulePasses");
 
 		//Invalid Tags
-		constexpr Json::Token tagInvalidA              = Utils::CreateLiteralToken("process_name");
-		constexpr Json::Token tagInvalidB              = Utils::CreateLiteralToken("thread_name");
-		constexpr Json::Token prefixInvalidA           = Utils::CreateLiteralToken("Total");
+		constexpr static Json::Token tagInvalidA              = Utils::CreateLiteralToken("process_name");
+		constexpr static Json::Token tagInvalidB              = Utils::CreateLiteralToken("thread_name");
+		constexpr static Json::Token prefixInvalidA           = Utils::CreateLiteralToken("Total");
 
 		if (token.type == Json::Token::Type::String)
 		{ 
@@ -112,6 +113,7 @@ namespace Clang
 			if (Utils::EqualTokens(token,tagOptModule))             return CompileCategory::OptimizeModule; 
 			if (Utils::EqualTokens(token,tagRunPass))               return CompileCategory::RunPass; 
 			if (Utils::EqualTokens(token,tagCodeGenPasses))         return CompileCategory::CodeGenPasses; 
+			if (Utils::EqualTokens(token,tagPerFunctionPasses))     return CompileCategory::PerFunctionPasses; 
 			if (Utils::EqualTokens(token,tagPerModulePasses))       return CompileCategory::PerModulePasses; 
 			if (Utils::EqualTokens(token,tagDebugType))             return CompileCategory::DebugType; 
 			if (Utils::EqualTokens(token,tagDebugGlobalVariable))   return CompileCategory::DebugGlobalVariable; 
@@ -135,11 +137,11 @@ namespace Clang
 	// -----------------------------------------------------------------------------------------------------------
 	bool ProcessEvent(CompileEvent& output, Json::Reader& reader)
 	{ 
-		constexpr Json::Token tagName     = Utils::CreateLiteralToken("name");
-		constexpr Json::Token tagStart    = Utils::CreateLiteralToken("ts");
-		constexpr Json::Token tagDuration = Utils::CreateLiteralToken("dur");
-		constexpr Json::Token tagArgs     = Utils::CreateLiteralToken("args");
-		constexpr Json::Token tagDetail   = Utils::CreateLiteralToken("detail");
+		constexpr static Json::Token tagName     = Utils::CreateLiteralToken("name");
+		constexpr static Json::Token tagStart    = Utils::CreateLiteralToken("ts");
+		constexpr static Json::Token tagDuration = Utils::CreateLiteralToken("dur");
+		constexpr static Json::Token tagArgs     = Utils::CreateLiteralToken("args");
+		constexpr static Json::Token tagDetail   = Utils::CreateLiteralToken("detail");
 
 		//Open Object token already parsed by the caller
 		Json::Token token; 

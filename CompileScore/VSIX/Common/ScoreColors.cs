@@ -40,6 +40,7 @@
                 case CompilerData.CompileCategory.OptimizeFunction:      return OptFunctionBrush;
                 case CompilerData.CompileCategory.RunPass:               return RunPassBrush;
                 case CompilerData.CompileCategory.CodeGenPasses:         return CodeGenBrush; //repeated color
+                case CompilerData.CompileCategory.PerFunctionPasses:     return RunPassBrush; //repeated color
                 case CompilerData.CompileCategory.PerModulePasses:       return RunPassBrush; //repeated color
                 case CompilerData.CompileCategory.DebugType:             return OtherBrush; //repeated color
                 case CompilerData.CompileCategory.DebugGlobalVariable:   return OtherBrush; //repeated color

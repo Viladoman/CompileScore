@@ -407,7 +407,7 @@ namespace CompileScore.Timeline
             {
                 pixelToTimeRatio = pixelToTimeRatio > 0? pixelToTimeRatio : GetMinZoom();
                 canvas.Width = Root.Duration*pixelToTimeRatio;
-                canvas.Height = (Root.MaxDepthLevel+1) * NodeHeight;
+                canvas.Height = (Root.MaxDepthLevel+2) * NodeHeight;
 
                 if (restoreScrollX >= 0)
                 {

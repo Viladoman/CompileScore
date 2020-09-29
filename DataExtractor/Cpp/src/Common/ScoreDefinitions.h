@@ -32,6 +32,7 @@ enum class CompileCategory : CompileCategoryType
 
     RunPass,
     CodeGenPasses,
+    PerFunctionPasses,
     PerModulePasses,
     DebugType,
     DebugGlobalVariable,
