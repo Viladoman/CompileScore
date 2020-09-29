@@ -49,7 +49,13 @@ constexpr CompileCategoryType ToUnderlying(CompileCategory input){ return static
 
 struct CompileUnit
 { 
+    CompileUnit(const U32 _unitId = 0u)
+        : unitId(_unitId)
+        , values()
+    {}
+
     fastl::string name;
+    U32 unitId; //filled by the ScoreProcessor
     U32 values[ToUnderlying(CompileCategory::DisplayCount)];
 };
 
@@ -104,15 +110,16 @@ struct CompileEvent
     CompileCategory category; 
 };
 
-using TCompileDataDictionary  = fastl::unordered_map<fastl::string,U32>;
-using TCompileDatas  = fastl::vector<CompileData>;
-using TCompileUnits  = fastl::vector<CompileUnit>;
-using TCompileEvents = fastl::vector<CompileEvent>;
+using TCompileDataDictionary   = fastl::unordered_map<fastl::string,U32>;
+using TCompileDatas            = fastl::vector<CompileData>;
+using TCompileUnits            = fastl::vector<CompileUnit>;
+using TCompileEvents           = fastl::vector<CompileEvent>;
+using TCompileEventTracks      = fastl::vector<TCompileEvents>;
 
 struct ScoreTimeline
 { 
-    TCompileEvents events;
-    fastl::string  name;
+    TCompileEventTracks tracks;
+    fastl::string       name;
 };
 
 struct ScoreData

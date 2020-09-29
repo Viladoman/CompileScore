@@ -16,7 +16,7 @@ namespace CompileScore
 	// -----------------------------------------------------------------------------------------------------------
 	CompileData& CreateGlobalEntry(ScoreData& scoreData, CompileEvent& element)
 	{ 
-		//TODO ~ ramonv ~ use hashes for this
+		//TODO ~ ramonv ~ use a string hash for this double lookups
 
 		const CompileCategoryType globalIndex = ToUnderlying(element.category);
 		TCompileDatas& global = scoreData.globals[globalIndex];
@@ -54,20 +54,12 @@ namespace CompileScore
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	void ProcessTimeline(ScoreData& scoreData, ScoreTimeline& timeline)
-	{
+	void ProcessTimelineTrack(ScoreData& scoreData, CompileUnit& unit, TCompileEvents& events, const CompileCategory gatherLimit)
+	{ 
 		U32 overlapThreshold[ToUnderlying(CompileCategory::DisplayCount)] = {};
-
-		const CompileCategory gatherLimit = GetGatherLimit(); 
-
-		//Create new unit
-		const U32 unitId = static_cast<U32>(scoreData.units.size());
-		scoreData.units.emplace_back();
-		CompileUnit& unit = scoreData.units.back();
-		unit.name = timeline.name;
-
+	
 		//Process Timeline elements
-		for (CompileEvent& element : timeline.events)
+		for (CompileEvent& element : events)
 		{ 
 			if (element.category < gatherLimit)
 			{ 
@@ -78,7 +70,7 @@ namespace CompileScore
 				if (element.duration >= compileData.max)
 				{ 
 					compileData.max = element.duration;
-					compileData.maxId = unitId;
+					compileData.maxId =unit.unitId;
 				}
 
 				++compileData.count;
@@ -92,6 +84,23 @@ namespace CompileScore
 					overlapThreshold[ToUnderlying(element.category)] = element.start+element.duration;
 				}
 			}
+		}
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	void ProcessTimeline(ScoreData& scoreData, ScoreTimeline& timeline)
+	{
+		const CompileCategory gatherLimit = GetGatherLimit(); 
+
+		//Create new unit
+		const U32 unitId = static_cast<U32>(scoreData.units.size());
+		scoreData.units.emplace_back(unitId);
+		CompileUnit& unit = scoreData.units.back();
+		unit.name = timeline.name;
+		
+		for (TCompileEvents& track : timeline.tracks)
+		{ 
+			ProcessTimelineTrack(scoreData,unit,track,gatherLimit);
 		}
 		
 		IO::Binarizer* binarizer = Context::Get<IO::Binarizer>(); 

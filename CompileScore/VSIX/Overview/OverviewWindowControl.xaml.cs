@@ -18,7 +18,7 @@
             CompilerData.Instance.ScoreDataChanged += RefreshTabs;
 
             //Initialize Tabs
-            for (CompilerData.CompileCategory category = 0; category < CompilerData.CompileCategory.GatherCount; ++category)
+            for (CompilerData.CompileCategory category = 0; (int)category < (int)CompilerData.CompileThresholds.Gather; ++category)
             {
                 AddTab(category);
             }
@@ -38,11 +38,11 @@
 
         public void RefreshTabs()
         {
-            int baseIndex = tabControl.Items.Count - (int)CompilerData.CompileCategory.GatherCount;
+            int baseIndex = tabControl.Items.Count - (int)CompilerData.CompileThresholds.Gather;
             if (baseIndex >= 0)
             {
                 //We assume the last tabs are the one for the categories
-                for (CompilerData.CompileCategory category = 0; category < CompilerData.CompileCategory.GatherCount; ++category)
+                for (CompilerData.CompileCategory category = 0; (int)category < (int)CompilerData.CompileThresholds.Gather; ++category)
                 {
                     int index = baseIndex + (int)category;
                     (tabControl.Items[index] as TabItem).Visibility = CompilerData.Instance.GetCollection(category).Count > 0? Visibility.Visible : Visibility.Collapsed;

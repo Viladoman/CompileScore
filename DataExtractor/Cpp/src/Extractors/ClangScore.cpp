@@ -203,7 +203,7 @@ namespace Clang
 	void AddEventToTimeline(ScoreTimeline& timeline, const CompileEvent& compileEvent)
 	{ 
 		//inject in a sorted position
-		TCompileEvents& events = timeline.events; 
+		TCompileEvents& events = timeline.tracks[0]; 
 		TCompileEvents::iterator found = fastl::lower_bound(events.begin(),events.end(),compileEvent,
 			[=](const CompileEvent& input, const CompileEvent& value)
 			{ 
@@ -215,7 +215,7 @@ namespace Clang
 	// -----------------------------------------------------------------------------------------------------------
 	void NormalizeStartTimes(ScoreTimeline& timeline)
 	{ 
-		TCompileEvents& events = timeline.events; 
+		TCompileEvents& events = timeline.tracks[0]; 
 
 		if (!events.empty())
 		{
@@ -233,6 +233,8 @@ namespace Clang
 		constexpr Json::Token literalTraceEvents = Utils::CreateLiteralToken("traceEvents");
 
 		ScoreTimeline timeline;
+		timeline.tracks.emplace_back(); //we only use one events track in Clang
+
 		timeline.name = path;
 		StringUtils::ToPathBaseName(timeline.name); //remove the path
 		StringUtils::RemoveExtension(timeline.name); //remove the .json

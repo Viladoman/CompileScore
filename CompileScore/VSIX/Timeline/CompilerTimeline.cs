@@ -24,8 +24,8 @@ namespace CompileScore.Timeline
 
         public object Value { set; get; }       
 
-        public uint Start { get; }
-        public uint Duration { get; }
+        public uint Start { set; get; }
+        public uint Duration { set; get; }
         public uint DepthLevel { set; get; }
         public uint MaxDepthLevel { set; get; }
         public Brush UIColor { set; get; }
@@ -89,8 +89,7 @@ namespace CompileScore.Timeline
 
                         if (!ReachedEndOfStream(reader))
                         {
-                            root = BuildTimelineTree(reader);
-                            FinializeRoot(root, unit);
+                            root = BuildTimelineRoot(reader,unit);
                         }
                     }
                     else
@@ -101,15 +100,25 @@ namespace CompileScore.Timeline
 
                 fileStream.Close();
             }
+
             return root;
         }
 
         bool ReachedEndOfStream(BinaryReader reader)
         {
             return reader.BaseStream.Position == reader.BaseStream.Length;
-        } 
+        }
 
         private void SkipTimeline(BinaryReader reader)
+        {
+            uint numTracks = reader.ReadUInt32();
+            for (uint i=0;i<numTracks;++i)
+            {
+                SkipTimelineTrack(reader);
+            }
+        }
+
+        private void SkipTimelineTrack(BinaryReader reader)
         {
             uint numEvents = reader.ReadUInt32();
             const uint nodeSize = 13; //4+4+4+1
@@ -130,41 +139,115 @@ namespace CompileScore.Timeline
             return new TimelineNode(label, start, duration, category, value);
         }
 
-        private TimelineNode BuildTimelineTree(BinaryReader reader)
+        private void AdjustNodeProperties(TimelineNode node)
         {
-            TimelineNode root = null;
-           
-            //THe nodes are sorted by start time 
-            uint numEvents = reader.ReadUInt32();
-
-            if (numEvents > 0)
+            if (node.Children.Count > 0)
             {
-                TimelineNode parent = null;
-
-                for (uint i=0u;i<numEvents;++i)
+                node.Start = node.Children[0].Start;
+                foreach(TimelineNode child in node.Children)
                 {
-                    TimelineNode newNode = LoadNode(reader);
-
-                    //Find parent node 
-                    while (parent != null && (newNode.Start >= (parent.Start+parent.Duration))){ parent = parent.Parent; }
-
-                    if (parent == null) root = newNode; 
-                    else parent.AddChild(newNode);
-
-                    parent = newNode.Duration == 0? parent : newNode;
+                    node.Duration = Math.Max(node.Duration, (child.Start+child.Duration)-node.Start);
                 }
             }
-
-            return root; 
         }
 
-        private void FinializeRoot(TimelineNode root, UnitValue unit)
+        private TimelineNode BuildTimelineTree(BinaryReader reader)
         {
-            if (root.Category == CompilerData.CompileCategory.ExecuteCompiler)
+            uint numEvents = reader.ReadUInt32();
+
+            TimelineNode root = new TimelineNode(CompilerData.CompileCategory.Thread.ToString(), 0, 0, CompilerData.CompileCategory.Thread);
+
+            TimelineNode parent = root;
+
+            for (uint i = 0u; i < numEvents; ++i)
             {
-                root.Value = unit;
-                root.Label = unit.Name + " ( " + Common.UIConverters.GetTimeStr(root.Duration) + " )";
+                TimelineNode newNode = LoadNode(reader);
+
+                //Find parent node 
+                while (parent != root && (newNode.Start >= (parent.Start + parent.Duration))) { parent = parent.Parent; }
+
+                parent.AddChild(newNode);
+                parent = newNode.Duration == 0 ? parent : newNode;
             }
+
+            AdjustNodeProperties(root);
+
+            return root;  
+        }
+
+        private void InitializeNodeRecursive(TimelineNode node, uint baseDepth = 0)
+        {
+            node.DepthLevel = node.Parent == null ? baseDepth : node.Parent.DepthLevel + 1;
+            node.MaxDepthLevel = node.DepthLevel;
+            node.UIColor = Common.Colors.GetCategoryBackground(node.Category);
+
+            foreach (TimelineNode child in node.Children)
+            {
+                InitializeNodeRecursive(child,baseDepth);
+                node.MaxDepthLevel = Math.Max(node.MaxDepthLevel, child.MaxDepthLevel);
+            }
+        }
+
+        private uint GetSectionDepthLevel(TimelineNode node, uint from, uint to)
+        {
+            if (node.Start > to || (node.Start + node.Duration) < from)
+            {
+                //early exit, no overlap
+                return 0;
+            }
+                
+            uint level = node.DepthLevel;
+
+            foreach (TimelineNode child in node.Children)
+            {
+                level = Math.Max(level, GetSectionDepthLevel(child,from,to));
+            }
+
+            return level;
+        }
+
+        private uint GetBaseDepthLevel(TimelineNode root, TimelineNode input)
+        {
+            uint maxLevel = 1;
+            foreach (TimelineNode child in root.Children)
+            {
+                maxLevel = Math.Max(maxLevel,GetSectionDepthLevel(child, input.Start, input.Start + input.Duration)+2);
+            }
+
+            return maxLevel;
+        }
+
+        private TimelineNode BuildTimelineRoot(BinaryReader reader, UnitValue unit)
+        {
+            uint numTracks = reader.ReadUInt32();
+
+            TimelineNode root = new TimelineNode("", 0, 0, CompilerData.CompileCategory.Timeline);
+            InitializeNodeRecursive(root);
+
+            for (uint i=0;i<numTracks;++i)
+            {
+                TimelineNode tree = BuildTimelineTree(reader);
+
+                if (tree.Children.Count > 0 && tree.Children[0].Category == CompilerData.CompileCategory.ExecuteCompiler)
+                {
+                    //skip the thread for the main track
+                    tree = tree.Children[0];
+                    tree.Value = unit;
+                }
+                
+                //Initialize nodes
+                InitializeNodeRecursive(tree, GetBaseDepthLevel(root,tree));
+                root.MaxDepthLevel = tree.MaxDepthLevel;
+
+                root.AddChild(tree);
+            }
+
+            AdjustNodeProperties(root);
+
+            root.Value = unit;
+            root.Label = unit.Name + " ( " + Common.UIConverters.GetTimeStr(root.Duration) + " )";
+
+            return root.Children.Count > 0? root : null;
         }
 
         public void DisplayTimeline(UnitValue unit, CompileValue value = null)

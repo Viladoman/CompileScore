@@ -55,7 +55,11 @@
     </UserControl.Resources>
 
     <Grid>
-        <ListView x:Name="listview">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <ListView Grid.Row="0" x:Name="listview">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Width="150" DisplayMemberBinding="{Binding Category, Converter={StaticResource categoryStrConverter}}"/>
@@ -70,7 +74,7 @@
                     <GridViewColumn Width="65" DisplayMemberBinding="{Binding Ratio,  Converter={StaticResource ratioToPercentConverter}}"/>
                 </GridView>
             </ListView.View>
-       
         </ListView>
+        <TextBlock Grid.Row="2" Text="Disclaimer: The values are accumulative (equivalent to a single thread compilation)" HorizontalAlignment="Center" />
     </Grid>
 </UserControl>

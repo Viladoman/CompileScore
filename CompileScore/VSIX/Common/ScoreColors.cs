@@ -20,6 +20,8 @@
         static Brush BackEndBrush              = new SolidColorBrush(Color.FromArgb(255, 136, 81,  0));
         static Brush ExecuteCompilerBrush      = new SolidColorBrush(Color.FromArgb(255, 51,  119, 102));
         static Brush OtherBrush                = new SolidColorBrush(Color.FromArgb(255, 119, 0,   0));
+        static Brush ThreadBrush               = new SolidColorBrush(Color.FromArgb(255, 75,  75,  75));
+        static Brush TimelineBrush             = new SolidColorBrush(Color.FromArgb(255, 51,  51,  51));
 
         static public Brush GetCategoryBackground(CompilerData.CompileCategory category)
         {
@@ -45,6 +47,8 @@
                 case CompilerData.CompileCategory.BackEnd:               return BackEndBrush;
                 case CompilerData.CompileCategory.ExecuteCompiler:       return ExecuteCompilerBrush;
                 case CompilerData.CompileCategory.Other:                 return OtherBrush;
+                case CompilerData.CompileCategory.Thread:                return ThreadBrush;
+                case CompilerData.CompileCategory.Timeline:              return TimelineBrush;
             }
 
             return OtherBrush;

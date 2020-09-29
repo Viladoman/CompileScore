@@ -115,6 +115,7 @@ namespace CompileScore.Timeline
         const double NodeHeight = 20.0;
         const double zoomIncreaseRatio = 1.1;
         const double FakeWidth = 3;
+        const double textRenderMinWidth = 60;
 
         private double pixelToTimeRatio = -1.0;
         private double restoreScrollX = -1.0;
@@ -237,11 +238,6 @@ namespace CompileScore.Timeline
         private void SetRoot(TimelineNode root)
         {
             Root = root;
-            if (Root != null)
-            {
-                InitializeNodeRecursive(Root);
-            }
-
             nodeSearchBox.SetData(ComputeFlatNameList());
 
             pixelToTimeRatio = -1.0;
@@ -427,20 +423,6 @@ namespace CompileScore.Timeline
             }
         }
 
-        private void InitializeNodeRecursive(TimelineNode node)
-        {
-            node.DepthLevel = node.Parent == null ? 0 : node.Parent.DepthLevel+1;
-            node.MaxDepthLevel = node.DepthLevel;
-
-            node.UIColor = Common.Colors.GetCategoryBackground(node.Category); 
-
-            foreach (TimelineNode child in node.Children)
-            {
-                InitializeNodeRecursive(child);
-                node.MaxDepthLevel = Math.Max(node.MaxDepthLevel, child.MaxDepthLevel);
-            }
-        }
-
         private void RenderNodeRecursive(DrawingContext drawingContext, TimelineNode node, double clipTimeStart, double clipTimeEnd, double clipDepth, double fakeDurationThreshold)
         {
             //Clipping and LODs
@@ -483,7 +465,7 @@ namespace CompileScore.Timeline
             drawingContext.DrawRectangle(brush, borderPen, new Rect(pixelStart, posY, screenWidth, NodeHeight));
 
             //Render text
-            if (screenWidth > 30)
+            if (screenWidth >= textRenderMinWidth)
             {
                 var UIText = new FormattedText(node.Label, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, Font, 12, Common.Colors.GetCategoryForeground(), VisualTreeHelper.GetDpi(this).PixelsPerDip);
                 UIText.MaxTextWidth = Math.Min(screenWidth, UIText.Width);
@@ -511,7 +493,13 @@ namespace CompileScore.Timeline
 
         private void RenderBase()
         {
-            if (Root != null)
+            if (Root == null)
+            {
+                //Clear the canvas
+                using (DrawingContext drawingContext = baseVisual.Visual.RenderOpen()){}
+                RefreshCanvasVisual(baseVisual);
+            }
+            else
             {
                 borderPen.Brush = this.Foreground;
 

@@ -341,11 +341,14 @@ namespace IO
     // -----------------------------------------------------------------------------------------------------------
     void Binarizer::Binarize(const ScoreTimeline& timeline)
     { 
-        //TODO ~ ramonv ~ add option to disable timeline export
-
         if (FILE* stream = m_impl->NextTimelineStream())
         { 
-            Utils::BinarizeTimelineEvents(stream,timeline.events);
+            Utils::BinarizeU32(stream,static_cast<unsigned int>(timeline.tracks.size()));
+            for (const TCompileEvents& events : timeline.tracks)
+            { 
+                Utils::BinarizeTimelineEvents(stream,events);
+            }
+
             LOG_INFO("Timeline for %s exported", timeline.name.c_str());
         }
     }

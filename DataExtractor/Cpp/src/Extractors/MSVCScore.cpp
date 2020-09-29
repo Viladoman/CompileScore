@@ -18,6 +18,8 @@ namespace MSVC
 
     using TTimeStamp = unsigned long long;
     using TSymbolId  = unsigned long long;
+    using TProcessId = unsigned long;
+    using TThreadId  = unsigned long;
 
     namespace Utils
     { 
@@ -58,6 +60,19 @@ namespace MSVC
     };
     using TMSVCCompileEvents = fastl::vector<MSVCCompileEvent>;
 
+    struct MSVCCompileTrack
+    { 
+        MSVCCompileTrack(const TThreadId _threadId = 0u)
+            : threadId(_threadId)
+            , sectionStartIndex(0u)
+        {}
+
+        TMSVCCompileEvents events;
+        TThreadId          threadId; 
+        size_t             sectionStartIndex; 
+    };
+    using TMSVCCompileTracks = fastl::vector<MSVCCompileTrack>;
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     class Gatherer : public MSBI::IAnalyzer
@@ -70,15 +85,15 @@ namespace MSVC
             using TSymbolsMap = fastl::unordered_map<TSymbolId,fastl::string>;
 
             TUEntry()
-                : sectionStartIndex(0u)
-                , timestampOffset(0u)
+                : timestampOffset(0u)
                 , timeSectionAccumulator(0u)
             {}
 
+            MSVCCompileTrack& GetTrack(const TThreadId threadId);
+
             fastl::string      name;
-            TMSVCCompileEvents events;
+            TMSVCCompileTracks tracks;
             TSymbolsMap        symbols;
-            size_t             sectionStartIndex; 
             TTimeStamp         timestampOffset;
             U32                timeSectionAccumulator;
         };
@@ -87,7 +102,7 @@ namespace MSVC
 
         struct TUProcess
         { 
-            TUProcess(const unsigned long _processId = 0u);
+            TUProcess(const TProcessId _processId = 0u);
 
             TUEntry* GetActiveTU();         
             void ActivateTU(const fastl::string& path);
@@ -96,7 +111,7 @@ namespace MSVC
 
             TTUCollection data; 
             TTUDictionary dict;
-            unsigned long processId; 
+            TProcessId    processId; 
             U32 activeIndex;
         };
         using TUProcessContainer = fastl::vector<TUProcess>;
@@ -126,7 +141,7 @@ namespace MSVC
         void FinalizeActiveTU(TUProcess& process);
         void MergePendingEvents(TUEntry& entry);
 
-        TUProcess& GetProcess(unsigned long processId);
+        TUProcess& GetProcess(TProcessId processId);
 
     private:
         TUProcessContainer m_processes;
@@ -138,7 +153,26 @@ namespace MSVC
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // -----------------------------------------------------------------------------------------------------------
-    Gatherer::TUProcess::TUProcess(const unsigned long _processId)
+    MSVCCompileTrack& Gatherer::TUEntry::GetTrack(const TThreadId threadId)
+    { 
+        //TODO ~ ramonv ~ linear lookup if lots of threads it might not scale properly
+
+        for (MSVCCompileTrack& track : tracks)
+        {
+            if (track.threadId == threadId)
+            { 
+                return track;
+            }
+        }
+
+        tracks.emplace_back(threadId);
+        return tracks.back();
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // -----------------------------------------------------------------------------------------------------------
+    Gatherer::TUProcess::TUProcess(const TProcessId _processId)
         : processId(_processId)
         , activeIndex(InvalidIndex)
     {}
@@ -175,7 +209,7 @@ namespace MSVC
             dict.erase(activeTU->name);
 
             //remove suballocation on activetU but keep to not destroy the dictionary indices
-            activeTU->events.clear();
+            activeTU->tracks.clear();
             activeTU->name.clear();
             activeTU->symbols.clear();
 
@@ -234,12 +268,13 @@ namespace MSVC
         TUProcess& process = GetProcess(activity.ProcessId());
         process.ActivateTU(path);
         TUEntry* activeTU = process.GetActiveTU();
+        MSVCCompileTrack& track = activeTU->GetTrack(activity.ThreadId());
 
         activeTU->timestampOffset = activity.StartTimestamp();
-        if (activeTU->events.empty())
+        if (track.events.empty())
         {
             activeTU->name = path;
-            activeTU->events.emplace_back(MSVCCompileEvent(CompileEvent(CompileCategory::ExecuteCompiler,0u,0u,path)));
+            track.events.emplace_back(MSVCCompileEvent(CompileEvent(CompileCategory::ExecuteCompiler,0u,0u,path)));
         }
     }
 
@@ -248,8 +283,7 @@ namespace MSVC
     {
         const CompileCategory category = activity.PassCode() == MSBI::Activities::CompilerPass::PassCode::BACK_END? CompileCategory::BackEnd : CompileCategory::FrontEnd;
 
-        unsigned long threadId = activity.ThreadId();
-        unsigned long processId = activity.ProcessId();
+        const TProcessId processId = activity.ProcessId();
 
         TUProcess& process = GetProcess(activity.ProcessId());
         TUEntry* activeTU = process.GetActiveTU();
@@ -258,7 +292,10 @@ namespace MSVC
         if (MSVCCompileEvent* newEvent = AddEvent(activeTU,category,activity)) 
         { 
             activeTU->timeSectionAccumulator = (newEvent->event.start + newEvent->event.duration)+1;
-            activeTU->sectionStartIndex = activeTU->events.size();
+            for (MSVCCompileTrack& track : activeTU->tracks)
+            { 
+                track.sectionStartIndex = track.events.size();
+            }
         }
 
         if (category == CompileCategory::BackEnd)
@@ -305,9 +342,6 @@ namespace MSVC
     // -----------------------------------------------------------------------------------------------------------
     void Gatherer::OnFunctionEnded(const MSBI::Activities::Function& activity)
     {
-        //TODO ~ ramonv ~ we need to fix threadId multitimeline export first ( better no data than bad data ) 
-        return;
-
         fastl::string name = activity.Name();
 
         //TODO ~ ramonv ~ undecorateName - windows function: UnDecorateSymbolName()
@@ -326,7 +360,7 @@ namespace MSVC
     // -----------------------------------------------------------------------------------------------------------
     void Gatherer::OnCodeGenerationThreadEnded(const MSBI::Activities::Thread& activity)
     { 
-        //AddEvent(GetProcess(activity.ProcessId()).GetActiveTU(),CompileCategory::CodeGenPasses,activity);
+        AddEvent(GetProcess(activity.ProcessId()).GetActiveTU(),CompileCategory::CodeGenPasses,activity);
     }
 
     // -----------------------------------------------------------------------------------------------------------
@@ -360,8 +394,9 @@ namespace MSVC
         { 
             const U32 startTime = ComputeEventStartTime(activeTU,activity);
 
-            TMSVCCompileEvents& events = activeTU->events;
-            TMSVCCompileEvents::iterator startSearch = events.begin()+activeTU->sectionStartIndex;
+            MSVCCompileTrack& track = activeTU->GetTrack(activity.ThreadId());
+            TMSVCCompileEvents& events = track.events;
+            TMSVCCompileEvents::iterator startSearch = events.begin()+track.sectionStartIndex;
             TMSVCCompileEvents::iterator found = fastl::lower_bound(startSearch,events.end(),startTime,[=](const MSVCCompileEvent& input, U32 value){ return value >= input.event.start; });
             TMSVCCompileEvents::iterator elem = events.emplace(found,MSVCCompileEvent(CompileEvent(category,startTime,ConvertDuration(activity.Duration()),name),nameSymbol));    
             return &(*elem);
@@ -377,22 +412,29 @@ namespace MSVC
         if (TUEntry* tu = process.GetActiveTU())
         { 
             TUEntry& entry = *tu;
-            entry.events[0].event.duration = entry.timeSectionAccumulator; //Fix the root node
+            entry.tracks[0].events[0].event.duration = entry.timeSectionAccumulator; //Fix the root node
 
             //Create standard timeline
             ScoreTimeline timeline; 
             timeline.name = entry.name;
-            timeline.events.reserve(entry.events.size());
+            timeline.tracks.reserve(entry.tracks.size());
 
-            for(MSVCCompileEvent& element : entry.events)
-            { 
-                //assign name from symbols table if needed
-                if (element.nameSymbol > 0u)
+            for (MSVCCompileTrack& track : entry.tracks)
+            {
+                timeline.tracks.emplace_back();
+                TCompileEvents& timelineEvents = timeline.tracks.back();
+
+                timelineEvents.reserve(track.events.size());
+                for(MSVCCompileEvent& element : track.events)
                 { 
-                    element.event.name = entry.symbols[element.nameSymbol];
-                }
+                    //assign name from symbols table if needed
+                    if (element.nameSymbol > 0u)
+                    { 
+                        element.event.name = entry.symbols[element.nameSymbol];
+                    }
 
-                timeline.events.push_back(element.event);
+                    timelineEvents.push_back(element.event);
+                }
             }
 
             CompileScore::ProcessTimeline(m_scoreData,timeline);
@@ -402,9 +444,9 @@ namespace MSVC
     }
 
     // -----------------------------------------------------------------------------------------------------------
-    Gatherer::TUProcess& Gatherer::GetProcess(unsigned long processId)
+    Gatherer::TUProcess& Gatherer::GetProcess(const TProcessId processId)
     { 
-        TUProcessContainer::iterator found = fastl::lower_bound(m_processes.begin(),m_processes.end(),processId,[](const TUProcess& process, const unsigned long processId){ return processId > process.processId; });
+        TUProcessContainer::iterator found = fastl::lower_bound(m_processes.begin(),m_processes.end(),processId,[](const TUProcess& process, const TProcessId processId){ return processId > process.processId; });
         if (found == m_processes.end() || found->processId != processId)
         {
             found = m_processes.insert(found,processId);

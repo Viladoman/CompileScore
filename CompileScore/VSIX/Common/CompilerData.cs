@@ -59,7 +59,7 @@ namespace CompileScore
 
     public class UnitValue
     {
-        private uint[] values = new uint[(int)CompilerData.CompileCategory.DisplayCount];
+        private uint[] values = new uint[(int)CompilerData.CompileThresholds.Display];
 
         public UnitValue(string name, uint index)
         {
@@ -75,7 +75,7 @@ namespace CompileScore
 
         public void SetValue(CompilerData.CompileCategory category, uint input)
         {
-            if (category < CompilerData.CompileCategory.DisplayCount)
+            if ((int)category < (int)CompilerData.CompileThresholds.Display)
             {
                 values[(int)category] = input;
             }
@@ -115,9 +115,18 @@ namespace CompileScore
             DebugGlobalVariable,
             Invalid,
 
+            //Meta categories only for the visualizers
+            Thread, 
+            Timeline,
+
+            //Global Counters
             FullCount,
-            GatherCount = PendingInstantiations,
-            DisplayCount = RunPass,
+        }
+
+        public enum CompileThresholds
+        {
+            Gather  = CompileCategory.PendingInstantiations,
+            Display = CompileCategory.RunPass,
         }
 
         private CompileScorePackage _package;
@@ -138,7 +147,7 @@ namespace CompileScore
             public List<uint>                         normalizedThresholds = new List<uint>();
         }
 
-        private CompileDataset[] _datasets = new CompileDataset[(uint)CompileCategory.GatherCount].Select(h => new CompileDataset()).ToArray();
+        private CompileDataset[] _datasets = new CompileDataset[(int)CompileThresholds.Gather].Select(h => new CompileDataset()).ToArray();
 
         //events
         public event Notify ScoreDataChanged;
@@ -198,7 +207,7 @@ namespace CompileScore
 
         public UnitTotal GetTotal(CompileCategory category)
         {
-            return category < CompileCategory.DisplayCount && (int)category < _totals.Count? _totals[(int)category] : null;
+            return (int)category < (int)CompileThresholds.Display && (int)category < _totals.Count? _totals[(int)category] : null;
         }
 
         public List<UnitValue> GetUnits()
@@ -280,7 +289,7 @@ namespace CompileScore
 
         public CompileValue GetValue(CompileCategory category, int index)
         {
-            if (category < CompileCategory.GatherCount)
+            if ((int)category < (int)CompileThresholds.Gather)
             {
                 CompileDataset dataset = _datasets[(int)category];
                 return index >= 0 && index < dataset.collection.Count ? dataset.collection[index] : null;
@@ -306,7 +315,7 @@ namespace CompileScore
             var name = reader.ReadString();
             var compileData = new UnitValue(name, index);
 
-            for(CompileCategory category = 0; category < CompileCategory.DisplayCount; ++category)
+            for(CompileCategory category = 0; (int)category < (int)CompileThresholds.Display; ++category)
             {
                 compileData.SetValue(category, reader.ReadUInt32());
             }
@@ -328,7 +337,7 @@ namespace CompileScore
         }
         private void ClearDatasets()
         {
-            for (int i=0;i< (int)CompileCategory.GatherCount; ++i)
+            for (int i=0;i< (int)CompileThresholds.Gather; ++i)
             {
                 CompileDataset dataset = _datasets[i];
                 dataset.collection.Clear();
@@ -370,7 +379,7 @@ namespace CompileScore
                         _unitsCollection = new List<UnitValue>(unitList);
 
                         //Read Datasets
-                        for(int i = 0; i < (int)CompileCategory.GatherCount; ++i)
+                        for(int i = 0; i < (int)CompileThresholds.Gather; ++i)
                         {
                             uint dataLength = reader.ReadUInt32();
                             var thislist = new List<CompileValue>((int)dataLength);
@@ -423,7 +432,7 @@ namespace CompileScore
 
             //Process Totals
             _totals = new List<UnitTotal>();
-            for (int k = 0; k < (int)CompileCategory.DisplayCount; ++k)
+            for (int k = 0; k < (int)CompileThresholds.Display; ++k)
             {
                 _totals.Add(new UnitTotal((CompileCategory)k));
             }
@@ -431,7 +440,7 @@ namespace CompileScore
             foreach (UnitValue unit in _unitsCollection)
             {  
                 
-                for(int k = 0; k < (int)CompileCategory.DisplayCount;++k)
+                for(int k = 0; k < (int)CompileThresholds.Display;++k)
                 {
                     _totals[k].Total += unit.ValuesList[k];
                 }
