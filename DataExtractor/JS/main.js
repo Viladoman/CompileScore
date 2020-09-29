@@ -1,9 +1,8 @@
 var Extract = require('./src/extract.js')
 
 var verbosityLevel = 1;
-var exportDetail = 3;
 
-var params = { detail: 3, timeline: true};
+var params = { detail: 3, timeline: true, timelinePacking: 100};
 
 function FormatTime(miliseconds)
 { 
@@ -74,9 +73,14 @@ function ProcessCommandLine()
     }
     else if ((i+1) < args.length)
     { 
-      if (args[i] == '-i' || args[i] == '-input') inputFolder = args[i+1];
-      if (args[i] == '-o' || args[i] == '-output') outputFile = args[i+1];
-      if (args[i] == '-d' || args[i] == '-detail')
+      if (args[i] == '-i'  || args[i] == '-input') inputFolder = args[i+1];
+      if (args[i] == '-o'  || args[i] == '-output') outputFile = args[i+1];
+      if (args[i] == '-tp' || args[i] == '-timelinepack')
+      { 
+        var packing = Number(args[i+1]);
+        params.timelinePacking = isNaN(packing) || packing <= 0? params.timelinePacking : packing;
+      }
+      if (args[i] == '-d'  || args[i] == '-detail')
       { 
         var level = Number(args[i+1]);
         params.detail = isNaN(level)? params.detail : Math.max(0,level);

@@ -5,9 +5,9 @@ var path = require('path');
 
 var exportParams = {};
 
-const VERSION = 3;
-const TIMELINES_PER_FILE = 100;
+const VERSION = 4;
 const TIMELINE_FILE_NUM_DIGITS = 4;
+const TIMELINES_PER_FILE_FALLBACK = 100;
 
 const maxU32 = 0xffffffff;
 
@@ -17,23 +17,26 @@ var NodeNature = {
   PARSETEMPLATE:         2,
   INSTANTIATECLASS:      3,
   INSTANTIATEFUNCTION:   4,
-  CODEGENFUNCTION:       5,
-  OPTFUNCTION:           6,
+  INSTANTIATEVARIABLE:   5, 
+  INSTANTIATECONCEPT:    6,
+  CODEGENFUNCTION:       7,
+  OPTFUNCTION:           8,
   
-  PENDINGINSTANTIATIONS: 7,
-  OPTMODULE:             8,
-  FRONTEND:              9,
-  BACKEND:               10,
-  EXECUTECOMPILER:       11,
-  OTHER:                 12,
+  PENDINGINSTANTIATIONS: 9,
+  OPTMODULE:             10,
+  FRONTEND:              11,
+  BACKEND:               12,
+  EXECUTECOMPILER:       13,
+  OTHER:                 14,
 
-  RUNPASS:               13,
-  CODEGENPASSES:         14,
-  PERMODULEPASSES:       15,
-  DEBUGTYPE:             16,
-  DEBUGGLOBALVARIABLE:   17,
+  RUNPASS:               15,
+  CODEGENPASSES:         16,
+  PERFUNCTIONPASSES:     17,
+  PERMODULEPASSES:       18,
+  DEBUGTYPE:             19,
+  DEBUGGLOBALVARIABLE:   20,
 
-  INVALID:               18,
+  INVALID:               21,
 }
 
 var NodeNatureData = {
@@ -65,6 +68,7 @@ function NodeNatureFromString(natureName)
   else if (natureName == 'OptFunction')                 { return NodeNature.OPTFUNCTION; }
   else if (natureName == 'RunPass')                     { return NodeNature.RUNPASS; }
   else if (natureName == 'CodeGenPasses')               { return NodeNature.CODEGENPASSES; }
+  else if (natureName == 'PerFunctionPasses')           { return NodeNature.PERFUNCTIONPASSES; }
   else if (natureName == 'PerModulePasses')             { return NodeNature.PERMODULEPASSES; }
   else if (natureName == 'DebugType')                   { return NodeNature.DEBUGTYPE; }
   else if (natureName == 'DebugGlobalVariable')         { return NodeNature.DEBUGGLOBALVARIABLE; }
@@ -101,6 +105,8 @@ var units = [];
 var activeBundle = undefined;
 var nextBundleNumber = 0;
 var bundleBasePath = '';
+
+function GetTimelinesPerFile() { return exportParams.timelinePacking != undefined? exportParams.timelinePacking : TIMELINES_PER_FILE_FALLBACK; }
 
 function GetGlobal(nature, name)
 { 
@@ -256,6 +262,10 @@ function BinarizeTimelineEvent(timelineEvent)
 
 function WriteTimeline(stream, timeline)
 { 
+  //Clang outputs a single thread
+  stream.write(Bin.Num(1,4));
+
+  //Single task serialization
   stream.write(Bin.Num(timeline.length,4));
   for (var i=0,sz=timeline.length;i<sz;++i)
   { 
@@ -293,7 +303,7 @@ function AddToBundle(bundle, timeline)
 { 
   bundle.timelines.push(timeline);
 
-  if (bundle.timelines.length >= TIMELINES_PER_FILE)
+  if (bundle.timelines.length >= GetTimelinesPerFile())
   { 
     ExportBundle(activeBundle);
     activeBundle = undefined; 
@@ -324,6 +334,7 @@ function Extract(inputFolder,outputFile,params,doneCallback)
       FileIO.SaveFileStream(outputFile,function(stream){
 
         stream.write(Bin.Num(VERSION,4));
+        stream.write(Bin.Num(GetTimelinesPerFile(),4));
 
         //Export units
         stream.write(Bin.Num(units.length,4));
