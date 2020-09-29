@@ -45,6 +45,8 @@ namespace CompileScore.Overview
                 }
             }
             listview.ItemsSource = totals;
+
+            descriptionText.Visibility = totals.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             RefreshWidths();
         }
         

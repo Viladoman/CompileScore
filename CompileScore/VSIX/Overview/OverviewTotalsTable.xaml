@@ -75,6 +75,6 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <TextBlock Grid.Row="2" Text="Disclaimer: The values are accumulative (equivalent to a single thread compilation)" HorizontalAlignment="Center" />
+        <TextBlock x:Name="descriptionText" Grid.Row="2" Text="The values are all unit additions (equivalent to a single thread compilation)" HorizontalAlignment="Center" />
     </Grid>
 </UserControl>
