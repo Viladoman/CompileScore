@@ -130,7 +130,6 @@ namespace CommandLine
                     { 
                         params.timelinePacking = value;
                     }
-                    
                 }
                 else if ((Utils::StringCompare(argValue,"-d")==0 || Utils::StringCompare(argValue,"-detail")==0) && (i+1) < argc)
                 { 
