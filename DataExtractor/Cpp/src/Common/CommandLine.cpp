@@ -125,13 +125,18 @@ namespace CommandLine
                 else if ((Utils::StringCompare(argValue,"-tp")==0 || Utils::StringCompare(argValue,"-timelinepack")==0) && (i+1) < argc)
                 { 
                     ++i;
-                    Utils::StringToUInt(params.timelinePacking,argv[i]);
+                    unsigned int value = 0;
+                    if (Utils::StringToUInt(value,argv[i]) && value > 0)
+                    { 
+                        params.timelinePacking = value;
+                    }
+                    
                 }
                 else if ((Utils::StringCompare(argValue,"-d")==0 || Utils::StringCompare(argValue,"-detail")==0) && (i+1) < argc)
                 { 
                     ++i;
                     unsigned int value = 0;
-                    if (Utils::StringToUInt(params.timelinePacking,argv[i]) && value < static_cast<unsigned int>(ExportParams::Detail::Invalid))
+                    if (Utils::StringToUInt(value,argv[i]) && value < static_cast<unsigned int>(ExportParams::Detail::Invalid))
                     { 
                         params.detail = ExportParams::Detail(value);
                     }
@@ -140,7 +145,7 @@ namespace CommandLine
                 {
                     ++i;
                     unsigned int value = 0;
-                    if (Utils::StringToUInt(params.timelinePacking,argv[i]) && value < static_cast<unsigned int>(IO::Verbosity::Invalid))
+                    if (Utils::StringToUInt(value,argv[i]) && value < static_cast<unsigned int>(IO::Verbosity::Invalid))
                     { 
                         IO::SetVerbosityLevel(IO::Verbosity(value));
                     }
