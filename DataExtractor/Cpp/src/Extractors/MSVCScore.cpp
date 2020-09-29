@@ -156,7 +156,6 @@ namespace MSVC
     MSVCCompileTrack& Gatherer::TUEntry::GetTrack(const TThreadId threadId)
     { 
         //TODO ~ ramonv ~ linear lookup if lots of threads it might not scale properly
-
         for (MSVCCompileTrack& track : tracks)
         {
             if (track.threadId == threadId)
@@ -327,8 +326,6 @@ namespace MSVC
         { 
         case MSBI::Activities::TemplateInstantiation::Kind::CLASS:    category = CompileCategory::InstantiateClass; break;
         case MSBI::Activities::TemplateInstantiation::Kind::FUNCTION: category = CompileCategory::InstantiateFunction; break;
-
-        //TODO ~ ramonv ~ add once we move to next data version so we can expand the categories
         case MSBI::Activities::TemplateInstantiation::Kind::VARIABLE: category = CompileCategory::InstantiateVariable; break; 
         case MSBI::Activities::TemplateInstantiation::Kind::CONCEPT:  category = CompileCategory::InstantiateConcept; break;
         }
