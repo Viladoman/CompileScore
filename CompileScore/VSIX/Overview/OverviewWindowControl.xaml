@@ -5,16 +5,17 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
              xmlns:local="clr-namespace:CompileScore.Overview"
-             Background="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"
-             Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
+             xmlns:common="clr-namespace:CompileScore.Common"
+             Background="{DynamicResource {x:Static common:ColorTheme.Background}}"
+             Foreground="{DynamicResource {x:Static common:ColorTheme.Foreground}}"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800"
              Name="MyToolWindow">
 
     <UserControl.Resources>
         <Style TargetType="TabControl">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"/>
-            <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.Background}}"/>
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         </Style>
@@ -28,21 +29,18 @@
                             </Border>
                         </Grid>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTabSelectedTabKey}}" />
-                                <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTabSelectedTextKey}}" />
-                                <Setter Property="Panel.ZIndex" Value="100" />
-                            </Trigger>
                             <Trigger Property="IsSelected" Value="False">
-                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTabBorderKey}}" />
-                                <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"/>
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.TabItem_Background}}" />
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.TabItem_Foreground}}"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTabMouseOverBorderKey}}" />
-                                <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTabMouseOverTextKey}}"/>
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.TabItem_MouseOverBackground}}" />
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.TabItem_MouseOverForeground}}"/>
                             </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.DropDownDisabledGlyphKey}}"/>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.TabItem_SelectedBackground}}" />
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.TabItem_SelectedForeground}}" />
+                                <Setter Property="Panel.ZIndex" Value="100" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>

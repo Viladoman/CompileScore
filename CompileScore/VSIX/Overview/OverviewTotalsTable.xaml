@@ -3,29 +3,27 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
-             xmlns:local="clr-namespace:CompileScore.Overview"
-             xmlns:commonUtils="clr-namespace:CompileScore.Common"
-             Background="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"
-             Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
+             xmlns:common="clr-namespace:CompileScore.Common"
+             Background="{DynamicResource {x:Static common:ColorTheme.Background}}"
+             Foreground="{DynamicResource {x:Static common:ColorTheme.Foreground}}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 
     <UserControl.Resources>
-        <commonUtils:CategoryStrConverter x:Key="categoryStrConverter"/>
-        <commonUtils:CategoryColorConverter x:Key="categoryColorConverter"/>
-        <commonUtils:UITimeConverterZero x:Key="uiTimeConverter"/>
-        <commonUtils:RatioToPercentConverter x:Key="ratioToPercentConverter"/>
+        <common:CategoryStrConverter x:Key="categoryStrConverter"/>
+        <common:CategoryColorConverter x:Key="categoryColorConverter"/>
+        <common:UITimeConverterZero x:Key="uiTimeConverter"/>
+        <common:RatioToPercentConverter x:Key="ratioToPercentConverter"/>
         <Style TargetType="GridViewColumnHeader">
             <Setter Property="Visibility" Value="Collapsed" />
         </Style>
         <Style TargetType="ProgressBar">
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.ToolWindowTabSelectedTabKey}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.ProgressBar_Background}}"/>
         </Style>
         <Style TargetType="ListView">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"/>
-            <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.Background}}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=Items.Count}" Value="0" >
@@ -56,10 +54,11 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <ListView Grid.Row="0" x:Name="listview">
+        <TextBlock x:Name="descriptionText" Grid.Row="0" Text="The values displayed are equivalent to a single process compilation" HorizontalAlignment="Center" />
+        <ListView Grid.Row="1" x:Name="listview">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Width="150" DisplayMemberBinding="{Binding Category, Converter={StaticResource categoryStrConverter}}"/>
@@ -75,6 +74,5 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <TextBlock x:Name="descriptionText" Grid.Row="2" Text="The values are all unit additions (equivalent to a single thread compilation)" HorizontalAlignment="Center" />
     </Grid>
 </UserControl>

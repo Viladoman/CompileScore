@@ -3,39 +3,40 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:CompileScore.Overview"
-             xmlns:commonUtils="clr-namespace:CompileScore.Common"
-             xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+             xmlns:common="clr-namespace:CompileScore.Common"
+             Background="{DynamicResource {x:Static common:ColorTheme.Background}}"
+             Foreground="{DynamicResource {x:Static common:ColorTheme.Foreground}}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="900">
     
     <UserControl.Resources>
-        <commonUtils:UITimeConverter x:Key="uiTimeConverter"/>
+        <common:UITimeConverter x:Key="uiTimeConverter"/>
         <Style TargetType="Label">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}"/>
         </Style>
         <Style TargetType="TextBox">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"/>
-            <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.Background}}"/>
         </Style>
         <Style TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"/>
-            <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.Background}}"/>
         </Style>
         <Style TargetType="DataGrid">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"/>
-            <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource {x:Static vsshell:VsBrushes.GridLineKey}}" />
-            <Setter Property="VerticalGridLinesBrush"   Value="{DynamicResource {x:Static vsshell:VsBrushes.GridLineKey}}" />
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.Background}}"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource {x:Static common:ColorTheme.Grid_Line}}" />
+            <Setter Property="VerticalGridLinesBrush"   Value="{DynamicResource {x:Static common:ColorTheme.Grid_Line}}" />
+            <Setter Property="BorderThickness" Value="0" />
         </Style>
         <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.GridHeadingTextKey}}"/>
-            <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.GridHeadingBackgroundKey}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Grid_HeaderForeground}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.Grid_HeaderBackground}}"/>
 
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
-                        <Grid Name="HedearGrid" Background="{DynamicResource {x:Static vsshell:VsBrushes.GridHeadingBackgroundKey}}" >
+                        <Grid Name="HeaderGrid" Background="{DynamicResource {x:Static common:ColorTheme.Grid_HeaderBackground}}" >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -43,16 +44,16 @@
                             <ContentPresenter  Margin="6,3,6,3" VerticalAlignment="Center" Grid.Column="0" />
                             <Path x:Name="SortArrow" Visibility="Collapsed" Data="M0,0 L1,0 0.5,1 z" Stretch="Fill" 
                                     Grid.Column="1" Width="8" Height="6" Margin="0,0,8,0"
-                                    Fill="{DynamicResource {x:Static vsshell:VsBrushes.CommandBarSelectedBorderKey}}"
+                                    Fill="{DynamicResource {x:Static common:ColorTheme.Grid_HeaderArrow}}"
                                     VerticalAlignment="Center" RenderTransformOrigin="0.5,0.4" />
                             <Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" Cursor="SizeWE" Grid.Column="1"  >
                                 <Thumb.Style>
                                     <Style TargetType="{x:Type Thumb}">
-                                        <Setter Property="Width" Value="2" />
+                                        <Setter Property="Width" Value="1" />
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="{x:Type Thumb}">
-                                                    <Border Background="Transparent"/>
+                                                    <Border Background="{DynamicResource {x:Static common:ColorTheme.Grid_HeaderSeparator}}"/>
                                                 </ControlTemplate>
                                             </Setter.Value>
                                         </Setter>
@@ -78,19 +79,19 @@
             </Setter>
         </Style>
         <Style TargetType="DataGridRow">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"/>
-            <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.Background}}"/>
             <EventSetter Event="MouseDoubleClick" Handler="DataGridRow_DoubleClick"/>
         </Style>
         <Style TargetType="DataGridCell">
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"/>
-            <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}"/>
+            <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.Background}}"/>
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
 
             <Style.Triggers>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:VsBrushes.CommandBarSelectedBorderKey}}" />
+                    <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.Grid_CellSelectedBackground}}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -98,25 +99,40 @@
     </UserControl.Resources>
 
     <Grid>
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Margin="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="100" />
             </Grid.ColumnDefinitions>
-            <TextBox   Grid.Row="0" Grid.Column="0" x:Name="searchTextBox" TextChanged="SearchTextChangedEventHandler"/>
-            <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Path=Items.Count, ElementName=compileDataGrid, StringFormat='Count {0}'}" />
+            <TextBox   Grid.Column="0" x:Name="searchTextBox" TextChanged="SearchTextChangedEventHandler"/>
+            <TextBlock Grid.Column="0" IsHitTestVisible="False" Text="Search" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="DarkGray">
+                <TextBlock.Style>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Text, ElementName=searchTextBox}" Value="">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <TextBlock Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Path=Items.Count, ElementName=compileDataGrid, StringFormat='Count {0}'}" />
         </Grid>
-        <DataGrid x:Name="compileDataGrid" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="Column" SelectionUnit="FullRow" Margin="0,21,0,0">
+        
+        <DataGrid Grid.Row="1" x:Name="compileDataGrid" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="Column" SelectionUnit="FullRow" Margin="0">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Name"         Binding="{Binding Name}" IsReadOnly="True" Width="300"/>
-                <DataGridTextColumn Header="Count"        Binding="{Binding Count}" IsReadOnly="True" Width="50"/>
+                <DataGridTextColumn Header="Count"        Binding="{Binding Count}" IsReadOnly="True" Width="75"/>
                 <DataGridTextColumn Header="Accumulated"  Binding="{Binding Accumulated,  Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="100"/>
-                <DataGridTextColumn Header="Max"          Binding="{Binding Max,          Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="75"/>
-                <DataGridTextColumn Header="Min"          Binding="{Binding Min,          Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="75"/>
-                <DataGridTextColumn Header="Avg"          Binding="{Binding Mean,         Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="75"/>
+                <DataGridTextColumn Header="Max"          Binding="{Binding Max,          Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
+                <DataGridTextColumn Header="Min"          Binding="{Binding Min,          Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
+                <DataGridTextColumn Header="Avg"          Binding="{Binding Mean,         Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
                 <DataGridTextColumn Header="Max location" Binding="{Binding MaxUnit.Name}" IsReadOnly="True" Width="200"/>
             </DataGrid.Columns>
         </DataGrid>

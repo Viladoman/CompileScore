@@ -15,7 +15,6 @@
         public OverviewWindowControl()
         {
             this.InitializeComponent();
-            CompilerData.Instance.ScoreDataChanged += RefreshTabs;
 
             //Initialize Tabs
             for (CompilerData.CompileCategory category = 0; (int)category < (int)CompilerData.CompileThresholds.Gather; ++category)
@@ -23,6 +22,8 @@
                 AddTab(category);
             }
             RefreshTabs();
+
+            CompilerData.Instance.ScoreDataChanged += RefreshTabs;
         }
 
         private void AddTab(CompilerData.CompileCategory category)

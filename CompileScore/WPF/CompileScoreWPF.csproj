@@ -38,7 +38,6 @@
     <ApplicationIcon>CompileScore.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.VisualStudio.Shell.15.0, Version=16.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -142,9 +141,6 @@
       <Link>Shared\Overview\OverviewTotalsTable.xaml.cs</Link>
       <DependentUpon>OverviewTotalsTable.xaml</DependentUpon>
     </Compile>
-    <Compile Include="..\VSIX\Overview\OverviewWindow.cs">
-      <Link>Shared\Overview\OverviewWindow.cs</Link>
-    </Compile>
     <Compile Include="..\VSIX\Overview\OverviewWindowControl.xaml.cs">
       <Link>Shared\Overview\OverviewWindowControl.xaml.cs</Link>
       <DependentUpon>OverviewWindowControl.xaml</DependentUpon>
@@ -163,6 +159,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Fake\ColorTheme.cs" />
     <Compile Include="Fake\FakeVS.cs" />
     <Compile Include="Fake\WindowProxy.cs" />
     <Compile Include="MainWindow.xaml.cs">

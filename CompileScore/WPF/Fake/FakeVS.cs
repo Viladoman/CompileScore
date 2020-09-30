@@ -9,15 +9,7 @@ using System.Windows.Media;
 namespace EnvDTE { }
 namespace EnvDTE80 { }
 namespace Microsoft.VisualStudio.Shell.Interop { }
-/*
-namespace Microsoft.VisualStudio.Shell
-{
-    public static class VsBrushes
-    {
-        public static object WindowKey { get; }
-    }
-}
-*/
+namespace Microsoft.VisualStudio.PlatformUI { }
 
 namespace CompileScore
 {

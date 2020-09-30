@@ -25,6 +25,7 @@ namespace CompileScore
         public MainWindow()
         {
             InitializeComponent();
+            Common.ColorTheme.AddThemeToApplicationResources();
 
             InitSystems();
 

@@ -45,6 +45,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Common\ColorTheme.cs" />
     <Compile Include="Common\CompilerData.cs" />
     <Compile Include="Common\DocumentLifeTimeManager.cs" />
     <Compile Include="Common\OutputLog.cs" />
