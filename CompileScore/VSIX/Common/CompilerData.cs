@@ -304,6 +304,8 @@ namespace CompileScore
 
         public void ForceLoadFromFilename(string filename)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             //Only call this from the standalone app (this craetes a desync from the VS settings)
             _relativeToSolution = false;
             _path = "";
