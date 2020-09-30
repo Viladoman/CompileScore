@@ -1,0 +1,38 @@
+﻿<Window x:Class="CompileScore.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CompileScore"
+        xmlns:timeline="clr-namespace:CompileScore.Timeline"
+        xmlns:overview="clr-namespace:CompileScore.Overview"
+        mc:Ignorable="d"
+        Title="Compile Score" Height="450" Width="1000">
+
+    <Window.CommandBindings>
+        <CommandBinding Command="Open" Executed="OnMenuFileOpen" />
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="O" Modifiers="Control" Command="Open"/>
+    </Window.InputBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <DockPanel Grid.Row="0">
+            <Menu DockPanel.Dock="Top">
+                <MenuItem Header="_File">
+                    <MenuItem Command="Open"/>
+                    <Separator />
+                    <MenuItem Header="_Exit" Click="OnMenuFileExit"/>
+                </MenuItem>
+            </Menu>
+        </DockPanel>
+
+        <TextBlock Grid.Row="1" x:Name="placeholder" HorizontalAlignment="Center" VerticalAlignment="Center">Drag or Open a .scor file to inspect</TextBlock>
+        <overview:OverviewWindowControl Grid.Row="1" x:Name="overview" Visibility="Collapsed"/>
+    </Grid>
+</Window>

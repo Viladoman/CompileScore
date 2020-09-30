@@ -20,7 +20,9 @@ CompileScore/VSIX/bin/
 CompileScore/VSIX/obj/
 
 # WPF StandAlone 
-CompileScore/WPF/
+CompileScore/WPF/.vs/
+CompileScore/WPF/bin/
+CompileScore/WPF/obj/
 
 #Temporary and binaries
 *.etl
