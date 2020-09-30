@@ -302,6 +302,16 @@ namespace CompileScore
             return index >= 0 && index < _unitsCollection.Count ? _unitsCollection[index] : null;
         }
 
+        public void ForceLoadFromFilename(string filename)
+        {
+            //Only call this from the standalone app (this craetes a desync from the VS settings)
+            _relativeToSolution = false;
+            _path = "";
+            _scoreFileName = filename;
+
+            ReloadSeverities();
+        }
+
         private void ReloadSeverities()
         {
             ThreadHelper.ThrowIfNotOnUIThread();

@@ -51,8 +51,6 @@
                 </TextBlock.Style>
             </TextBlock>
         
-            <!-- TODO : Add clear serach button -->
-        
             <Popup x:Name="autoListPopup"  Visibility="Collapsed" StaysOpen="False"  Placement="Bottom">
                 <ListBox x:Name="autoList" Visibility="Collapsed" Width="{Binding ElementName=autoTextBox,Path=ActualWidth}" MaxHeight="250" SelectionChanged="AutoList_SelectionChanged" />
             </Popup>
