@@ -1,6 +1,6 @@
 # CompileScore
 
-[![Clang](https://img.shields.io/badge/Clang-Full-green)]() [![MSVC](https://img.shields.io/badge/MSVC-Partial-yellow)]() 
+[![Clang](https://img.shields.io/badge/Clang-Full-green)]() [![MSVC](https://img.shields.io/badge/MSVC-Full-green)]() 
 
 VisualStudio extension used to display and highlight compilation profiling data. Know the real compilation cost of your code directly inside Visual Studio. Keep the compile times in check. 
 
@@ -82,25 +82,27 @@ The Data Extractor can be build using the Visual Studio solution located at **Da
 
 ## Data Extractor Options
 
-| Executable Flag       | Arguments and description                                                          | Mandatory |
-|-----------------------|------------------------------------------------------------------------------------|-----------|
-| `-clang` or `-msvc`   | Sets the system to use the Clang (.json traces) or MSVC (.etl traces) importer     | Yes       |
-| `-input` (`-i`)       | `Path to Input File`                                                               | Yes       |
-|                       | The path to the input folder to parse for -ftime-trace data or .etl file           |           |
-| `-output` (`-o`)      | `Output file`                                                                      | No        |
-|                       | The output file full path for the results (**compileData.scor** by default)        |           |
-| `-detail` (`-d`)      | `Level`                                                                            | No        |
-|                       | The exported detail level, useful to reduce the *.scor* file size on big projects: |           |
-|                       | 0 : None                                                                           |           |
-|                       | 1 : Basic - w/ include                                                             |           |
-|                       | 2 : FrontEnd - w/ include, parse, instatiate                                       |           |
-|                       | 3 : Full (**default**)                                                             |           |
-| `-notimeline` (`-nt`) | No timeline files will be generated                                                | No        |
-| `-verbosity` (`-v`)   | `Level`                                                                            | No        |
-|                       | Sets the verbosity level:                                                          |           |
-|                       | 0 : Silent                                                                         |           |
-|                       | 1 : Progress (**default**)                                                         |           |
-|                       | 2 - Full"                                                                          |           |
+| Executable Flag         | Arguments and description                                                          | Mandatory |
+|-------------------------|------------------------------------------------------------------------------------|-----------|
+| `-clang` or `-msvc`     | Sets the system to use the Clang (.json traces) or MSVC (.etl traces) importer     | Yes       |
+| `-input` (`-i`)         | `Path to Input File`                                                               | Yes       |
+|                         | The path to the input folder to parse for -ftime-trace data or .etl file           |           |
+| `-output` (`-o`)        | `Output file`                                                                      | No        |
+|                         | The output file full path for the results (**compileData.scor** by default)        |           |
+| `-detail` (`-d`)        | `Level`                                                                            | No        |
+|                         | The exported detail level, useful to reduce the *.scor* file size on big projects: |           |
+|                         | 0 : None                                                                           |           |
+|                         | 1 : Basic - w/ include                                                             |           |
+|                         | 2 : FrontEnd - w/ include, parse, instatiate                                       |           |
+|                         | 3 : Full (**default**)                                                             |           |
+| `-notimeline` (`-nt`)   | No timeline files will be generated                                                | No        |
+| `-timelinepack` (`-tp`) | `Number`                                                                           | No        |
+|                         | The number of timelines packed in the same file (**100** by default)               |           |
+| `-verbosity` (`-v`)     | `Level`                                                                            | No        |
+|                         | Sets the verbosity level:                                                          |           |
+|                         | 0 : Silent                                                                         |           |
+|                         | 1 : Progress (**default**)                                                         |           |
+|                         | 2 - Full"                                                                          |           |
 
 ## Running the Test Project 
 
