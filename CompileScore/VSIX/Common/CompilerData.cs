@@ -314,7 +314,7 @@ namespace CompileScore
             ReloadSeverities();
         }
 
-        private void ReloadSeverities()
+        public void ReloadSeverities()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             string realPath = GetRealPath();

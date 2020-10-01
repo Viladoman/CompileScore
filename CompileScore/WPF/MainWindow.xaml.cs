@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -49,8 +50,9 @@ namespace CompileScore
         private void RefreshToolVisibility()
         {
             bool hasData = CompilerData.Instance.GetTotals().Count > 0; 
-            placeholder.Visibility = hasData? Visibility.Collapsed : Visibility.Visible;
-            overview.Visibility    = hasData? Visibility.Visible   : Visibility.Collapsed;
+            placeholder.Visibility   = hasData? Visibility.Collapsed : Visibility.Visible;
+            overview.Visibility      = hasData? Visibility.Visible   : Visibility.Collapsed;
+            ReloadMenuItem.IsEnabled = hasData;
         }
 
         private void OpenFile(string filename)
@@ -88,6 +90,21 @@ namespace CompileScore
         {
             System.Windows.Application.Current.Shutdown();
         }
-        
+        private void OnReloadFile(object sender, RoutedEventArgs e)
+        {
+            CompilerData.Instance.ReloadSeverities();
+        }
+
+        private void OnHelp(object sender, RoutedEventArgs e)
+        {
+            Process.Start("https://github.com/Viladoman/CompileScore");
+        }
+
+        private void OnMenuAbout(object sender, RoutedEventArgs e)
+        {
+            Extras.AboutWindow dlg = new Extras.AboutWindow();
+            dlg.Owner = this;
+            dlg.ShowDialog();
+        }
     }
 }

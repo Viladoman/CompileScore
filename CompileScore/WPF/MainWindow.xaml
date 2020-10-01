@@ -12,10 +12,13 @@
 
     <Window.CommandBindings>
         <CommandBinding Command="Open" Executed="OnMenuFileOpen" />
+        <CommandBinding Command="Help" Executed="OnHelp" />
     </Window.CommandBindings>
     <Window.InputBindings>
-        <KeyBinding Key="O" Modifiers="Control" Command="Open"/>
+        <KeyBinding Key="O"  Modifiers="Control" Command="Open"/>
+        <KeyBinding Key="F1" Command="Help"/>
     </Window.InputBindings>
+
 
     <Grid>
         <Grid.RowDefinitions>
@@ -29,6 +32,14 @@
                     <MenuItem Command="Open"/>
                     <Separator />
                     <MenuItem Header="_Exit" Click="OnMenuFileExit"/>
+                </MenuItem>
+                <MenuItem Header="_Actions">
+                    <MenuItem x:Name="ReloadMenuItem" Header="Reload" Click="OnReloadFile" IsEnabled="False"/>
+                </MenuItem>
+                <MenuItem Header="_Help">
+                    <MenuItem Command="Help"/>
+                    <Separator />
+                    <MenuItem Header="_About" Click="OnMenuAbout" />
                 </MenuItem>
             </Menu>
         </DockPanel>

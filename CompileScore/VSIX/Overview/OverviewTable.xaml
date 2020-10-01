@@ -10,7 +10,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
 
     <UserControl.Resources>
-        <common:UITimeConverter x:Key="uiTimeConverter"/>
+        <common:UITimeConverterZero x:Key="uiTimeConverter"/>
         <Style TargetType="Label">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}"/>
         </Style>

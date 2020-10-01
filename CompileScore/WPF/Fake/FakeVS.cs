@@ -87,11 +87,6 @@ namespace CompileScore
 
             return null;
         }
-
-        public void CloseAllToolWindows()
-        {
-            //TODO ~ ramonv ~ to be implemented
-        }
     };
     
     public class SDTE { };

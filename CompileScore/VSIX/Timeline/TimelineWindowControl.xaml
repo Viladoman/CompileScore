@@ -8,7 +8,6 @@
              Background="{DynamicResource {x:Static common:ColorTheme.Background}}"
              Foreground="{DynamicResource {x:Static common:ColorTheme.Foreground}}"
              mc:Ignorable="d"
-             d:DesignHeight="800" d:DesignWidth="400"
              Name="MyToolWindow">
     <Grid>
         <local:Timeline x:Name="timeline"/>
