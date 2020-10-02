@@ -33,6 +33,7 @@ struct ExportParams
     Source       source; 
     Detail       detail;
     Timeline     timeline;
+    Detail       timelineDetail;
     unsigned int timelinePacking;
 };
 

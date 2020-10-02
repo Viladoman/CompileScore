@@ -1,5 +1,6 @@
 #include "../Common/Context.h"
 #include "../Common/ScoreDefinitions.h"
+#include "../fastl/algorithm.h"
 
 #include "IOStream.h"
 #include "CommandLine.h"
@@ -37,20 +38,15 @@ namespace CompileScore
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	CompileCategory GetGatherLimit()
+	CompileCategory GetDetailCategory(const ExportParams::Detail detail)
 	{ 
-		if (ExportParams* exportParams = Context::Get<ExportParams>()) 
+		switch(detail)
 		{ 
-			switch(exportParams->detail)
-			{ 
-				case ExportParams::Detail::None:     return CompileCategory::GatherNone;
-				case ExportParams::Detail::Basic:    return CompileCategory::GatherBasic;
-				case ExportParams::Detail::FrontEnd: return CompileCategory::GatherFrontEnd; 
-				default: return CompileCategory::GatherFull;
-			}
+			case ExportParams::Detail::None:     return CompileCategory::GatherNone;
+			case ExportParams::Detail::Basic:    return CompileCategory::GatherBasic;
+			case ExportParams::Detail::FrontEnd: return CompileCategory::GatherFrontEnd; 
+			default: return CompileCategory::GatherFull;
 		}
-
-		return CompileCategory::GatherFull; 
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
@@ -90,7 +86,9 @@ namespace CompileScore
 	// -----------------------------------------------------------------------------------------------------------
 	void ProcessTimeline(ScoreData& scoreData, ScoreTimeline& timeline)
 	{
-		const CompileCategory gatherLimit = GetGatherLimit(); 
+		//Get Gather limit
+		ExportParams* exportParams = Context::Get<ExportParams>(); 
+		const CompileCategory gatherLimit = exportParams? GetDetailCategory(exportParams->detail) : CompileCategory::GatherFull;
 
 		//Create new unit
 		const U32 unitId = static_cast<U32>(scoreData.units.size());
@@ -102,12 +100,25 @@ namespace CompileScore
 		{ 
 			ProcessTimelineTrack(scoreData,unit,track,gatherLimit);
 		}
-		
-		IO::Binarizer* binarizer = Context::Get<IO::Binarizer>(); 
-		ExportParams* exportParams = Context::Get<ExportParams>(); 
 
+		IO::Binarizer* binarizer = Context::Get<IO::Binarizer>(); 
 		if (binarizer && exportParams && exportParams->timeline == ExportParams::Timeline::Enabled) 
-		{ 
+		{
+			//Remove unwanted elements from the timeline
+			const CompileCategory timelineLimit = GetDetailCategory(exportParams->timelineDetail);
+			if (timelineLimit < CompileCategory::GatherFull)
+			{ 
+				for (TCompileEvents& track : timeline.tracks)
+				{
+					track.erase(fastl::remove_if(track.begin(),track.end(),
+						[=](const CompileEvent& input)
+						{ 
+							return input.category >= timelineLimit && input.category < CompileCategory::GatherFull; 
+						}
+					),track.end());
+				}
+			}
+
 			binarizer->Binarize(timeline);
 		}
 	}
