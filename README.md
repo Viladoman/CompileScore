@@ -32,6 +32,12 @@ Navigation controls:
 - Zoom: Control + Mouse Wheel
 - Scroll: Middle mouse press and drag
 
+### Standalone App 
+
+This repository also contains a standalone app with the same visualization and code as the VS extension. It can prove useful to compare results or open reports without having to open Visual Studio. 
+
+The app needs to be build. The solution can be found at *CompileScore/WPF/CompileScoreWPF.sln*
+
 ## How it works
 
 Setup the C++ compiler to output a trace for what happened during the build. We can then aggregate all that data using the DataExtractor in this repository, and use it together with the VS plugin in order to visualize the data inside Visual Studio. 
@@ -82,27 +88,36 @@ The Data Extractor can be build using the Visual Studio solution located at **Da
 
 ## Data Extractor Options
 
-| Executable Flag         | Arguments and description                                                          | Mandatory |
-|-------------------------|------------------------------------------------------------------------------------|-----------|
-| `-clang` or `-msvc`     | Sets the system to use the Clang (.json traces) or MSVC (.etl traces) importer     | Yes       |
-| `-input` (`-i`)         | `Path to Input File`                                                               | Yes       |
-|                         | The path to the input folder to parse for -ftime-trace data or .etl file           |           |
-| `-output` (`-o`)        | `Output file`                                                                      | No        |
-|                         | The output file full path for the results (**compileData.scor** by default)        |           |
-| `-detail` (`-d`)        | `Level`                                                                            | No        |
-|                         | The exported detail level, useful to reduce the *.scor* file size on big projects: |           |
-|                         | 0 : None                                                                           |           |
-|                         | 1 : Basic - w/ include                                                             |           |
-|                         | 2 : FrontEnd - w/ include, parse, instatiate                                       |           |
-|                         | 3 : Full (**default**)                                                             |           |
-| `-notimeline` (`-nt`)   | No timeline files will be generated                                                | No        |
-| `-timelinepack` (`-tp`) | `Number`                                                                           | No        |
-|                         | The number of timelines packed in the same file (**100** by default)               |           |
-| `-verbosity` (`-v`)     | `Level`                                                                            | No        |
-|                         | Sets the verbosity level:                                                          |           |
-|                         | 0 : Silent                                                                         |           |
-|                         | 1 : Progress (**default**)                                                         |           |
-|                         | 2 - Full"                                                                          |           |
+| Executable Flag           | Arguments and description                                                             | Mandatory |
+|---------------------------|---------------------------------------------------------------------------------------|-----------|
+| `-clang` or `-msvc`       | Sets the system to use the Clang (.json traces) or MSVC (.etl traces) importer        | Yes       |
+| `-input` (`-i`)           | `Path to Input File`                                                                  | Yes       |
+|                           | The path to the input folder to parse for -ftime-trace data or .etl file              |           |
+| `-output` (`-o`)          | `Output file` (**compileData.scor by default**)                                       | No        |
+|                           | The output file full path for the results                                             |           |
+| `-detail` (`-d`)          | `Level` (**3 by default**)                                                            | No        |
+|                           | The exported detail level for the overview and globals tables.                        |           |
+|                           | Details table below. Useful to reduce the *.scor* file size on big projects           |           |
+| `-timelinedetail` (`-td`) | `Level` (**3 by default**)                                                            | No        |
+|                           | The exported detail level for the timeline nodes                                      |           |
+|                           | Details table below. Useful to reduce the *.scor.txxxx* file sizes or improve packing |           |
+| `-notimeline` (`-nt`)     | No timeline files will be generated                                                   | No        |
+| `-timelinepack` (`-tp`)   | `Number`                                                                              | No        |
+|                           | The number of timelines packed in the same file (**100** by default)                  |           |
+| `-verbosity` (`-v`)       | `Level`                                                                               | No        |
+|                           | Sets the verbosity level:                                                             |           |
+|                           | 0 : Silent                                                                            |           |
+|                           | 1 : Progress (**default**)                                                            |           |
+|                           | 2 - Full"                                                                             |           |
+
+Detail level table: 
+
+| # | Desc     | General | Include | Parse | Instantiate | Code Generation |
+|---|----------|---------|---------|-------|-------------|-----------------|
+| 0 | None     | Yes     | No      | No    | No          | No              |
+| 1 | Basic    | Yes     | Yes     | No    | No          | No              |
+| 2 | FrontEnd | Yes     | Yes     | Yes   | Yes         | No              |
+| 3 | Full     | Yes     | Yes     | Yes   | Yes         | Yes             |
 
 ## Running the Test Project 
 
