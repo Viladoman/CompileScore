@@ -2,9 +2,6 @@
 
 #ifdef USE_FASTL
 
-//The model std::vector I took for reference uses the assignment operator for moving elements on erase
-//#define FASTL_VECTOR_ERASE_WITH_ASSIGNMENT
-
 //Forward declare the placement new in order to avoid #include <new> 
 void* operator new  (size_t size, void* ptr) noexcept; 
 
@@ -15,7 +12,7 @@ namespace fastl
 	template <class T> struct remove_reference { typedef T type; };
 	template <class T> struct remove_reference<T&> { typedef T type; };
 	template <class T> struct remove_reference<T&&> { typedef T type; };
-	template <typename T> typename remove_reference<T>::type&& move(T&& arg) { return static_cast<typename remove_reference<T>::type&&>(arg);	}
+	template <typename T> typename remove_reference<T>::type&& move(T&& arg) { return static_cast<typename remove_reference<T>::type&&>(arg); }
 
 	template <bool, typename T = void> struct enable_if {};
 	template <typename T> struct enable_if<true, T> { typedef T type; };
@@ -43,7 +40,6 @@ namespace fastl
 	public:
 		vector();
 		explicit vector(size_t size);
-		vector(const vector<T>& input);
 
 		//If more than 1 argument is provided we assume that we want to construct the vector with its elements ( using SFINAE - fake initializer list )
 		template<typename ... Args, enable_if_t<(sizeof...(Args) > 1)>* = nullptr> 
@@ -52,9 +48,12 @@ namespace fastl
 			(emplace_back(args),...); 
 		}
 
+		vector(const vector<T>& input);
+		vector(vector<T>&& input);
 		~vector();
 
 		vector<T>& operator = (const vector<T>& t);
+		vector<T>& operator = (vector<T>&& t);
 
 		reference operator[](size_type index) { return m_data[index]; }
 		const_reference operator[](size_type index) const { return m_data[index]; }
@@ -83,10 +82,13 @@ namespace fastl
 		iterator erase(iterator it);
 		iterator erase(iterator fromIt,iterator toIt); 
 
-		private:
-			value_type* m_data;
-			size_type   m_size;
-			size_type   m_capacity;
+	private: 
+		void Destroy();
+
+	private:
+		value_type* m_data;
+		size_type   m_size;
+		size_type   m_capacity;
 	};
 
 	//Implementation
@@ -126,14 +128,20 @@ namespace fastl
 	}
 
 	//------------------------------------------------------------------------------------------
+	template<typename T> vector<T>::vector(vector<T>&& input)
+		: m_data(move(input.m_data))
+		, m_size(move(input.m_size))
+		, m_capacity(move(input.m_capacity))
+	{ 
+		input.m_data = nullptr;
+		input.m_size = 0u; 
+		input.m_capacity = 0u;
+	}
+
+	//------------------------------------------------------------------------------------------
 	template<typename T> vector<T>::~vector() 
 	{ 
-		for (size_type i=0u;i<m_size;++i)
-		{
-			m_data[i].~T();
-		}
-		
-		DestroyBuffer(m_data);
+		Destroy();
 	}
 
 	//------------------------------------------------------------------------------------------
@@ -150,6 +158,22 @@ namespace fastl
 	}
 
 	//------------------------------------------------------------------------------------------
+	template<typename T> vector<T>& vector<T>::operator = (vector<T>&& t)
+	{
+		if (this != &t) 
+		{ 
+			Destroy(); 
+			m_data = move(t.m_data);
+			m_size = move(t.m_size); 
+			m_capacity = move(t.m_capacity);
+			t.m_data = nullptr;
+			t.m_size = 0u;
+			t.m_capacity = 0u; 
+		}
+		return *this;
+	}
+
+	//------------------------------------------------------------------------------------------
 	template<typename T> inline void vector<T>::reserve(const size_type size)
 	{
 		if (size > m_capacity)
@@ -159,7 +183,7 @@ namespace fastl
 
 			for (size_type i = 0u; i < m_size; ++i)
 			{
-				Construct<T>(&newData[i],m_data[i]);
+				Construct<T>(&newData[i],move(m_data[i]));
 				m_data[i].~T();
 			}
 
@@ -231,13 +255,26 @@ namespace fastl
 		}
 
 		iterator insertIt = begin() + index; //this is important as reserve might move the memory around
-		for (iterator i = end()-1; i >= insertIt;--i)
+		iterator endIt = end();
+
+		if(endIt == insertIt)
+		{ 
+			Construct<T>(insertIt,move(args)...);
+		}
+		else
 		{
-			Construct<T>(i+1,*i);
-			i->~T();
+			//Build the new element 
+			Construct<T>(end(),move(*(end()-1))); 
+
+			//Shift remaining elements
+			for (iterator i = end()-1; i > insertIt;--i)
+			{
+				*i = move(*(i-1));
+			}	
+
+			*insertIt = T(move(args)...);
 		}
 
-		Construct<T>(insertIt,move(args)...);
 		++m_size;
 
 		return insertIt;
@@ -257,16 +294,22 @@ namespace fastl
 
 		for (iterator i = fromIt; i < batchEndIt; ++i)
 		{
-#ifdef FASTL_VECTOR_ERASE_WITH_ASSIGNMENT
-			* i = *(i + rangeSize);
-#else 
-			i->~T(); 
-			Construct<T>(i,*(i+rangeSize));
-#endif
+			*i = move(*(i + rangeSize));
 		}
 
 		resize(m_size - rangeSize);
 		return fromIt;
+	}
+
+	//------------------------------------------------------------------------------------------
+	template<typename T> void vector<T>::Destroy()
+	{
+		for (size_type i=0u;i<m_size;++i)
+		{
+			m_data[i].~T();
+		}
+
+		DestroyBuffer(m_data);
 	}
 }
 
