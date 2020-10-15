@@ -12,7 +12,7 @@
         public static void Initialize(IServiceProvider serviceProvider)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            CreatePane(serviceProvider, new Guid(), "Compile Score", true, false);
+            CreatePane(serviceProvider, Guid.NewGuid(), "Compile Score", true, false);
         }
 
         public static void Log(string text)
