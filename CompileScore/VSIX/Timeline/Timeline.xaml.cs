@@ -31,7 +31,10 @@ namespace CompileScore.Timeline
         {
             if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
             {
-                OnControlMouseWheel.Invoke(this,e);
+                if (OnControlMouseWheel != null)
+                {
+                    OnControlMouseWheel.Invoke(this,e);
+                }
             }
             else 
             { 
@@ -80,7 +83,10 @@ namespace CompileScore.Timeline
             if (Is2DScolling)
             {
                 Point nextPosition = e.GetPosition(this);
-                On2DMouseScroll.Invoke(this, new Mouse2DScrollEventArgs(nextPosition - lastScrollingPosition));
+                if (On2DMouseScroll != null)
+                {
+                    On2DMouseScroll.Invoke(this, new Mouse2DScrollEventArgs(nextPosition - lastScrollingPosition));
+                }
                 lastScrollingPosition = nextPosition;
             }
             base.OnMouseMove(e);

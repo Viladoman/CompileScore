@@ -31,7 +31,6 @@ namespace CompileScore.Common
         
         public static readonly object Slider_Background = "Slider_Background";
         public static readonly object Slider_Foreground = "Slider_Foreground";
-        public static readonly object Slider_Arrow      = "Slider_Arrow";
 
         static public void AddThemeToApplicationResources()
         {
