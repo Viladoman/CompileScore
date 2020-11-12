@@ -35,6 +35,12 @@ namespace CompileScore
 
             this.AllowDrop = true;
             this.Drop += OnDrop;
+
+            string[] arguments = Environment.GetCommandLineArgs();
+            if (arguments.GetLength(0) >= 2)
+            {
+                OpenFile(arguments[1]);
+            }
         }
 
         private void InitSystems()
