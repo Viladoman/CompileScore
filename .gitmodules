@@ -1,0 +1,3 @@
+[submodule "vcperf"]
+	path = vcperf
+	url = https://github.com/microsoft/vcperf.git
