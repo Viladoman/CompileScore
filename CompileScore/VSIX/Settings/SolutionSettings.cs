@@ -45,6 +45,8 @@ namespace CompileScore
 
     public class SettingsManager
     {
+        public static event Notify SettingsChanged;
+
         private static readonly Lazy<SettingsManager> lazy = new Lazy<SettingsManager>(() => new SettingsManager());
         public static SettingsManager Instance { get { return lazy.Value; } }
 
@@ -86,6 +88,7 @@ namespace CompileScore
                 {
                     string jsonString = File.ReadAllText(Filename);
                     Settings = JsonConvert.DeserializeObject<SolutionSettings>(jsonString);
+                    if (SettingsChanged != null) SettingsChanged.Invoke();
                 }
                 catch(Exception e)
                 {
@@ -104,6 +107,7 @@ namespace CompileScore
                 {
                     string jsonString = JsonConvert.SerializeObject(Settings, Formatting.Indented);
                     File.WriteAllText(Filename, jsonString);
+                    if (SettingsChanged != null) SettingsChanged.Invoke();
                 }
                 catch (Exception e)
                 {

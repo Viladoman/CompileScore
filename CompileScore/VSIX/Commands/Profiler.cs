@@ -10,7 +10,6 @@ using System.IO;
 using System.Security.Principal;
 
 //TODO ~ ramonv ~ add Rebuild and Profile + ScoreExtractor only + Clean Profile Data commands
-//TODO missing commands : Rebuild and Profile, Load Default Data, Force Stop Vcperf
 
 namespace CompileScore
 {
@@ -57,6 +56,22 @@ namespace CompileScore
             BuildEvents = applicationObject.Events.BuildEvents;
             BuildEvents.OnBuildBegin += OnBuildBegin;
             BuildEvents.OnBuildDone  += OnBuildDone;
+        }
+
+        public bool CleanSolution()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            try
+            {
+                DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
+                Assumes.Present(applicationObject);
+                applicationObject.Solution.SolutionBuild.Clean(true);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public void BuildSolution()

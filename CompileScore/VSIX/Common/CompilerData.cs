@@ -170,6 +170,7 @@ namespace CompileScore
             ServiceProvider = serviceProvider;
 
             DocumentLifetimeManager.FileWatchedChanged += OnFileWatchedChanged;
+            SettingsManager.SettingsChanged += OnSolutionSettingsChanged;
 
             RefreshInstance();
         }
@@ -294,10 +295,8 @@ namespace CompileScore
             SetSource(DataSource.Forced);
             DocumentLifetimeManager.UnWatchFile();
 
-            if (SetScoreLocation(filename))
-            {
-                LoadSeverities(ScoreLocation);
-            }
+            SetScoreLocation(filename);
+            LoadSeverities(ScoreLocation);
         }
 
         private void SetSource(DataSource input)
@@ -527,7 +526,6 @@ namespace CompileScore
 
         public void OnSolutionSettingsChanged()
         {
-            //TODO ~ ramonv ~ hook this to the solution settings 
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (Source == DataSource.Default)

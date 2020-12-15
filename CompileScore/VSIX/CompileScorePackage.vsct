@@ -63,6 +63,36 @@
           <ButtonText>Build and Profile (MSVC Only)</ButtonText>
         </Strings>
       </Button>
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdidRebuild" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupBuild" />
+        <Icon guid="guidImages" id="icon" />
+        <Strings>
+          <ButtonText>Rebuild and Profile (MSVC Only)</ButtonText>
+        </Strings>
+      </Button>
+      
+      <!--
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdClean" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
+        <Strings>
+          <ButtonText>Clean Profile Data</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdGenerate" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
+        <Strings>
+          <ButtonText>Run Score Generator</ButtonText>
+        </Strings>
+      </Button>
+      -->
+      
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdLoadDefault" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
+        <Strings>
+          <ButtonText>Load Default Score</ButtonText>
+        </Strings>
+      </Button>
+      
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdidBuild" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreBuild" />
         <Icon guid="guidImages" id="icon" />
@@ -70,7 +100,14 @@
           <ButtonText>Build and Profile (MSVC Only)</ButtonText>
         </Strings>
       </Button>
-        
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdidRebuild" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreBuild" />
+        <Icon guid="guidImages" id="icon" />
+        <Strings>
+          <ButtonText>Rebuild and Profile (MSVC Only)</ButtonText>
+        </Strings>
+      </Button>
+
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdidOptions" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupOptions" />
         <Strings>
@@ -108,6 +145,9 @@
         <Parent guid="guidSHLMainMenu" id="IDM_VS_TOOL_MAINMENU" />
       </Group>
       <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupBuild" priority="0x0600">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenu" />
+      </Group>
+      <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" priority="0x0600">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenu" />
       </Group>
       <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupOptions" priority="0x0600">
@@ -157,13 +197,19 @@
       <IDSymbol value="4128" name="CompileScoreGroup" />
       <IDSymbol value="4129" name="CompileScoreMenu" />
       <IDSymbol value="4130" name="CompileScoreMenuGroupBuild" />
-      <IDSymbol value="4131" name="CompileScoreMenuGroupOptions" />
-      <IDSymbol value="4132" name="CompileScoreMenuGroupHelp" />
-      <IDSymbol value="4133" name="CompileScoreBuild" />
+      <IDSymbol value="4131" name="CompileScoreMenuGroupScript" />      
+      <IDSymbol value="4132" name="CompileScoreMenuGroupOptions" />
+      <IDSymbol value="4133" name="CompileScoreMenuGroupHelp" />
+      <IDSymbol value="4134" name="CompileScoreBuild" />
       <IDSymbol value="256" name="cmdidBuild" />
-      <IDSymbol value="257" name="cmdidOptions" />
-      <IDSymbol value="258" name="cmdidDocumentation" />
-      <IDSymbol value="259" name="cmdidAbout" />
+      <IDSymbol value="257" name="cmdidRebuild" />
+      <IDSymbol value="258" name="cmdIdClean" />
+      <IDSymbol value="259" name="cmdIdGenerate" />
+      <IDSymbol value="260" name="cmdIdLoadDefault" />
+      <IDSymbol value="261" name="cmdidOptions" />
+      <IDSymbol value="262" name="cmdidDocumentation" />
+      <IDSymbol value="263" name="cmdidReport" />
+      <IDSymbol value="264" name="cmdidAbout" />
     </GuidSymbol>
   </Symbols>
 </CommandTable>

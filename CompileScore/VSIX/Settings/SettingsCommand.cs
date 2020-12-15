@@ -14,7 +14,7 @@ namespace CompileScore.Commands
     /// </summary>
     internal sealed class SettingsCommand
     {
-        public const int CommandId = 257;
+        public const int CommandId = 261;
         public static readonly Guid CommandSet = new Guid("f76ad68f-41c2-4f8d-945e-427b0d092da1");    
         private readonly AsyncPackage package;
 

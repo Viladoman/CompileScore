@@ -46,7 +46,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Commands\BuildCommand.cs" />
+    <Compile Include="Commands\LoadDefaultCommand.cs" />
     <Compile Include="Commands\Profiler.cs" />
+    <Compile Include="Commands\RebuildCommand.cs" />
     <Compile Include="Common\ColorTheme.cs" />
     <Compile Include="Common\CompilerData.cs" />
     <Compile Include="Common\Documentation.cs" />
