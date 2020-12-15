@@ -24,7 +24,7 @@
         <StackPanel Grid.Row="0" Margin="10">
             <TextBlock Text="Compile Score" FontSize="20"/>
             <Separator/>
-            <TextBlock Text="Author: Ramonv Viladomat" />
+            <TextBlock Text="Author: Ramon Viladomat" />
             <TextBlock x:Name="appVersionTxt"/>
             <TextBlock x:Name="dataVersionTxt"/>
         </StackPanel>

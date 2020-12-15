@@ -44,18 +44,53 @@
           If you do not want an image next to your command, remove the Icon node /> -->
       <Button guid="guidCompileScorePackageCmdSet" id="OverviewWindowCommandId" priority="0x0100" type="Button">
         <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
-        <Icon guid="guidImages" id="bmpPic1" />
+        <Icon guid="guidImages" id="icon" />
         <Strings>
           <ButtonText>Compile Score</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidCompileScorePackageCmdSet" id="cmdidTimelineWindowCommand" priority="0x0100" type="Button">
         <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
-        <Icon guid="guidImages1" id="bmpPic1" />
+        <Icon guid="guidImages1" id="icon" />
         <Strings>
           <ButtonText>Compile Score Timeline</ButtonText>
         </Strings>
       </Button>
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdidBuild" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupBuild" />
+        <Icon guid="guidImages" id="icon" />
+        <Strings>
+          <ButtonText>Build and Profile (MSVC Only)</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdidBuild" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreBuild" />
+        <Icon guid="guidImages" id="icon" />
+        <Strings>
+          <ButtonText>Build and Profile (MSVC Only)</ButtonText>
+        </Strings>
+      </Button>
+        
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdidOptions" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupOptions" />
+        <Strings>
+          <ButtonText>Options</ButtonText>
+        </Strings>
+      </Button>
+      <!--
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdidDocumentation" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupHelp" />
+        <Strings>
+          <ButtonText>Documentation</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdidAbout" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupHelp" />
+        <Strings>
+          <ButtonText>About</ButtonText>
+        </Strings>
+      </Button>
+      -->
     </Buttons>
 
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
@@ -65,11 +100,41 @@
             bitmap strip containing the bitmaps and then there are the numeric ids of the elements used
             inside a button definition. An important aspect of this declaration is that the element id
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
-      <Bitmap guid="guidImages" href="Overview\Resources\OverviewWindowCommand.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows, bmpPicStrikethrough" />
-      <Bitmap guid="guidImages1" href="Timeline\Resources\TimelineWindowCommand.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows, bmpPicStrikethrough" />
+      <Bitmap guid="guidImages" href="Overview\Resources\OverviewWindowCommand.png" usedList="icon" />
+      <Bitmap guid="guidImages1" href="Timeline\Resources\TimelineWindowCommand.png" usedList="icon" />
     </Bitmaps>
-  </Commands>
+    <Groups>
+      <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_TOOL_MAINMENU" />
+      </Group>
+      <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupBuild" priority="0x0600">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenu" />
+      </Group>
+      <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupOptions" priority="0x0600">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenu" />
+      </Group>
+      <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupHelp" priority="0x0600">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenu" />
+      </Group>
+      <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreBuild" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_BUILD" />
+      </Group>
+    </Groups>
+    <Menus>
+      <Menu guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenu" type="Menu" priority="0x0600">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreGroup"/>
+        <Strings>
+          <ButtonText>Compile Score</ButtonText>
+        </Strings>
+      </Menu>
+    </Menus>
 
+  </Commands>
+<!--
+  <KeyBindings>
+    <KeyBinding guid="guidCompileScorePackageCmdSet1" id="cmdidBuild" editor="guidVSStd97" key1="0" mod1="CONTROL"/>
+  </KeyBindings>
+-->
   <Symbols>
     <!-- This is the package guid. -->
     <GuidSymbol name="guidCompileScorePackage" value="{b55e42c2-29b6-44c4-9ebc-da319e3301d2}" />
@@ -81,21 +146,24 @@
     </GuidSymbol>
 
     <GuidSymbol name="guidImages" value="{0496400a-502d-409f-8b65-44fc403b3314}">
-      <IDSymbol name="bmpPic1" value="1" />
-      <IDSymbol name="bmpPic2" value="2" />
-      <IDSymbol name="bmpPicSearch" value="3" />
-      <IDSymbol name="bmpPicX" value="4" />
-      <IDSymbol name="bmpPicArrows" value="5" />
-      <IDSymbol name="bmpPicStrikethrough" value="6" />
+      <IDSymbol name="icon" value="1" />
     </GuidSymbol>
   
     <GuidSymbol value="{7a5634b2-76ed-45fe-a5f4-fdc908065ef4}" name="guidImages1">
-      <IDSymbol name="bmpPic1" value="1" />
-      <IDSymbol name="bmpPic2" value="2" />
-      <IDSymbol name="bmpPicSearch" value="3" />
-      <IDSymbol name="bmpPicX" value="4" />
-      <IDSymbol name="bmpPicArrows" value="5" />
-      <IDSymbol name="bmpPicStrikethrough" value="6" />
+      <IDSymbol name="icon" value="1" />
+    </GuidSymbol>
+  
+    <GuidSymbol value="{f76ad68f-41c2-4f8d-945e-427b0d092da1}" name="guidCompileScorePackageCmdSet1">
+      <IDSymbol value="4128" name="CompileScoreGroup" />
+      <IDSymbol value="4129" name="CompileScoreMenu" />
+      <IDSymbol value="4130" name="CompileScoreMenuGroupBuild" />
+      <IDSymbol value="4131" name="CompileScoreMenuGroupOptions" />
+      <IDSymbol value="4132" name="CompileScoreMenuGroupHelp" />
+      <IDSymbol value="4133" name="CompileScoreBuild" />
+      <IDSymbol value="256" name="cmdidBuild" />
+      <IDSymbol value="257" name="cmdidOptions" />
+      <IDSymbol value="258" name="cmdidDocumentation" />
+      <IDSymbol value="259" name="cmdidAbout" />
     </GuidSymbol>
   </Symbols>
 </CommandTable>

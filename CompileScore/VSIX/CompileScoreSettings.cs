@@ -7,42 +7,11 @@ namespace CompileScore
 
     public class GeneralSettingsPageGrid : DialogPage
     {
-        private string optionPath = @"";
-        private string optionScoreFileName = @"compileData.scor";
-        private bool optionPathRelativeToSolution = true;
         private bool optionNormalizedSeverity = true;
         private bool optionHighlightEnabled = true;
-        private bool optionTooltipEnabled = true; 
         private List<uint> optionSeverities = new List<uint> { 250u, 1000u, 25000u, 100000u, 500000u };
 
         public List<uint> GetOptionSeverities() { return optionSeverities; }
-
-        [Category("File")]
-        [DisplayName("Relative Path To Solution")]
-        [Description("Is the Input Path Relative to the the Solution")]
-        public bool OptionPathRelativeToSolution
-        {
-            get { return optionPathRelativeToSolution; }
-            set { optionPathRelativeToSolution = value; ThreadHelper.ThrowIfNotOnUIThread(); CompilerData.Instance.OnSettingsRelativePathChanged(); }
-        }
-
-        [Category("File")]
-        [DisplayName("Input Path")]
-        [Description("Path to where the input data is located (relative to SolutionDir)")]
-        public string OptionPath
-        {
-            get { return optionPath; }
-            set { optionPath = value; ThreadHelper.ThrowIfNotOnUIThread(); CompilerData.Instance.OnSettingsPathChanged(); }
-        }
-
-        [Category("File")]
-        [DisplayName("Score Filename")]
-        [Description("Filename that contains the compilation data")]
-        public string OptionScoreFileName
-        {
-            get { return optionScoreFileName; }
-            set { optionScoreFileName = value; ThreadHelper.ThrowIfNotOnUIThread(); CompilerData.Instance.OnSettingsScoreFileNameChanged(); }
-        }
 
         [Category("Display")]
         [DisplayName("Text Highlight")]
@@ -56,12 +25,8 @@ namespace CompileScore
         [Category("Display")]
         [DisplayName("Tooltip")]
         [Description("If true, a tooltip will show up when hovering with the mouse")]
-        public bool OptionTooltipEnabled
-        {
-            get { return optionTooltipEnabled; }
-            set { optionTooltipEnabled = value; }
-        }
-
+        public bool OptionTooltipEnabled { set; get; }
+        
         [Category("Tags")]
         [DisplayName("Normalized Severity")]
         [Description("If true, the severity levels will be defined based on the min-max found")]

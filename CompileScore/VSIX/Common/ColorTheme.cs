@@ -29,5 +29,8 @@ namespace CompileScore.Common
         public static readonly object TabItem_SelectedForeground  = VsBrushes.ToolWindowTabSelectedTextKey;
         public static readonly object TabItem_MouseOverBackground = VsBrushes.ToolWindowTabMouseOverBackgroundBeginKey;
         public static readonly object TabItem_MouseOverForeground = VsBrushes.ToolWindowTabMouseOverTextKey;
+
+        public static readonly object ComboBox_MouseOverBackground = VsBrushes.ToolWindowTabMouseOverBackgroundBeginKey;
+        public static readonly object ComboBox_MouseOverForeground = VsBrushes.ToolWindowTabMouseOverTextKey;
     }
 }

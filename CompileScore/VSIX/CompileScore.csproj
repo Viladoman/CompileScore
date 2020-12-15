@@ -45,9 +45,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Commands\BuildCommand.cs" />
+    <Compile Include="Commands\Profiler.cs" />
     <Compile Include="Common\ColorTheme.cs" />
     <Compile Include="Common\CompilerData.cs" />
+    <Compile Include="Common\Documentation.cs" />
     <Compile Include="Common\DocumentLifeTimeManager.cs" />
+    <Compile Include="Common\EditorUtils.cs" />
+    <Compile Include="Common\FileWatcher.cs" />
+    <Compile Include="Common\MacroEvaluator.cs" />
     <Compile Include="Common\OutputLog.cs" />
     <Compile Include="Common\ScoreColors.cs" />
     <Compile Include="Common\WindowProxy.cs" />
@@ -80,6 +86,12 @@
     </Compile>
     <Compile Include="QuickInfo\ScoreQuickInfoSource.cs" />
     <Compile Include="QuickInfo\ScoreQuickInfoSourceProvider.cs" />
+    <Compile Include="Settings\SettingsCommand.cs" />
+    <Compile Include="Settings\SettingsControl.xaml.cs">
+      <DependentUpon>SettingsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Settings\SettingsWindow.cs" />
+    <Compile Include="Settings\SolutionSettings.cs" />
     <Compile Include="Timeline\CompilerTimeline.cs" />
     <Compile Include="Timeline\Timeline.xaml.cs">
       <DependentUpon>Timeline.xaml</DependentUpon>
@@ -122,6 +134,39 @@
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="16.2.3074" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\..\DataExtractor\Cpp\x64\Release\CppBuildInsights.dll">
+      <Link>External\ScoreExtractor\CppBuildInsights.dll</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\..\DataExtractor\Cpp\x64\Release\KernelTraceControl.dll">
+      <Link>External\ScoreExtractor\KernelTraceControl.dll</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\..\DataExtractor\Cpp\x64\Release\ScoreDataExtractor.exe">
+      <Link>External\ScoreExtractor\ScoreDataExtractor.exe</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\..\vcperf\out\Release\x64\CppBuildInsights.dll">
+      <Link>External\VCPerf\CppBuildInsights.dll</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\..\vcperf\out\Release\x64\CppBuildInsightsEtw.xml">
+      <Link>External\VCPerf\CppBuildInsightsEtw.xml</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\..\vcperf\out\Release\x64\KernelTraceControl.dll">
+      <Link>External\VCPerf\KernelTraceControl.dll</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\..\vcperf\out\Release\x64\perf_msvcbuildinsights.dll">
+      <Link>External\VCPerf\perf_msvcbuildinsights.dll</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\..\vcperf\out\Release\x64\vcperf.exe">
+      <Link>External\VCPerf\vcperf.exe</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Commands\Resources\icons.png" />
     <Content Include="Icon.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -153,6 +198,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Settings\SettingsControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Timeline\Timeline.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -170,6 +219,7 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

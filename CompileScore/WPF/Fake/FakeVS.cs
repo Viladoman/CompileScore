@@ -19,6 +19,9 @@ namespace CompileScore
         {
             Trace.WriteLine(input);
         }
+
+        public void Activate() { }
+        public void Clear() { }
     };
 
     public class IVsOutputWindow 
@@ -120,13 +123,9 @@ namespace CompileScore
 
     public class GeneralSettingsPageGrid
     {
-        public string OptionPath = "";
-        public string OptionScoreFileName = "compileData.scor";
-        public bool OptionPathRelativeToSolution = true;
         public bool OptionNormalizedSeverity = true;
 
         private List<uint> fakeSeverities = new List<uint>();
         public List<uint> GetOptionSeverities() { return fakeSeverities; }
     };
-
 }

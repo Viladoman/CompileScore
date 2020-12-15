@@ -94,19 +94,19 @@ namespace CompileScore
             Include = 0,
             ParseClass,
             ParseTemplate,
-            InstanceClass, 
+            InstanceClass,
             InstanceFunction,
-            InstanceVariable, 
+            InstanceVariable,
             InstanceConcept,
-            CodeGeneration, 
+            CodeGeneration,
             OptimizeFunction,
-            
+
             PendingInstantiations,
-            OptimizeModule, 
+            OptimizeModule,
             FrontEnd,
             BackEnd,
             ExecuteCompiler,
-            Other, 
+            Other,
 
             RunPass,
             CodeGenPasses,
@@ -117,7 +117,7 @@ namespace CompileScore
             Invalid,
 
             //Meta categories only for the visualizers
-            Thread, 
+            Thread,
             Timeline,
 
             //Global Counters
@@ -126,43 +126,48 @@ namespace CompileScore
 
         public enum CompileThresholds
         {
-            Gather  = CompileCategory.PendingInstantiations,
+            Gather = CompileCategory.PendingInstantiations,
             Display = CompileCategory.RunPass,
         }
 
-        private CompileScorePackage _package;
-        private IServiceProvider _serviceProvider;
+        public enum DataSource
+        {
+            Default,
+            Forced,
+        }
 
-        private string _path = "";
-        private string _scoreFileName = "";
-        private string _solutionDir = "";
-        private bool _relativeToSolution = true;
+        private CompileScorePackage Package { set; get; }
+        private IServiceProvider ServiceProvider { set; get; }
 
-        private List<UnitValue> _unitsCollection = new List<UnitValue>();
-        private List<UnitTotal> _totals = new List<UnitTotal>();
+        private string ScoreLocation { set; get; } = "";
+        private string SolutionDir { set; get; } = "";
+        private List<UnitValue> UnitsCollection { set; get; } = new List<UnitValue>();
+        private List<UnitTotal> Totals { set; get; } = new List<UnitTotal>();
+
+        private DataSource Source { set; get; } = DataSource.Default;
 
         public class CompileDataset
         {
-            public List<CompileValue>                 collection = new List<CompileValue>();
-            public Dictionary<string, CompileValue>   dictionary = new Dictionary<string, CompileValue>();
-            public List<uint>                         normalizedThresholds = new List<uint>();
+            public List<CompileValue> collection = new List<CompileValue>();
+            public Dictionary<string, CompileValue> dictionary = new Dictionary<string, CompileValue>();
+            public List<uint> normalizedThresholds = new List<uint>();
         }
 
-        private CompileDataset[] _datasets = new CompileDataset[(int)CompileThresholds.Gather].Select(h => new CompileDataset()).ToArray();
+        private CompileDataset[] Datasets { set; get; } = new CompileDataset[(int)CompileThresholds.Gather].Select(h => new CompileDataset()).ToArray();
 
         //events
         public event Notify ScoreDataChanged;
         public event Notify HighlightEnabledChanged;
 
         public static CompilerData Instance { get { return lazy.Value; } }
-        private CompilerData(){}
+        private CompilerData() { }
 
         public void Initialize(CompileScorePackage package, IServiceProvider serviceProvider)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            _package = package;
-            _serviceProvider = serviceProvider;
+            Package = package;
+            ServiceProvider = serviceProvider;
 
             DocumentLifetimeManager.FileWatchedChanged += OnFileWatchedChanged;
 
@@ -173,23 +178,19 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (_solutionDir.Length == 0 && _serviceProvider != null)
-            {    
-                DTE2 applicationObject = _serviceProvider.GetService(typeof(SDTE)) as DTE2;
+            if (SolutionDir.Length == 0 && ServiceProvider != null)
+            {
+                DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
                 Assumes.Present(applicationObject);
                 string solutionDirRaw = applicationObject.Solution.FullName;
 
                 if (solutionDirRaw.Length > 0)
                 {
                     //A valid solution folder was found
-                    _solutionDir = (Path.HasExtension(solutionDirRaw)? Path.GetDirectoryName(solutionDirRaw) : solutionDirRaw) + '\\';
+                    SolutionDir = (Path.HasExtension(solutionDirRaw) ? Path.GetDirectoryName(solutionDirRaw) : solutionDirRaw) + '\\';
 
-                    //Get the information from the settings
-                    GeneralSettingsPageGrid settings = GetGeneralSettings();
-                    if (SetPath(settings.OptionPath) || SetScoreFileName(settings.OptionScoreFileName) || SetRelativeToSolution(settings.OptionPathRelativeToSolution))
-                    {
-                        ReloadSeverities();
-                    }
+                    SettingsManager.Instance.Initialize(SolutionDir);
+                    OnSolutionSettingsChanged();
 
                     //Trigger settings refresh
                     OnHighlightEnabledChanged();
@@ -199,31 +200,31 @@ namespace CompileScore
 
         public GeneralSettingsPageGrid GetGeneralSettings()
         {
-            return _package == null? null : _package.GetGeneralSettings();
+            return Package == null ? null : Package.GetGeneralSettings();
         }
         public List<UnitTotal> GetTotals()
         {
-            return _totals;
-        } 
+            return Totals;
+        }
 
         public UnitTotal GetTotal(CompileCategory category)
         {
-            return (int)category < (int)CompileThresholds.Display && (int)category < _totals.Count? _totals[(int)category] : null;
+            return (int)category < (int)CompileThresholds.Display && (int)category < Totals.Count ? Totals[(int)category] : null;
         }
 
         public List<UnitValue> GetUnits()
         {
-            return _unitsCollection;
+            return UnitsCollection;
         }
 
         public UnitValue GetUnitByIndex(uint index)
         {
-            return index < _unitsCollection.Count ? _unitsCollection[(int)index] : null;
+            return index < UnitsCollection.Count ? UnitsCollection[(int)index] : null;
         }
 
         public UnitValue GetUnitByName(string name)
         {
-            foreach(UnitValue unit in _unitsCollection)
+            foreach (UnitValue unit in UnitsCollection)
             {
                 if (unit.Name == name)
                 {
@@ -235,55 +236,29 @@ namespace CompileScore
 
         public List<CompileValue> GetCollection(CompileCategory category)
         {
-            return _datasets[(int)category].collection;
+            return Datasets[(int)category].collection;
         }
 
-        public string GetScoreFullPath() { return GetRealPath() + _scoreFileName; }
+        public string GetScoreFullPath() { return ScoreLocation; }
 
-        private string GetRealPath() { return _relativeToSolution ? _solutionDir + _path : _path; }
+        private string GetRealPath() { return Path.GetDirectoryName(ScoreLocation); }
 
-        private bool SetRelativeToSolution(bool input)
+        private bool SetScoreLocation(string input)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (_relativeToSolution != input)
+            if (ScoreLocation != input)
             {
-                _relativeToSolution = input;
-                OutputLog.Log(_relativeToSolution? "Path is relative To Solution" : "Path is Global");
+                ScoreLocation = input;
+                OutputLog.Log("Settings - Score File: " + ScoreLocation);
                 return true;
             }
             return false;
         }
 
-        private bool SetPath(string input)
+        public CompileValue GetValue(CompileCategory category, string fileName)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (_path != input)
-            {
-                _path = input;
-                OutputLog.Log("Settings - Score Path: " + _path);
-                return true;
-            }
-            return false;
-        }
-
-        private bool SetScoreFileName(string input)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (_scoreFileName != input)
-            {
-                _scoreFileName = input;
-                OutputLog.Log("Settings - Score File: " + _scoreFileName);
-                return true;
-            }
-            return false;
-        }
-         
-        public CompileValue GetValue(CompileCategory category,string fileName)
-        {
-            CompileDataset dataset = _datasets[(int)category];
+            CompileDataset dataset = Datasets[(int)category];
             if (dataset.dictionary.ContainsKey(fileName)) { return dataset.dictionary[fileName]; }
             return null;
         }
@@ -292,35 +267,45 @@ namespace CompileScore
         {
             if ((int)category < (int)CompileThresholds.Gather)
             {
-                CompileDataset dataset = _datasets[(int)category];
+                CompileDataset dataset = Datasets[(int)category];
                 return index >= 0 && index < dataset.collection.Count ? dataset.collection[index] : null;
             }
             return null;
         }
         public UnitValue GetUnit(int index)
         {
-            return index >= 0 && index < _unitsCollection.Count ? _unitsCollection[index] : null;
+            return index >= 0 && index < UnitsCollection.Count ? UnitsCollection[index] : null;
+        }
+
+        public void LoadDefaultSource()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            SetSource(DataSource.Default);
+            MacroEvaluator evaluator = new MacroEvaluator();
+            SetScoreLocation(evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreLocation));
+            WatchScoreFile();
+            LoadSeverities(ScoreLocation);
         }
 
         public void ForceLoadFromFilename(string filename)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            //Only call this from the standalone app (this craetes a desync from the VS settings)
-            _relativeToSolution = false;
-            _path = "";
-            _scoreFileName = filename;
+            SetSource(DataSource.Forced);
+            DocumentLifetimeManager.UnWatchFile();
 
-            ReloadSeverities();
+            if (SetScoreLocation(filename))
+            {
+                LoadSeverities(ScoreLocation);
+            }
         }
 
-        public void ReloadSeverities()
+        private void SetSource(DataSource input)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            string realPath = GetRealPath();
-
-            DocumentLifetimeManager.WatchFile(realPath, _scoreFileName);
-            LoadSeverities(realPath + _scoreFileName);
+            if (Source != input)
+            {
+                Source = input; 
+            }
         }
 
         private void ReadCompileUnit(BinaryReader reader, List<UnitValue> list, uint index)
@@ -352,19 +337,25 @@ namespace CompileScore
         {
             for (int i=0;i< (int)CompileThresholds.Gather; ++i)
             {
-                CompileDataset dataset = _datasets[i];
+                CompileDataset dataset = Datasets[i];
                 dataset.collection.Clear();
                 dataset.dictionary.Clear();
                 dataset.normalizedThresholds.Clear();
             }
         }
 
+        public void ReloadSeverities()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            LoadSeverities(ScoreLocation);
+        }
+
         private void LoadSeverities(string fullPath)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            _unitsCollection.Clear();
-            _totals.Clear();
+            UnitsCollection.Clear();
+            Totals.Clear();
             ClearDatasets();
 
             if (File.Exists(fullPath))
@@ -389,7 +380,7 @@ namespace CompileScore
                             ReadCompileUnit(reader, unitList, i);
                         }
                     
-                        _unitsCollection = new List<UnitValue>(unitList);
+                        UnitsCollection = new List<UnitValue>(unitList);
 
                         //Read Datasets
                         for(int i = 0; i < (int)CompileThresholds.Gather; ++i)
@@ -400,7 +391,7 @@ namespace CompileScore
                             {
                                 ReadCompileValue(reader, thislist);
                             }
-                            _datasets[i].collection = new List<CompileValue>(thislist);
+                            Datasets[i].collection = new List<CompileValue>(thislist);
                         }
                     }
                     else
@@ -433,7 +424,7 @@ namespace CompileScore
 
             //for(int i = 0; i < (int)CompileCategory.GahterCount; ++i)
             {
-                CompileDataset dataset = _datasets[i];
+                CompileDataset dataset = Datasets[i];
                 List<uint> onlyValues = new List<uint>();
                 foreach (CompileValue entry in dataset.collection)
                 {
@@ -444,18 +435,18 @@ namespace CompileScore
             }
 
             //Process Totals
-            _totals = new List<UnitTotal>();
+            Totals = new List<UnitTotal>();
             for (int k = 0; k < (int)CompileThresholds.Display; ++k)
             {
-                _totals.Add(new UnitTotal((CompileCategory)k));
+                Totals.Add(new UnitTotal((CompileCategory)k));
             }
             
-            foreach (UnitValue unit in _unitsCollection)
+            foreach (UnitValue unit in UnitsCollection)
             {  
                 
                 for(int k = 0; k < (int)CompileThresholds.Display;++k)
                 {
-                    _totals[k].Total += unit.ValuesList[k];
+                    Totals[k].Total += unit.ValuesList[k];
                 }
             }
         }
@@ -497,7 +488,7 @@ namespace CompileScore
 
             //for (int i = 0; i < (int)CompileCategory.GatherCount; ++i)
             {
-                CompileDataset dataset = _datasets[i];
+                CompileDataset dataset = Datasets[i];
                 List<uint> thresholdList = settings.OptionNormalizedSeverity ? dataset.normalizedThresholds : settings.GetOptionSeverities();
                 foreach (CompileValue entry in dataset.collection)
                 {
@@ -525,32 +516,28 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             LoadSeverities(GetScoreFullPath());
-        } 
-
-        public void OnSettingsRelativePathChanged()
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            if (SetRelativeToSolution(GetGeneralSettings().OptionPathRelativeToSolution))
-            {
-                ReloadSeverities();
-            }
         }
 
-        public void OnSettingsPathChanged()
+        private void WatchScoreFile()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            if (SetPath(GetGeneralSettings().OptionPath))
-            {
-                ReloadSeverities(); 
-            }
+            string realPath = Path.GetDirectoryName(ScoreLocation) + '\\';
+            string filename = Path.GetFileName(ScoreLocation);
+            DocumentLifetimeManager.WatchFile(realPath, filename);
         }
 
-        public void OnSettingsScoreFileNameChanged()
+        public void OnSolutionSettingsChanged()
         {
+            //TODO ~ ramonv ~ hook this to the solution settings 
             ThreadHelper.ThrowIfNotOnUIThread();
-            if (SetScoreFileName(GetGeneralSettings().OptionScoreFileName))
+
+            if (Source == DataSource.Default)
             {
-                ReloadSeverities();
+                MacroEvaluator evaluator = new MacroEvaluator();
+                if (SetScoreLocation(evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreLocation)))
+                {
+                    WatchScoreFile();
+                    LoadSeverities(ScoreLocation);
+                }
             }
         }
 

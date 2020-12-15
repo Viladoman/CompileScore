@@ -55,11 +55,16 @@
             }
             else
             {
-                if (_fileWatcher != null)
-                {
-                    _fileWatcher.EnableRaisingEvents = false;
-                    _fileWatcher = null;
-                }
+                UnWatchFile();
+            }
+        }
+
+        public static void UnWatchFile()
+        {
+            if (_fileWatcher != null)
+            {
+                _fileWatcher.EnableRaisingEvents = false;
+                _fileWatcher = null;
             }
         }
 

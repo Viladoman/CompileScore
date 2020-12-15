@@ -56,11 +56,15 @@
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             OutputLog.Initialize(this);
+            EditorUtils.Initialize(this);
+            Profiler.Instance.Initialize(this);
             CompilerData.Instance.Initialize(this, this);
             Timeline.CompilerTimeline.Instance.Initialize(this);
             DocumentLifetimeManager.Initialize(this);
             await CompileScore.Overview.OverviewWindowCommand.InitializeAsync(this);
             await CompileScore.Timeline.TimelineWindowCommand.InitializeAsync(this);
+            await CompileScore.Commands.BuildCommand.InitializeAsync(this);
+            await CompileScore.Commands.SettingsCommand.InitializeAsync(this);
         }
 
         #endregion

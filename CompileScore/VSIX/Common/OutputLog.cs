@@ -9,16 +9,43 @@
     public static class OutputLog
     {
         private static IVsOutputWindowPane pane;
+
+        public static IVsOutputWindowPane GetPane()
+        {
+            return pane;
+        } 
+
         public static void Initialize(IServiceProvider serviceProvider)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             CreatePane(serviceProvider, Guid.NewGuid(), "Compile Score", true, false);
         }
 
+        public static void Focus()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            pane.Activate();
+        }
+
+        public static void Clear()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            pane.Clear();
+        }
+
         public static void Log(string text)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             Write(text);
+        }
+
+        public static void LogLine(string text)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            if (text != null)
+            {
+                pane.OutputString(text + "\n");
+            }
         }
 
         public static void Error(string text)

@@ -1,0 +1,62 @@
+﻿<UserControl x:Class="CompileScore.SettingsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:common="clr-namespace:CompileScore.Common"
+             Background="{DynamicResource {x:Static common:ColorTheme.Background}}"
+             Foreground="{DynamicResource {x:Static common:ColorTheme.Foreground}}"
+             xmlns:local="clr-namespace:CompileScore"
+             mc:Ignorable="d" 
+             d:DesignHeight="350" d:DesignWidth="400"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    
+    <UserControl.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}" />
+            <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.Background}}" />
+        </Style>
+        <Style TargetType="Label">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}" />
+            <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.Background}}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding Foreground}" BorderThickness="1">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.ComboBox_MouseOverForeground}}" />
+                    <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.ComboBox_MouseOverBackground}}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+        
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel x:Name="optionStack" Grid.Row="0"/>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Margin="10" Padding="10 0 10 0" Height="30" Click="ButtonDocumentation_OnClick">Documentation</Button>
+            <Button Grid.Column="1" Margin="0 10 10 10" Height="30" Click="ButtonSave_OnClick">Save</Button>
+        </Grid>
+    </Grid>
+</UserControl>
