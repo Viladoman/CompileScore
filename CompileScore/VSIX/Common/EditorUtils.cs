@@ -63,6 +63,7 @@ namespace CompileScore
             if (solution == null) return null;
             return (Path.HasExtension(solution.FullName) ? Path.GetDirectoryName(solution.FullName) : solution.FullName) + '\\';
         }
+
         static public EditorMode GetEditorMode()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -94,6 +95,24 @@ namespace CompileScore
             }
 
             return EditorMode.VisualStudio;
+        }
+
+        static public Overview.OverviewWindow FocusOverviewWindow()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            // Get the instance number 0 of this tool window. This window is single instance so this instance
+            // is actually the only one.
+            // The last flag is set to true so that if the tool window does not exists it will be created.
+            Overview.OverviewWindow window = Package.FindToolWindow(typeof(Overview.OverviewWindow), 0, true) as Overview.OverviewWindow;
+            if ((null == window) || (null == window.GetFrame()))
+            {
+                throw new NotSupportedException("Cannot create tool window");
+            }
+
+            window.ProxyShow();
+
+            return window;
         }
     }
 }

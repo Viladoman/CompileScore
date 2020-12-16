@@ -16,12 +16,12 @@
     /// </para>
     /// </remarks>
     [Guid("8c28dad6-3541-4fe6-95d2-a361d3710a12")]
-    public class OverviewWindow : ToolWindowPane
+    public class OverviewWindow : Common.WindowProxy
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="OverviewWindow"/> class.
         /// </summary>
-        public OverviewWindow() : base(null)
+        public OverviewWindow()
         {
             this.Caption = "Compile Score";
 

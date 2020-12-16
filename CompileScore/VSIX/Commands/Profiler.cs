@@ -304,8 +304,7 @@ namespace CompileScore
             // Potentially allow configuration and generator level macros
 
             CompilerData.Instance.ForceLoadFromFilename(outputPath);
-
-            // Force show window
+            EditorUtils.FocusOverviewWindow();
 
             SetState(StateType.Idle);
         }

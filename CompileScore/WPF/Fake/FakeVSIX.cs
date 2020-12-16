@@ -18,6 +18,8 @@ namespace CompileScore
 
     public class SettingsManager
     {
+        public static event Notify SettingsChanged;
+
         private static readonly Lazy<SettingsManager> lazy = new Lazy<SettingsManager>(() => new SettingsManager());
         public static SettingsManager Instance { get { return lazy.Value; } }
 
