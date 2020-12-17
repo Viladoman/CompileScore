@@ -9,8 +9,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Security.Principal;
 
-//TODO ~ ramonv ~ add Rebuild and Profile + ScoreExtractor only + Clean Profile Data commands
-
 namespace CompileScore
 {
     public class Profiler
@@ -119,6 +117,23 @@ namespace CompileScore
             OverviewDetail = generatorSettings.OverviewDetail;
             TimelineDetail = generatorSettings.TimelineDetail;
             TimelinePacking = generatorSettings.TimelinePacking;
+        }
+
+        private bool CreateDirectory(string path)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            try
+            {
+                Directory.CreateDirectory(path);
+            }
+            catch (Exception e)
+            {
+                DisplayError("Unable to create directory "+path+". " + e.ToString());
+                return false;
+            }
+
+            return true;
         }
 
         private void TriggerBuildSolution()
@@ -352,6 +367,8 @@ namespace CompileScore
             string inputPath = FixPath(Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.InputPath));
             string outputPath = Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.OutputPath);
 
+            CreateDirectory(Path.GetDirectoryName(outputPath));
+
             string finalInputPath = CompilerSource == Compiler.MSVC ? inputPath + ETLFileName : inputPath;
             string platform       = CompilerSource == Compiler.MSVC? "-msvc" : "-clang";
             string detail         = " -d " + (int)OverviewDetail;
@@ -380,6 +397,9 @@ namespace CompileScore
             if (CompilerSource == Compiler.MSVC)
             {
                 string path = FixPath(Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.InputPath));
+
+                CreateDirectory(path);
+
                 string commandLine = "/stopnoanalyze CompileScore " + path + ETLFileName;
 
                 OutputLog.Log("Executing VCPERF " + commandLine);
