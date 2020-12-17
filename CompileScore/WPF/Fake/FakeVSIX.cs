@@ -26,5 +26,7 @@ namespace CompileScore
         public SolutionSettings Settings { set; get; } = new SolutionSettings();
 
         public void Initialize(string solutionDir) { }
+
+        public void DummyFunction() { SettingsChanged.Invoke(); }
     }
 }
