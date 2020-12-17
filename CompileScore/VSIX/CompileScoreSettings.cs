@@ -25,7 +25,7 @@ namespace CompileScore
         [Category("Display")]
         [DisplayName("Tooltip")]
         [Description("If true, a tooltip will show up when hovering with the mouse")]
-        public bool OptionTooltipEnabled { set; get; }
+        public bool OptionTooltipEnabled { set; get; } = true;
         
         [Category("Tags")]
         [DisplayName("Normalized Severity")]

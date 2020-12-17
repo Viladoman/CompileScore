@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -102,6 +103,15 @@ namespace CompileScore
                         Grid.SetColumn(inputControl, 1);
                         elementGrid.Children.Add(inputControl);
                     }
+                    else if (property.PropertyType == typeof(uint) || property.PropertyType == typeof(int))
+                    {
+                        var inputControl = new TextBox();
+                        inputControl.SetBinding(TextBox.TextProperty, new Binding(thisFullName));
+                        inputControl.PreviewTextInput += NumberValidationTextBox;
+                        inputControl.Margin = new Thickness(5);
+                        Grid.SetColumn(inputControl, 1);
+                        elementGrid.Children.Add(inputControl);           
+                    }
                     else if (property.PropertyType.IsEnum)
                     {
                         ComboBox inputControl = new ComboBox();
@@ -115,6 +125,11 @@ namespace CompileScore
                     panel.Children.Add(elementGrid);
                 }
             }
+        }
+        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            Regex regex = new Regex("[^0-9]+");
+            e.Handled = regex.IsMatch(e.Text);
         }
 
         private void CreateGrid()

@@ -23,6 +23,14 @@ namespace CompileScore
             Clang,
         }
 
+        public enum ExtractorDetail
+        {
+            None     = 0, 
+            Basic    = 1, 
+            Frontend = 2,
+            Full     = 3,
+        }
+
         private enum StateType
         {
             Idle, 
@@ -45,6 +53,9 @@ namespace CompileScore
 
         private StateType State { set; get; } = StateType.Idle;
         private Compiler CompilerSource { set; get; } = Compiler.MSVC;
+        private ExtractorDetail OverviewDetail { set; get; } = ExtractorDetail.Basic;
+        private ExtractorDetail TimelineDetail { set; get; } = ExtractorDetail.Basic;
+        private uint TimelinePacking { set; get; } = 100;
 
         static bool IsElevated => new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
 
@@ -101,15 +112,24 @@ namespace CompileScore
             }
         }
 
+        private void SetGeneratorProperties()
+        {
+            ScoreGeneratorSettings generatorSettings = SettingsManager.Instance.Settings.ScoreGenerator;
+            CompilerSource = generatorSettings.Compiler;
+            OverviewDetail = generatorSettings.OverviewDetail;
+            TimelineDetail = generatorSettings.TimelineDetail;
+            TimelinePacking = generatorSettings.TimelinePacking;
+        }
+
         private void TriggerBuildSolution()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            CompilerSource = SettingsManager.Instance.Settings.ScoreGenerator.Compiler;
-
             OutputLog.Focus();
             OutputLog.Clear();
             Evaluator.Clear();
+
+            SetGeneratorProperties();
 
             //TODO ~ ramonv ~ ask if possible to add a way to query MS build insights for a session in progress. If in progress STOP it here.
 
@@ -288,9 +308,9 @@ namespace CompileScore
 
             if (CompilerSource == Compiler.MSVC)
             {
-                string commandLine = "/start CompileScore";
-
-                //TODO ~ Add \level flags if we need templates
+                string level = OverviewDetail >= ExtractorDetail.Frontend || (TimelinePacking > 0 && TimelineDetail >= ExtractorDetail.Frontend) ? " /level3" : "";
+                
+                string commandLine = "/start" + level + " CompileScore";
 
                 OutputLog.Log("Executing VCPERF " + commandLine);
                 var exitCode = TriggerProcess(GetVCPerfToolPath(), commandLine);
@@ -333,9 +353,11 @@ namespace CompileScore
             string outputPath = Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.OutputPath);
 
             string finalInputPath = CompilerSource == Compiler.MSVC ? inputPath + ETLFileName : inputPath;
-            string platform       = CompilerSource == Compiler.MSVC? "-msvc" : "-clang"; 
+            string platform       = CompilerSource == Compiler.MSVC? "-msvc" : "-clang";
+            string detail         = " -d " + (int)OverviewDetail;
+            string timeline       = TimelinePacking == 0? " -nt" : " -tp " + TimelinePacking + " -td " + (int)TimelineDetail;
 
-            string commandLine = platform + " -i " + finalInputPath + " -o " + outputPath;
+            string commandLine = platform + timeline + detail + " -i " + finalInputPath + " -o " + outputPath;
 
             OutputLog.Log("Executing Compile Score Extractor " + commandLine);
             var exitCode = TriggerProcess(GetScoreExtractorToolPath(), commandLine);

@@ -23,7 +23,7 @@ namespace CompileScore
 
     public class ScoreGeneratorSettings
     {
-        [UIDescription(Label = "Compiler", Tooltip = "Compiler used to generate the profile data. (For Clang make sure the -ftime-trace flag is set)")]
+        [UIDescription(Label = "Compiler", Tooltip = "Sets the system to use the Clang (.json traces) or MSVC (.etl traces) generator")]
         public Profiler.Compiler Compiler { set; get; } = Profiler.Compiler.MSVC;
 
         [UIDescription(Label = "Input Path", Tooltip = "Path to the compiler data.")]
@@ -32,9 +32,16 @@ namespace CompileScore
         [UIDescription(Label = "Output File", Tooltip = "Location where the .scor file will be generated")]
         public string OutputPath { set; get; } = @"$(SolutionDir)compileData.scor";
 
-        //TODO ~ Detail level
+        [UIDescription(Label="Overview Detail", Tooltip = "The exported detail level for the overview and globals tables.")]
+        public Profiler.ExtractorDetail OverviewDetail { set; get; } = Profiler.ExtractorDetail.Basic;
+
+        [UIDescription(Label="Timeline Detail", Tooltip = "The exported detail level for the timeline nodes. Useful to reduce the .scor.txxxx file sizes or improve packing")]
+        public Profiler.ExtractorDetail TimelineDetail { set; get; } = Profiler.ExtractorDetail.Basic;
+
+        [UIDescription(Label="Timeline Packing", Tooltip = "The number of timelines packed in the same file. if 0 no timeline will be created.")]
+        public uint TimelinePacking { set; get; } = 100;
+
         //TODO ~ Verbosity
-        //TODO ~ timeline packing options
     }
 
     public class SolutionSettings
