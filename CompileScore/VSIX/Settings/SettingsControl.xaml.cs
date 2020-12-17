@@ -47,7 +47,7 @@ namespace CompileScore
 
                 string thisFullName = prefix + '.' + property.Name;
 
-                bool isComplexObject = !property.PropertyType.IsPrimitive && property.PropertyType != typeof(string);
+                bool isComplexObject = !property.PropertyType.IsEnum && !property.PropertyType.IsPrimitive && property.PropertyType != typeof(string);
 
                 if (isComplexObject)
                 {
@@ -98,6 +98,15 @@ namespace CompileScore
                         var inputControl = new CheckBox();
                         inputControl.VerticalAlignment = VerticalAlignment.Center;
                         inputControl.SetBinding(CheckBox.IsCheckedProperty, new Binding(thisFullName));
+                        inputControl.Margin = new Thickness(5);
+                        Grid.SetColumn(inputControl, 1);
+                        elementGrid.Children.Add(inputControl);
+                    }
+                    else if (property.PropertyType.IsEnum)
+                    {
+                        ComboBox inputControl = new ComboBox();
+                        inputControl.ItemsSource = Enum.GetValues(property.PropertyType);
+                        inputControl.SetBinding(ComboBox.SelectedValueProperty, new Binding(thisFullName));
                         inputControl.Margin = new Thickness(5);
                         Grid.SetColumn(inputControl, 1);
                         elementGrid.Children.Add(inputControl);

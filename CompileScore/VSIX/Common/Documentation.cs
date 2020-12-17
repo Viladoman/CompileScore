@@ -13,6 +13,7 @@ namespace CompileScore
         {
             None,
             MainPage,
+            ReportIssue,
             GeneralConfiguration,
             Donate,
         }
@@ -22,6 +23,7 @@ namespace CompileScore
             switch (link)
             {
                 case Link.MainPage:             return @"https://github.com/Viladoman/CompileScore";
+                case Link.ReportIssue:          return @"https://github.com/Viladoman/CompileScore/issues";
                 case Link.GeneralConfiguration: return @"https://github.com/Viladoman/CompileScore"; //TODO ~ ramonv ~ add this wiki page
                 case Link.Donate:               return @"https://www.paypal.com/donate?hosted_button_id=QWTUS8PNK5X5A";
             }

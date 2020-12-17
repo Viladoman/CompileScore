@@ -45,10 +45,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Commands\BuildCommand.cs" />
-    <Compile Include="Commands\LoadDefaultCommand.cs" />
-    <Compile Include="Commands\Profiler.cs" />
-    <Compile Include="Commands\RebuildCommand.cs" />
+    <Compile Include="Editor\AboutCommand.cs" />
+    <Compile Include="Editor\BuildCommand.cs" />
+    <Compile Include="Editor\DocumentationCommand.cs" />
+    <Compile Include="Editor\LoadDefaultCommand.cs" />
+    <Compile Include="Editor\Profiler.cs" />
+    <Compile Include="Editor\RebuildCommand.cs" />
     <Compile Include="Common\ColorTheme.cs" />
     <Compile Include="Common\CompilerData.cs" />
     <Compile Include="Common\Documentation.cs" />
@@ -57,6 +59,10 @@
     <Compile Include="Common\FileWatcher.cs" />
     <Compile Include="Common\MacroEvaluator.cs" />
     <Compile Include="Common\OutputLog.cs" />
+    <Compile Include="Editor\MessageControl.xaml.cs">
+      <DependentUpon>MessageControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Editor\MessageWindow.cs" />
     <Compile Include="Common\ScoreColors.cs" />
     <Compile Include="Common\WindowProxy.cs" />
     <Compile Include="Common\UIConverters.cs" />
@@ -88,6 +94,9 @@
     </Compile>
     <Compile Include="QuickInfo\ScoreQuickInfoSource.cs" />
     <Compile Include="QuickInfo\ScoreQuickInfoSourceProvider.cs" />
+    <Compile Include="Settings\AboutWindow.xaml.cs">
+      <DependentUpon>AboutWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Settings\SettingsCommand.cs" />
     <Compile Include="Settings\SettingsControl.xaml.cs">
       <DependentUpon>SettingsControl.xaml</DependentUpon>
@@ -168,7 +177,7 @@
       <Link>External\VCPerf\vcperf.exe</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="Commands\Resources\icons.png" />
+    <Content Include="Editor\Resources\icons.png" />
     <Content Include="Icon.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -184,6 +193,10 @@
     <Content Include="Overview\Resources\OverviewWindowCommand.png" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Editor\MessageControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Overview\CompileDataTable.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -199,6 +212,10 @@
     <Page Include="Overview\OverviewWindowControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Settings\AboutWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Settings\SettingsControl.xaml">
       <Generator>MSBuild:Compile</Generator>

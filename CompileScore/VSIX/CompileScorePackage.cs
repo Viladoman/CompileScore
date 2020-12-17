@@ -69,6 +69,8 @@
             await CompileScore.Commands.RebuildCommand.InitializeAsync(this);
             await CompileScore.Commands.LoadDefaultCommand.InitializeAsync(this);
             await CompileScore.Commands.SettingsCommand.InitializeAsync(this);
+            await CompileScore.Commands.DocumentationCommand.InitializeAsync(this);
+            await CompileScore.Commands.AboutCommand.InitializeAsync(this);
         }
 
         #endregion

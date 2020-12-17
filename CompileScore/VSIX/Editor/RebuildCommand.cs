@@ -90,10 +90,7 @@ namespace CompileScore.Commands
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             Profiler profiler = Profiler.Instance;
-            if (profiler.CleanSolution())
-            {
-                profiler.BuildSolution();
-            }
+            profiler.RebuildSolution();
         }
     }
 }

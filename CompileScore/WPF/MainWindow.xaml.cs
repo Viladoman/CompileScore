@@ -103,11 +103,13 @@ namespace CompileScore
 
         private void OnHelp(object sender, RoutedEventArgs e)
         {
+            //TODO ~ ramonv ~ move to use the documentation file
             Process.Start("https://github.com/Viladoman/CompileScore");
         }
 
         private void OnMenuAbout(object sender, RoutedEventArgs e)
         {
+            //TODO ~ unify abouts 
             Extras.AboutWindow dlg = new Extras.AboutWindow();
             dlg.Owner = this;
             dlg.ShowDialog();

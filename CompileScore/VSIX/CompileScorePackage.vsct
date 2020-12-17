@@ -60,14 +60,14 @@
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupBuild" />
         <Icon guid="guidImages" id="icon" />
         <Strings>
-          <ButtonText>Build and Profile (MSVC Only)</ButtonText>
+          <ButtonText>Build Solution and Profile</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdidRebuild" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupBuild" />
         <Icon guid="guidImages" id="icon" />
         <Strings>
-          <ButtonText>Rebuild and Profile (MSVC Only)</ButtonText>
+          <ButtonText>Rebuild Solution and Profile</ButtonText>
         </Strings>
       </Button>
       
@@ -97,14 +97,14 @@
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreBuild" />
         <Icon guid="guidImages" id="icon" />
         <Strings>
-          <ButtonText>Build and Profile (MSVC Only)</ButtonText>
+          <ButtonText>Build Solution and Profile</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdidRebuild" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreBuild" />
         <Icon guid="guidImages" id="icon" />
         <Strings>
-          <ButtonText>Rebuild and Profile (MSVC Only)</ButtonText>
+          <ButtonText>Rebuild Solution and Profile</ButtonText>
         </Strings>
       </Button>
 
@@ -114,7 +114,6 @@
           <ButtonText>Options</ButtonText>
         </Strings>
       </Button>
-      <!--
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdidDocumentation" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupHelp" />
         <Strings>
@@ -127,7 +126,6 @@
           <ButtonText>About</ButtonText>
         </Strings>
       </Button>
-      -->
     </Buttons>
 
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->

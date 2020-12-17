@@ -17,6 +17,12 @@ namespace CompileScore
     {
         private static readonly Lazy<Profiler> lazy = new Lazy<Profiler>(() => new Profiler());
 
+        public enum Compiler
+        {
+            MSVC, 
+            Clang,
+        }
+
         private enum StateType
         {
             Idle, 
@@ -38,6 +44,7 @@ namespace CompileScore
         private BuildEvents BuildEvents { set; get; }
 
         private StateType State { set; get; } = StateType.Idle;
+        private Compiler CompilerSource { set; get; } = Compiler.MSVC;
 
         static bool IsElevated => new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
 
@@ -73,20 +80,38 @@ namespace CompileScore
                 return false;
             }
         }
+        public void RebuildSolution()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (Validate())
+            {
+                CleanSolution();
+                TriggerBuildSolution();
+            }
+        }
 
         public void BuildSolution()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (State != StateType.Idle) return;
+            if (Validate())
+            {
+                TriggerBuildSolution();
+            }
+        }
+
+        private void TriggerBuildSolution()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            CompilerSource = SettingsManager.Instance.Settings.ScoreGenerator.Compiler;
+
             OutputLog.Focus();
             OutputLog.Clear();
             Evaluator.Clear();
 
-            if (!Validate())
-            {
-                return;
-            }
+            //TODO ~ ramonv ~ ask if possible to add a way to query MS build insights for a session in progress. If in progress STOP it here.
 
             SetState(StateType.Triggering);
 
@@ -102,32 +127,41 @@ namespace CompileScore
             }
         }
 
+        private void DisplayError(string message)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            OutputLog.Error(message);
+            MessageWindow.Display(new MessageContent(message));
+        }
+
         private bool Validate()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (!IsElevated)
+            if (CompilerSource == Compiler.MSVC && !IsElevated)
             {
-                OutputLog.Error("Visual Studio needs to be running in administrator mode. Command cancelled!");
-                //TODO ~ ramonv ~ display message
+                DisplayError("Visual Studio needs to be running in administrator mode. Microsoft Build Insights requirement.");
                 return false;
             }
 
             if (GetScoreExtractorToolPath() == null)
             {
-                OutputLog.Error("Unable to find the score extractor program. Command cancelled!");
-                //TODO ~ ramonv ~ display message
+                DisplayError("Unable to find the score extractor program.");
                 return false;
             }
 
             if (GetVCPerfToolPath() == null)
             {
-                OutputLog.Error("Unable to find the vcperf program. Command cancelled!");
-                //TODO ~ ramonv ~ display message
+                DisplayError("Unable to find the vcperf program.");
                 return false;
             }
 
-            //TODO ~ ramonv ~ maybe here stop vcperf session just in case it is in a desync state
+            if (State != StateType.Idle)
+            {
+                DisplayError("Build Process already running!");
+                return false;
+            }
 
             return true;
         }
@@ -143,8 +177,6 @@ namespace CompileScore
         }
         private void OnBuildBegin(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
         {
-            //TODO ~ ramonv ~ call Async here
-
             ThreadHelper.ThrowIfNotOnUIThread();
 
             switch (State)
@@ -254,14 +286,21 @@ namespace CompileScore
 
             SetState(StateType.Preparing);
 
-            string commandLine = "/start CompileScore";
+            if (CompilerSource == Compiler.MSVC)
+            {
+                string commandLine = "/start CompileScore";
 
-            //TODO ~ Add \level flags if we need templates
+                //TODO ~ Add \level flags if we need templates
 
-            OutputLog.Log("Executing VCPERF " + commandLine);
-            var exitCode = TriggerProcess(GetVCPerfToolPath(), commandLine);
+                OutputLog.Log("Executing VCPERF " + commandLine);
+                var exitCode = TriggerProcess(GetVCPerfToolPath(), commandLine);
 
-            //TODO ~ ramonv ~ process exit code 
+                if (exitCode != 0)
+                {
+                    DisplayError("VCPerf process failed to start the gathering session with code " + exitCode + ". The current build data won't be captured. Please check the output pane for more information.");
+                }
+            }
+
             OutputLog.Log("Building...");
         }
 
@@ -293,16 +332,19 @@ namespace CompileScore
             string inputPath = FixPath(Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.InputPath));
             string outputPath = Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.OutputPath);
 
-            string platform = true? "-msvc" : "-clang"; //TODO ~ ramonv ~ based on platform 
+            string finalInputPath = CompilerSource == Compiler.MSVC ? inputPath + ETLFileName : inputPath;
+            string platform       = CompilerSource == Compiler.MSVC? "-msvc" : "-clang"; 
 
-            string commandLine = platform + " -i " + inputPath + ETLFileName + " -o " + outputPath;
+            string commandLine = platform + " -i " + finalInputPath + " -o " + outputPath;
 
             OutputLog.Log("Executing Compile Score Extractor " + commandLine);
             var exitCode = TriggerProcess(GetScoreExtractorToolPath(), commandLine);
-            //TODO ~ ramonv ~ process exitcode
             
-            // Potentially allow configuration and generator level macros
-
+            if (exitCode != 0)
+            {
+                DisplayError("Compile Score Data Extractor process failed with code "+ exitCode +". Please check the output pane for more information.");
+            }
+            
             CompilerData.Instance.ForceLoadFromFilename(outputPath);
             EditorUtils.FocusOverviewWindow();
 
@@ -313,13 +355,19 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            string path = FixPath(Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.InputPath));
-            string commandLine = "/stopnoanalyze CompileScore " + path + ETLFileName;
+            if (CompilerSource == Compiler.MSVC)
+            {
+                string path = FixPath(Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.InputPath));
+                string commandLine = "/stopnoanalyze CompileScore " + path + ETLFileName;
 
-            OutputLog.Log("Executing VCPERF " + commandLine);
-            var exitCode = TriggerProcess(GetVCPerfToolPath(), commandLine);
-         
-            //TODO ~ ramonv ~ process exit code 
+                OutputLog.Log("Executing VCPERF " + commandLine);
+                var exitCode = TriggerProcess(GetVCPerfToolPath(), commandLine);
+
+                if (exitCode != 0)
+                {
+                    DisplayError("VCPerf process failed to stop the data gathering with code " + exitCode + ". Please check the output pane for more information.");
+                }
+            }
         }
 
         private string FixPath(string path)

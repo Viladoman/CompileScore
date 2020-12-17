@@ -23,6 +23,9 @@ namespace CompileScore
 
     public class ScoreGeneratorSettings
     {
+        [UIDescription(Label = "Compiler", Tooltip = "Compiler used to generate the profile data. (For Clang make sure the -ftime-trace flag is set)")]
+        public Profiler.Compiler Compiler { set; get; } = Profiler.Compiler.MSVC;
+
         [UIDescription(Label = "Input Path", Tooltip = "Path to the compiler data.")]
         public string InputPath { set; get; } = "$(SolutionDir)";
 
