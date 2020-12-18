@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using System.IO;
 using EnvDTE;
 using EnvDTE80;
@@ -13,9 +14,19 @@ namespace CompileScore
 {
     internal static class CMakeConfigurationUtils
     {
-        public class CMakeActiveConfiguration
+        private class CMakeActiveConfiguration
         {
             public string CurrentProjectSetting { set; get; }
+        }
+
+        private class CMakeConfiguration
+        {
+            public string name { set; get; }
+        }
+
+        private class CMakeSettings
+        {
+            public List<CMakeConfiguration> configurations { set; get; }
         }
 
         static public string GetActiveConfigurationFileName()
@@ -52,12 +63,37 @@ namespace CompileScore
                 }
             }
 
-            //TODO ~ ramonv ~ if unable to find it here... load the CMAKe configurations and return the first one 
+            //try to return the first config if the active file is not present
+            CMakeSettings configs = GetConfigurations();
+            return configs != null && configs.configurations.Count > 0? configs.configurations[0].name : null;
+        }
 
-            return null;
+        static private CMakeSettings GetConfigurations()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            CMakeSettings settings = null;
+
+            string solutionPath = EditorUtils.GetSolutionPath();
+            if (solutionPath == null || solutionPath.Length == 0) return null;
+            string settingsFilename = solutionPath + "CMakeSettings.json";
+            if (File.Exists(settingsFilename))
+            {
+                try
+                {
+                    string jsonString = File.ReadAllText(settingsFilename);
+                    settings = JsonConvert.DeserializeObject<CMakeSettings>(jsonString);
+                }
+                catch (Exception e)
+                {
+                    OutputLog.Error(e.Message);
+                }
+            }
+
+            return settings;
         }
     }
-     
+
 
     public delegate void NotifySolution(Solution solution);  // delegate
 
