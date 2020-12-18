@@ -186,8 +186,6 @@ namespace CompileScore
                 string solutionDirRaw = applicationObject.Solution.FullName;
                 if (solutionDirRaw.Length > 0)
                 {
-                    IsSolutionReady = true;
-
                     //Add file watcher for configuration change notification on CMake projects
                     if (EditorUtils.GetEditorMode() == EditorUtils.EditorMode.CMake)
                     {
@@ -195,6 +193,7 @@ namespace CompileScore
                         FileWatcher.Watch(CMakeConfigurationUtils.GetActiveConfigurationFileName());
                     }
 
+                    IsSolutionReady = true;
                     SolutionReady?.Invoke(applicationObject.Solution);
                 }
             }
