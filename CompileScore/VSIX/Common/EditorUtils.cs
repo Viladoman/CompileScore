@@ -15,7 +15,6 @@ namespace CompileScore
             None, 
             VisualStudio,
             CMake,
-            UnrealEngine,
         }
 
         static private AsyncPackage Package { get; set; }
@@ -77,21 +76,6 @@ namespace CompileScore
             if (project.Object == null)
             {
                 return EditorMode.CMake;
-            }
-
-            Solution solution = EditorUtils.GetActiveSolution();
-            if (solution != null)
-            {
-                //Check for unreal project ( $(SolutionName.uproject) || UE4.sln + Engine/Source/UE4Editor.target )
-                var uproject = Path.ChangeExtension(solution.FullName, "uproject");
-                if (File.Exists(uproject))
-                {
-                    return EditorMode.UnrealEngine;
-                }
-                else if (Path.GetFileNameWithoutExtension(solution.FullName) == "UE4" && File.Exists(GetSolutionPath() + @"Engine/Source/UE4Editor.Target.cs"))
-                {
-                    return EditorMode.UnrealEngine;
-                }
             }
 
             return EditorMode.VisualStudio;

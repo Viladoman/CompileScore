@@ -27,6 +27,20 @@ namespace CompileScore
 
         public void Initialize(string solutionDir) { }
 
-        public void DummyFunction() { SettingsChanged.Invoke(); }
+        public void DummyFunction() { SettingsChanged?.Invoke(); }
+    }
+
+    public delegate void NotifySolution(Solution solution);
+
+    public class SolutionEventsListener
+    {
+        private static readonly Lazy<SolutionEventsListener> lazy = new Lazy<SolutionEventsListener>(() => new SolutionEventsListener());
+        public static SolutionEventsListener Instance { get { return lazy.Value; } }
+
+        public event NotifySolution SolutionOpen;
+        public event Notify ActiveSolutionConfigurationChanged;
+
+        public void DummyFunction() { SolutionOpen?.Invoke(new Solution()); ActiveSolutionConfigurationChanged?.Invoke(); }
+
     }
 }

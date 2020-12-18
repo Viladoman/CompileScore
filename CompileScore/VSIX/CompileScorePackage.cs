@@ -58,6 +58,7 @@
             OutputLog.Initialize(this);
             EditorUtils.Initialize(this);
             Profiler.Instance.Initialize(this);
+            SolutionEventsListener.Instance.Initialize(this);
             CompilerData.Instance.Initialize(this, this);
             Timeline.CompilerTimeline.Instance.Initialize(this);
             DocumentLifetimeManager.Initialize(this);

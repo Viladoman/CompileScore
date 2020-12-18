@@ -1,0 +1,11 @@
+{
+  "ScoreLocation": "$(SolutionDir)\\CompileData\\compileData.scor",
+  "ScoreGenerator": {
+    "Compiler": 0,
+    "InputPath": "$(SolutionDir)\\CompileData\\Temp",
+    "OutputPath": "$(SolutionDir)\\CompileData\\compileData.scor",
+    "OverviewDetail": 2,
+    "TimelineDetail": 2,
+    "TimelinePacking": 100
+  }
+}

@@ -1,16 +1,12 @@
-﻿
+﻿using Microsoft.VisualStudio.Shell;
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using EnvDTE;
+
 namespace CompileScore
 {
-    using EnvDTE80;
-    using Microsoft;
-    using Microsoft.VisualStudio.Shell;
-    using Microsoft.VisualStudio.Shell.Interop;
-    using System;
-    using System.IO;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Linq;
-
     public delegate void Notify();  // delegate
 
     public class CompileValue
@@ -85,6 +81,7 @@ namespace CompileScore
     public sealed class CompilerData
     {
         private static readonly Lazy<CompilerData> lazy = new Lazy<CompilerData>(() => new CompilerData());
+        public static CompilerData Instance { get { return lazy.Value; } }
 
         public const uint VERSION = 4;
 
@@ -159,7 +156,6 @@ namespace CompileScore
         public event Notify ScoreDataChanged;
         public event Notify HighlightEnabledChanged;
 
-        public static CompilerData Instance { get { return lazy.Value; } }
         private CompilerData() { }
 
         public void Initialize(CompileScorePackage package, IServiceProvider serviceProvider)
@@ -172,31 +168,21 @@ namespace CompileScore
             DocumentLifetimeManager.FileWatchedChanged += OnFileWatchedChanged;
             SettingsManager.SettingsChanged += OnSolutionSettingsChanged;
 
-            RefreshInstance();
+            var SolutionEvents = SolutionEventsListener.Instance;
+            SolutionEvents.SolutionReady += OnSolutionReady;
+            SolutionEvents.ActiveSolutionConfigurationChanged += OnSolutionSettingsChanged; //Refresh settings for potential macro variables change
         }
 
-        public void RefreshInstance()
+        private void OnSolutionReady(Solution solution)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (SolutionDir.Length == 0 && ServiceProvider != null)
-            {
-                DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
-                Assumes.Present(applicationObject);
-                string solutionDirRaw = applicationObject.Solution.FullName;
+            string solutionDirRaw = solution.FullName;
+            SolutionDir = (Path.HasExtension(solutionDirRaw) ? Path.GetDirectoryName(solutionDirRaw) : solutionDirRaw) + '\\';
+            SettingsManager.Instance.Initialize(SolutionDir);
+            OnSolutionSettingsChanged();
 
-                if (solutionDirRaw.Length > 0)
-                {
-                    //A valid solution folder was found
-                    SolutionDir = (Path.HasExtension(solutionDirRaw) ? Path.GetDirectoryName(solutionDirRaw) : solutionDirRaw) + '\\';
-
-                    SettingsManager.Instance.Initialize(SolutionDir);
-                    OnSolutionSettingsChanged();
-
-                    //Trigger settings refresh
-                    OnHighlightEnabledChanged();
-                }
-            }
+            OnHighlightEnabledChanged(); 
         }
 
         public GeneralSettingsPageGrid GetGeneralSettings()
@@ -241,8 +227,6 @@ namespace CompileScore
         }
 
         public string GetScoreFullPath() { return ScoreLocation; }
-
-        private string GetRealPath() { return Path.GetDirectoryName(ScoreLocation); }
 
         private bool SetScoreLocation(string input)
         {
@@ -524,7 +508,7 @@ namespace CompileScore
             DocumentLifetimeManager.WatchFile(realPath, filename);
         }
 
-        public void OnSolutionSettingsChanged()
+        private void OnSolutionSettingsChanged()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 

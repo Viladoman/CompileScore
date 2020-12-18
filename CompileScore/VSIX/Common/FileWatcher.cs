@@ -12,6 +12,7 @@ namespace CompileScore.Common
         private FileSystemWatcher Watcher { set; get; }
         private DateTime WatcherLastRead { set; get; } = DateTime.MinValue;
         private string WatcherFullPath { set; get; } = "";
+        public bool Verbosity { set; get; } = true;
 
         public event NotifyFileChanged FileWatchedChanged;
 
@@ -103,7 +104,10 @@ namespace CompileScore.Common
 
                 ThreadHelper.JoinableTaskFactory.Run(async delegate {
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    OutputLog.Log("External file change detected for "+Path.GetFileName(WatcherFullPath));
+                    if (Verbosity)
+                    {
+                        OutputLog.Log("External file change detected for "+Path.GetFileName(WatcherFullPath));
+                    }
                     FileWatchedChanged?.Invoke();
                 });
 

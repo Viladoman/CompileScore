@@ -44,11 +44,21 @@ namespace CompileScore
             {
                 return EditorUtils.GetSolutionPath();
             }
+            else if (macroStr == @"$(SolutionName)")
+            {
+                //TODO~  ramonv ~ to be implemented
+                return null;
+            }
             else if (macroStr == @"$(Configuration)")
             {
-                //TODO ~ ramonv ~ support Configuration and react to configuration change 
-                //return ExtractorCMake.GetActiveConfigurationName();
+                return SolutionEventsListener.Instance.ConfigurationName;
             }
+            else if (macroStr == "$(Platform)")
+            {
+                return SolutionEventsListener.Instance.PlatformName;
+            }
+            
+            //TODO ~ ramonv ~ add detail level 
 
             return null;
         }

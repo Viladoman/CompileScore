@@ -8,6 +8,7 @@ using System.Windows;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Principal;
+using Microsoft.VisualStudio;
 
 namespace CompileScore
 {
@@ -93,6 +94,7 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            SetGeneratorProperties();
             if (Validate())
             {
                 CleanSolution();
@@ -104,6 +106,7 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            SetGeneratorProperties();
             if (Validate())
             {
                 TriggerBuildSolution();
@@ -144,20 +147,27 @@ namespace CompileScore
             OutputLog.Clear();
             Evaluator.Clear();
 
-            SetGeneratorProperties();
-
             //TODO ~ ramonv ~ ask if possible to add a way to query MS build insights for a session in progress. If in progress STOP it here.
 
             SetState(StateType.Triggering);
 
             try
             {
+                //TODO ~ ramonv ~ find a way to call Build All in CMake projects
+                //DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
+
+                //applicationObject.ExecuteCommand("Build.BuildSolution");
+                //applicationObject.ExecuteCommand("Build.RebuildSolution");
+
+                //TODO ~ Ramonv ~ CMAKE does not trigger build events! 
+
                 DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
                 Assumes.Present(applicationObject);
                 applicationObject.Solution.SolutionBuild.Build();
             }
-            catch(Exception)
+            catch(Exception e)
             {
+                DisplayError("Unable to Trigger the build. " + e.Message);
                 SetState(StateType.Idle);
             }
         }

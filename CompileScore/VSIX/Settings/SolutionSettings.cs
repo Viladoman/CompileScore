@@ -40,8 +40,6 @@ namespace CompileScore
 
         [UIDescription(Label="Timeline Packing", Tooltip = "The number of timelines packed in the same file. if 0 no timeline will be created.")]
         public uint TimelinePacking { set; get; } = 100;
-
-        //TODO ~ Verbosity
     }
 
     public class SolutionSettings
