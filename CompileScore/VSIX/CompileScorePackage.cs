@@ -1,12 +1,12 @@
-﻿namespace CompileScore
-{
-    using System;
-    using System.Runtime.InteropServices;
-    using System.Threading;
-    using Microsoft.VisualStudio.Shell;
-    using Microsoft.VisualStudio.Shell.Interop;
-    using Task = System.Threading.Tasks.Task;
+﻿using System;
+using System.Runtime.InteropServices;
+using System.Threading;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Task = System.Threading.Tasks.Task;
 
+namespace CompileScore
+{
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.
     /// </summary>
@@ -56,9 +56,9 @@
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             OutputLog.Initialize(this);
+            EditorContext.Instance.Initialize(this);
             EditorUtils.Initialize(this);
             Profiler.Instance.Initialize(this);
-            SolutionEventsListener.Instance.Initialize(this);
             CompilerData.Instance.Initialize(this, this);
             Timeline.CompilerTimeline.Instance.Initialize(this);
             DocumentLifetimeManager.Initialize(this);

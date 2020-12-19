@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft;
@@ -29,20 +30,16 @@ namespace CompileScore
             public List<CMakeConfiguration> configurations { set; get; }
         }
 
-        static public string GetActiveConfigurationFileName()
+        static public string GetActiveConfigurationFileName(string rootPath)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            string solutionPath = EditorUtils.GetSolutionPath();
-            if (solutionPath == null || solutionPath.Length == 0) return null;
-            return solutionPath + @".vs\ProjectSettings.json";
+             return rootPath + @".vs\ProjectSettings.json";
         }
 
-        static public string GetActiveConfigurationName()
+        static public string GetActiveConfigurationName(string rootPath)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            string activeConfigFilename = GetActiveConfigurationFileName();
+            string activeConfigFilename = GetActiveConfigurationFileName(rootPath);
             if (File.Exists(activeConfigFilename))
             {
                 var activeConfig = new CMakeActiveConfiguration();
@@ -64,19 +61,17 @@ namespace CompileScore
             }
 
             //try to return the first config if the active file is not present
-            CMakeSettings configs = GetConfigurations();
+            CMakeSettings configs = GetConfigurations(rootPath);
             return configs != null && configs.configurations.Count > 0? configs.configurations[0].name : null;
         }
 
-        static private CMakeSettings GetConfigurations()
+        static private CMakeSettings GetConfigurations(string rootPath)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             CMakeSettings settings = null;
 
-            string solutionPath = EditorUtils.GetSolutionPath();
-            if (solutionPath == null || solutionPath.Length == 0) return null;
-            string settingsFilename = solutionPath + "CMakeSettings.json";
+            string settingsFilename = rootPath + "CMakeSettings.json";
             if (File.Exists(settingsFilename))
             {
                 try
@@ -94,13 +89,20 @@ namespace CompileScore
         }
     }
 
-
-    public delegate void NotifySolution(Solution solution);  // delegate
-
-    internal class SolutionEventsListener : IVsSolutionEvents3, IVsSolutionEvents4, IVsUpdateSolutionEvents2, IVsUpdateSolutionEvents3, IDisposable
+    [ComVisible(true)]
+    public class EditorContext : IVsSolutionEvents3, IVsSolutionEvents7, IVsUpdateSolutionEvents2, IVsUpdateSolutionEvents3, IDisposable
     {
-        private static readonly Lazy<SolutionEventsListener> lazy = new Lazy<SolutionEventsListener>(() => new SolutionEventsListener());
-        public static SolutionEventsListener Instance { get { return lazy.Value; } }
+        private static readonly Lazy<EditorContext> lazy = new Lazy<EditorContext>(() => new EditorContext());
+        public static EditorContext Instance { get { return lazy.Value; } }
+
+        public enum EditorMode
+        {
+            None,
+            VisualStudio,
+            CMake,
+        }
+
+        public string RootPath { private set; get; }
 
         private IVsSolution solution;
         private IVsSolutionBuildManager3 buildManager;
@@ -108,62 +110,30 @@ namespace CompileScore
         private uint cookie2 = VSConstants.VSCOOKIE_NIL;
         private uint cookie3 = VSConstants.VSCOOKIE_NIL;
 
-        private IServiceProvider Provider;
+        private IServiceProvider ServiceProvider;
 
-        private bool IsSolutionReady { set; get; } = false;
-        private Common.FileWatcher FileWatcher { get; } = new Common.FileWatcher();
+        public EditorMode Mode { private set; get; }
 
-        private string configurationName;
-        private string platformName;
+        private Common.FileWatcher FileWatcher { get; } = new Common.FileWatcher(); //TODO ~ ramonv ~ try using the new api for this 
 
-        public string ConfigurationName 
-        { 
-            set 
-            {
-                if (configurationName != value)
-                {
-                    configurationName = value;
-                    if (IsSolutionReady)
-                    {
-                        ActiveSolutionConfigurationChanged?.Invoke();
-                    }
-                }
-            }
+        public string ConfigurationName { private set; get; }
 
-            get { return configurationName; } 
-        }
+        public string PlatformName { private set; get; }
 
-        public string PlatformName
-        {
-            set
-            {
-                if (platformName != value)
-                {
-                    platformName = value;
-                    if (IsSolutionReady)
-                    {
-                        ActiveSolutionConfigurationChanged?.Invoke();
-                    }
-                }
-            }
+        public event Notify ModeChanged;
+        public event Notify ConfigurationChanged;
 
-            get { return platformName; }
-        }
-
-        public event NotifySolution SolutionReady;
-        public event Notify         ActiveSolutionConfigurationChanged;
-
-        private SolutionEventsListener() { }
+        private EditorContext() { }
 
         public void Initialize(IServiceProvider serviceProvider)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            Provider = serviceProvider;
+            ServiceProvider = serviceProvider;
 
-            this.solution = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
+            this.solution = ServiceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
             Assumes.Present(this.solution);
-            this.buildManager = serviceProvider.GetService(typeof(SVsSolutionBuildManager)) as IVsSolutionBuildManager3;
+            this.buildManager = ServiceProvider.GetService(typeof(SVsSolutionBuildManager)) as IVsSolutionBuildManager3;
             Assumes.Present(this.buildManager);
 
             FileWatcher.FileWatchedChanged += OnCMakeActiveConfigurationChanged;
@@ -176,14 +146,14 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            ErrorHandler.ThrowOnFailure(this.solution.AdviseSolutionEvents(this, out this.cookie1));
+            this.solution.AdviseSolutionEvents(this, out this.cookie1);
             if (this.buildManager != null)
             {
                 if (this.buildManager is IVsSolutionBuildManager2 bm2)
                 {
-                    _ = ErrorHandler.ThrowOnFailure(bm2.AdviseUpdateSolutionEvents(this, out this.cookie2));
+                    bm2.AdviseUpdateSolutionEvents(this, out this.cookie2);
                 }
-                _ = ErrorHandler.ThrowOnFailure(this.buildManager.AdviseUpdateSolutionEvents3(this, out this.cookie3));
+                this.buildManager.AdviseUpdateSolutionEvents3(this, out this.cookie3);
             }
         }
 
@@ -211,26 +181,35 @@ namespace CompileScore
             }
         }
 
-        public void CheckForOpenedSolution()
+        private void SetMode(EditorMode input)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (!IsSolutionReady && Provider != null)
+            if (Mode != input)
             {
-                DTE2 applicationObject = Provider.GetService(typeof(SDTE)) as DTE2;
-                Assumes.Present(applicationObject);
-                string solutionDirRaw = applicationObject.Solution.FullName;
-                if (solutionDirRaw.Length > 0)
-                {
-                    //Add file watcher for configuration change notification on CMake projects
-                    if (EditorUtils.GetEditorMode() == EditorUtils.EditorMode.CMake)
-                    {
-                        ConfigurationName = CMakeConfigurationUtils.GetActiveConfigurationName();
-                        FileWatcher.Watch(CMakeConfigurationUtils.GetActiveConfigurationFileName());
-                    }
+                Mode = input;
+                ModeChanged?.Invoke();
+            }
+        }
 
-                    IsSolutionReady = true;
-                    SolutionReady?.Invoke(applicationObject.Solution);
+        private void SetConfiguration(string input)
+        {
+            if (ConfigurationName != input)
+            {
+                ConfigurationName = input;
+                if (Mode != EditorMode.None)
+                {
+                    ConfigurationChanged?.Invoke();
+                }
+            }
+        }
+
+        private void SetPlatform(string input)
+        {
+            if (PlatformName != input)
+            {
+                PlatformName = input;
+                if (Mode != EditorMode.None)
+                {
+                    ConfigurationChanged?.Invoke();
                 }
             }
         }
@@ -238,8 +217,10 @@ namespace CompileScore
         private void OnCMakeActiveConfigurationChanged()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            ConfigurationName = CMakeConfigurationUtils.GetActiveConfigurationName();
+            SetConfiguration(CMakeConfigurationUtils.GetActiveConfigurationName(RootPath));
         }
+
+        //EVENTS
 
         int IVsUpdateSolutionEvents2.OnActiveProjectCfgChange(IVsHierarchy pIVsHierarchy) => VSConstants.E_NOTIMPL;
 
@@ -265,13 +246,13 @@ namespace CompileScore
             if (pNewActiveSlnCfg != null && pNewActiveSlnCfg.get_DisplayName(out newConfigName) == VSConstants.S_OK)
             {
                 var configSplit = newConfigName.Split('|');
-                ConfigurationName = configSplit.Length > 0? configSplit[0] : null;
-                PlatformName      = configSplit.Length > 1? configSplit[1] : null;
+                SetConfiguration(configSplit.Length > 0? configSplit[0] : null);
+                SetPlatform(configSplit.Length > 1? configSplit[1] : null);
             }
             else
             {
-                ConfigurationName = null;
-                PlatformName      = null;
+                SetConfiguration(null);
+                SetPlatform(null);
             }
 
             return VSConstants.S_OK;
@@ -281,7 +262,7 @@ namespace CompileScore
 
         public int OnAfterCloseSolution(object pUnkReserved)
         {
-            IsSolutionReady = false;
+            SetMode(EditorMode.None);
             return VSConstants.S_OK;
         }
 
@@ -296,7 +277,12 @@ namespace CompileScore
         public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            CheckForOpenedSolution();
+
+            DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
+            Assumes.Present(applicationObject);
+            RootPath = Path.GetDirectoryName(applicationObject.Solution.FullName)+'\\';
+            SetMode(EditorMode.VisualStudio);
+
             return VSConstants.S_OK;
         }
 
@@ -318,12 +304,25 @@ namespace CompileScore
 
         public int OnQueryUnloadProject(IVsHierarchy pRealHierarchy, ref int pfCancel) => VSConstants.E_NOTIMPL;
 
-        public int OnAfterAsynchOpenProject(IVsHierarchy pHierarchy, int fAdded) => VSConstants.E_NOTIMPL;
+        public void OnAfterOpenFolder(string folderPath) 
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
 
-        public int OnAfterChangeProjectParent(IVsHierarchy pHierarchy) => VSConstants.E_NOTIMPL;
+            RootPath = folderPath + '\\';
 
-        public int OnAfterRenameProject(IVsHierarchy pHierarchy) => VSConstants.E_NOTIMPL;
+            //Add file watcher for configuration change notification on CMake projects  
+            SetConfiguration(CMakeConfigurationUtils.GetActiveConfigurationName(RootPath));
+            FileWatcher.Watch(CMakeConfigurationUtils.GetActiveConfigurationFileName(RootPath));
+          
+            SetMode(EditorMode.CMake);
+        }
+        public void OnBeforeCloseFolder(string folderPath) 
+        {
+            SetMode(EditorMode.None);
+        }
 
-        public int OnQueryChangeProjectParent(IVsHierarchy pHierarchy, IVsHierarchy pNewParentHier, ref int pfCancel) => VSConstants.E_NOTIMPL;
+        public void OnQueryCloseFolder(string folderPath, ref int pfCancel) { }
+        public void OnAfterCloseFolder(string folderPath) { }
+        public void OnAfterLoadAllDeferredProjects() { }
     }
 }

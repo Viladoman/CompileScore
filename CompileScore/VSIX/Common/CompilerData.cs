@@ -168,18 +168,16 @@ namespace CompileScore
             DocumentLifetimeManager.FileWatchedChanged += OnFileWatchedChanged;
             SettingsManager.SettingsChanged += OnSolutionSettingsChanged;
 
-            var SolutionEvents = SolutionEventsListener.Instance;
-            SolutionEvents.SolutionReady += OnSolutionReady;
-            SolutionEvents.ActiveSolutionConfigurationChanged += OnSolutionSettingsChanged; //Refresh settings for potential macro variables change
+            var SolutionEvents = EditorContext.Instance;
+            SolutionEvents.ModeChanged += OnEditorModeChanged;
+            SolutionEvents.ConfigurationChanged += OnSolutionSettingsChanged; //Refresh settings for potential macro variables change
         }
 
-        private void OnSolutionReady(Solution solution)
+        private void OnEditorModeChanged()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-
-            string solutionDirRaw = solution.FullName;
-            SolutionDir = (Path.HasExtension(solutionDirRaw) ? Path.GetDirectoryName(solutionDirRaw) : solutionDirRaw) + '\\';
-            SettingsManager.Instance.Initialize(SolutionDir);
+            
+            SettingsManager.Instance.Initialize(EditorContext.Instance.RootPath);
             OnSolutionSettingsChanged();
 
             OnHighlightEnabledChanged(); 

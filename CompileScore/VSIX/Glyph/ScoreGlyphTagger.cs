@@ -36,9 +36,6 @@
             CompilerData.Instance.ScoreDataChanged += OnDataChanged;
             DocumentLifetimeManager.DocumentSavedTrigger += OnDocumentSaved;
 
-            //This is triggered here due to the fact that CMake project don't trigger the solution events
-            SolutionEventsListener.Instance.CheckForOpenedSolution();
-
             CreateTrackingSpans();
         }
 

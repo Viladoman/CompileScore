@@ -42,7 +42,7 @@ namespace CompileScore
 
             if (macroStr == @"$(SolutionDir)")
             {
-                return EditorUtils.GetSolutionPath();
+                return EditorContext.Instance.RootPath;
             }
             else if (macroStr == @"$(SolutionName)")
             {
@@ -51,14 +51,12 @@ namespace CompileScore
             }
             else if (macroStr == @"$(Configuration)")
             {
-                return SolutionEventsListener.Instance.ConfigurationName;
+                return EditorContext.Instance.ConfigurationName;
             }
             else if (macroStr == "$(Platform)")
             {
-                return SolutionEventsListener.Instance.PlatformName;
+                return EditorContext.Instance.PlatformName;
             }
-            
-            //TODO ~ ramonv ~ add detail level 
 
             return null;
         }

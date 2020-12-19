@@ -64,13 +64,13 @@ namespace CompileScore
         private string Filename{ set; get; }
         private Common.FileWatcher Watcher { set; get; }  = new Common.FileWatcher();
 
-        public void Initialize(string solutionDir)
+        public void Initialize(string rootDir)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             Watcher.FileWatchedChanged += Load;
 
-            SetFilename(solutionDir + SettingsName);
+            SetFilename(rootDir + SettingsName);
         }
 
         private void SetFilename(string str)
