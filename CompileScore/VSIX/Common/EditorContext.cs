@@ -13,21 +13,21 @@ using Newtonsoft.Json;
 
 namespace CompileScore
 {
-    internal static class CMakeConfigurationUtils
+    internal static class FolderConfigurationUtils
     {
-        private class CMakeActiveConfiguration
+        private class FolderActiveConfiguration
         {
             public string CurrentProjectSetting { set; get; }
         }
 
-        private class CMakeConfiguration
+        private class FolderConfiguration
         {
             public string name { set; get; }
         }
 
-        private class CMakeSettings
+        private class FolderSettings
         {
-            public List<CMakeConfiguration> configurations { set; get; }
+            public List<FolderConfiguration> configurations { set; get; }
         }
 
         static public string GetActiveConfigurationFileName(string rootPath)
@@ -42,12 +42,12 @@ namespace CompileScore
             string activeConfigFilename = GetActiveConfigurationFileName(rootPath);
             if (File.Exists(activeConfigFilename))
             {
-                var activeConfig = new CMakeActiveConfiguration();
+                var activeConfig = new FolderActiveConfiguration();
 
                 try
                 {
                     string jsonString = File.ReadAllText(activeConfigFilename);
-                    activeConfig = JsonConvert.DeserializeObject<CMakeActiveConfiguration>(jsonString);
+                    activeConfig = JsonConvert.DeserializeObject<FolderActiveConfiguration>(jsonString);
                 }
                 catch (Exception e)
                 {
@@ -61,15 +61,15 @@ namespace CompileScore
             }
 
             //try to return the first config if the active file is not present
-            CMakeSettings configs = GetConfigurations(rootPath);
+            FolderSettings configs = GetConfigurations(rootPath);
             return configs != null && configs.configurations.Count > 0? configs.configurations[0].name : null;
         }
 
-        static private CMakeSettings GetConfigurations(string rootPath)
+        static private FolderSettings GetConfigurations(string rootPath)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            CMakeSettings settings = null;
+            FolderSettings settings = null;
 
             string settingsFilename = rootPath + "CMakeSettings.json";
             if (File.Exists(settingsFilename))
@@ -77,7 +77,7 @@ namespace CompileScore
                 try
                 {
                     string jsonString = File.ReadAllText(settingsFilename);
-                    settings = JsonConvert.DeserializeObject<CMakeSettings>(jsonString);
+                    settings = JsonConvert.DeserializeObject<FolderSettings>(jsonString);
                 }
                 catch (Exception e)
                 {
@@ -99,7 +99,7 @@ namespace CompileScore
         {
             None,
             VisualStudio,
-            CMake,
+            Folder,
         }
 
         public string RootPath { private set; get; }
@@ -136,7 +136,7 @@ namespace CompileScore
             this.buildManager = ServiceProvider.GetService(typeof(SVsSolutionBuildManager)) as IVsSolutionBuildManager3;
             Assumes.Present(this.buildManager);
 
-            FileWatcher.FileWatchedChanged += OnCMakeActiveConfigurationChanged;
+            FileWatcher.FileWatchedChanged += OnFolderActiveConfigurationChanged;
             FileWatcher.Verbosity = false;
 
             StartListeningForChanges();
@@ -214,10 +214,10 @@ namespace CompileScore
             }
         }
 
-        private void OnCMakeActiveConfigurationChanged()
+        private void OnFolderActiveConfigurationChanged()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            SetConfiguration(CMakeConfigurationUtils.GetActiveConfigurationName(RootPath));
+            SetConfiguration(FolderConfigurationUtils.GetActiveConfigurationName(RootPath));
         }
 
         //EVENTS
@@ -311,10 +311,10 @@ namespace CompileScore
             RootPath = folderPath + '\\';
 
             //Add file watcher for configuration change notification on CMake projects  
-            SetConfiguration(CMakeConfigurationUtils.GetActiveConfigurationName(RootPath));
-            FileWatcher.Watch(CMakeConfigurationUtils.GetActiveConfigurationFileName(RootPath));
+            SetConfiguration(FolderConfigurationUtils.GetActiveConfigurationName(RootPath));
+            FileWatcher.Watch(FolderConfigurationUtils.GetActiveConfigurationFileName(RootPath));
           
-            SetMode(EditorMode.CMake);
+            SetMode(EditorMode.Folder);
         }
         public void OnBeforeCloseFolder(string folderPath) 
         {
