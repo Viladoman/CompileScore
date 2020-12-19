@@ -45,12 +45,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Editor\AboutCommand.cs" />
-    <Compile Include="Editor\BuildCommand.cs" />
-    <Compile Include="Editor\DocumentationCommand.cs" />
-    <Compile Include="Editor\LoadDefaultCommand.cs" />
+    <Compile Include="Editor\CustomCommands.cs" />
     <Compile Include="Editor\Profiler.cs" />
-    <Compile Include="Editor\RebuildCommand.cs" />
     <Compile Include="Common\ColorTheme.cs" />
     <Compile Include="Common\CompilerData.cs" />
     <Compile Include="Common\Documentation.cs" />
@@ -84,7 +80,6 @@
       <DependentUpon>OverviewTotalsTable.xaml</DependentUpon>
     </Compile>
     <Compile Include="Overview\OverviewWindow.cs" />
-    <Compile Include="Overview\OverviewWindowCommand.cs" />
     <Compile Include="Overview\OverviewWindowControl.xaml.cs">
       <DependentUpon>OverviewWindowControl.xaml</DependentUpon>
     </Compile>
@@ -98,7 +93,6 @@
     <Compile Include="Settings\AboutWindow.xaml.cs">
       <DependentUpon>AboutWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Settings\SettingsCommand.cs" />
     <Compile Include="Settings\SettingsControl.xaml.cs">
       <DependentUpon>SettingsControl.xaml</DependentUpon>
     </Compile>
@@ -115,7 +109,6 @@
       <DependentUpon>TimelineSearch.xaml</DependentUpon>
     </Compile>
     <Compile Include="Timeline\TimelineWindow.cs" />
-    <Compile Include="Timeline\TimelineWindowCommand.cs" />
     <Compile Include="Timeline\TimelineWindowControl.xaml.cs">
       <DependentUpon>TimelineWindowControl.xaml</DependentUpon>
     </Compile>

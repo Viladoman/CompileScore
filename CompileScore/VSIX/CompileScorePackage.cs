@@ -63,15 +63,7 @@ namespace CompileScore
             Timeline.CompilerTimeline.Instance.Initialize(this);
             DocumentLifetimeManager.Initialize(this);
 
-            //Commands
-            await CompileScore.Overview.OverviewWindowCommand.InitializeAsync(this);
-            await CompileScore.Timeline.TimelineWindowCommand.InitializeAsync(this);
-            await CompileScore.Commands.BuildCommand.InitializeAsync(this);
-            await CompileScore.Commands.RebuildCommand.InitializeAsync(this);
-            await CompileScore.Commands.LoadDefaultCommand.InitializeAsync(this);
-            await CompileScore.Commands.SettingsCommand.InitializeAsync(this);
-            await CompileScore.Commands.DocumentationCommand.InitializeAsync(this);
-            await CompileScore.Commands.AboutCommand.InitializeAsync(this);
+            await CustomCommands.InitializeAsync(this);
         }
 
         #endregion
