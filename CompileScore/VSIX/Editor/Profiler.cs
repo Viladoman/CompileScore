@@ -113,6 +113,11 @@ namespace CompileScore
             }
         }
 
+        public bool IsAvailable()
+        {
+            return State == StateType.Idle;
+        }
+
         private void SetGeneratorProperties()
         {
             ScoreGeneratorSettings generatorSettings = SettingsManager.Instance.Settings.ScoreGenerator;

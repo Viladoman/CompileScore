@@ -41,8 +41,18 @@ namespace CompileScore.Commands
             commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
 
             var menuCommandID = new CommandID(CommandSet, CommandId);
-            var menuItem = new MenuCommand(this.Execute, menuCommandID);
+            var menuItem = new OleMenuCommand(this.Execute, menuCommandID);
+            menuItem.BeforeQueryStatus += QueryCommandHandler;
             commandService.AddCommand(menuItem);
+        }
+
+        private void QueryCommandHandler(object sender, EventArgs args)
+        {
+            var menuCommand = sender as OleMenuCommand;
+            if (menuCommand != null)
+            {
+                menuCommand.Visible = menuCommand.Enabled = Profiler.Instance.IsAvailable();
+            }
         }
 
         /// <summary>
