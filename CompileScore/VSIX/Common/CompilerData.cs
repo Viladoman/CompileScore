@@ -168,9 +168,9 @@ namespace CompileScore
             DocumentLifetimeManager.FileWatchedChanged += OnFileWatchedChanged;
             SettingsManager.SettingsChanged += OnSolutionSettingsChanged;
 
-            var SolutionEvents = EditorContext.Instance;
-            SolutionEvents.ModeChanged += OnEditorModeChanged;
-            SolutionEvents.ConfigurationChanged += OnSolutionSettingsChanged; //Refresh settings for potential macro variables change
+            var EditorContextInstance = EditorContext.Instance;
+            EditorContextInstance.ModeChanged += OnEditorModeChanged;
+            EditorContextInstance.ConfigurationChanged += OnSolutionSettingsChanged; //Refresh settings for potential macro variables change
         }
 
         private void OnEditorModeChanged()

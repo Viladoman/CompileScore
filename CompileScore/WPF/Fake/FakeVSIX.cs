@@ -25,22 +25,22 @@ namespace CompileScore
 
         public SolutionSettings Settings { set; get; } = new SolutionSettings();
 
-        public void Initialize(string solutionDir) { }
+        public void Initialize(string rootPath) { }
 
         public void DummyFunction() { SettingsChanged?.Invoke(); }
     }
 
-    public delegate void NotifySolution(Solution solution);
-
-    public class SolutionEventsListener
+    public class EditorContext
     {
-        private static readonly Lazy<SolutionEventsListener> lazy = new Lazy<SolutionEventsListener>(() => new SolutionEventsListener());
-        public static SolutionEventsListener Instance { get { return lazy.Value; } }
+        private static readonly Lazy<EditorContext> lazy = new Lazy<EditorContext>(() => new EditorContext());
+        public static EditorContext Instance { get { return lazy.Value; } }
 
-        public event NotifySolution SolutionReady;
-        public event Notify ActiveSolutionConfigurationChanged;
+        public string RootPath { get; } = "";
 
-        public void DummyFunction() { SolutionReady?.Invoke(new Solution()); ActiveSolutionConfigurationChanged?.Invoke(); }
+        public event Notify ModeChanged;
+        public event Notify ConfigurationChanged;
+
+        public void DummyFunction() { ModeChanged?.Invoke(); ConfigurationChanged?.Invoke(); }
 
     }
 }

@@ -96,7 +96,6 @@ namespace CompileScore
     public class DTE2 : SDTE
     {
         public Events Events = new Events();
-        public Solution Solution = new Solution();
     };
 
     public class Assumes
@@ -116,10 +115,6 @@ namespace CompileScore
             return null;
         }
     }
-    public class Solution
-    {
-        public string FullName = "";
-    };
 
     public class GeneralSettingsPageGrid
     {
