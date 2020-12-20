@@ -64,13 +64,18 @@ namespace CompileScore
         private string Filename{ set; get; }
         private Common.FileWatcher Watcher { set; get; }  = new Common.FileWatcher();
 
-        public void Initialize(string rootDir)
+        public void Initialize()
+        {
+            Watcher.FileWatchedChanged += Load;
+            EditorContext.Instance.ModeChanged += OnEditorModeChanged;
+        }
+
+        private void OnEditorModeChanged()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            Watcher.FileWatchedChanged += Load;
-
-            SetFilename(rootDir + SettingsName);
+            var EditorContextInstance = EditorContext.Instance;
+            SetFilename(EditorContextInstance.Mode == EditorContext.EditorMode.None? null : EditorContextInstance.RootPath + SettingsName);
         }
 
         private void SetFilename(string str)
@@ -96,7 +101,7 @@ namespace CompileScore
                 {
                     string jsonString = File.ReadAllText(Filename);
                     Settings = JsonConvert.DeserializeObject<SolutionSettings>(jsonString);
-                    if (SettingsChanged != null) SettingsChanged.Invoke();
+                    SettingsChanged?.Invoke();
                 }
                 catch(Exception e)
                 {
@@ -115,7 +120,7 @@ namespace CompileScore
                 {
                     string jsonString = JsonConvert.SerializeObject(Settings, Formatting.Indented);
                     File.WriteAllText(Filename, jsonString);
-                    if (SettingsChanged != null) SettingsChanged.Invoke();
+                    SettingsChanged?.Invoke();
                 }
                 catch (Exception e)
                 {

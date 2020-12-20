@@ -176,11 +176,12 @@ namespace CompileScore
         private void OnEditorModeChanged()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            
-            SettingsManager.Instance.Initialize(EditorContext.Instance.RootPath);
-            OnSolutionSettingsChanged();
 
-            OnHighlightEnabledChanged(); 
+            if (EditorContext.Instance.Mode != EditorContext.EditorMode.None)
+            {
+                OnSolutionSettingsChanged();
+                OnHighlightEnabledChanged(); 
+            }
         }
 
         public GeneralSettingsPageGrid GetGeneralSettings()

@@ -56,12 +56,15 @@ namespace CompileScore
             await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 
             OutputLog.Initialize(this);
-            EditorContext.Instance.Initialize(this);
+
+            DocumentLifetimeManager.Initialize(this);
+            SettingsManager.Instance.Initialize();
+            CompilerData.Instance.Initialize(this, this);
             EditorUtils.Initialize(this);
             Profiler.Instance.Initialize(this);
-            CompilerData.Instance.Initialize(this, this);
             Timeline.CompilerTimeline.Instance.Initialize(this);
-            DocumentLifetimeManager.Initialize(this);
+
+            EditorContext.Instance.Initialize(this);
 
             await CustomCommands.InitializeAsync(this);
         }

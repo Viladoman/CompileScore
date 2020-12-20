@@ -139,13 +139,7 @@ namespace CompileScore
             FileWatcher.FileWatchedChanged += OnFolderActiveConfigurationChanged;
             FileWatcher.Verbosity = false;
 
-            StartListeningForChanges();
-        }
-
-        private void StartListeningForChanges()
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
+            //Start Listening for events
             this.solution.AdviseSolutionEvents(this, out this.cookie1);
             if (this.buildManager != null)
             {
@@ -155,6 +149,8 @@ namespace CompileScore
                 }
                 this.buildManager.AdviseUpdateSolutionEvents3(this, out this.cookie3);
             }
+
+            CheckAlreadyOpenedContext(); 
         }
 
         public void Dispose()
@@ -180,6 +176,7 @@ namespace CompileScore
                 this.cookie3 = VSConstants.VSCOOKIE_NIL;
             }
         }
+
 
         private void SetMode(EditorMode input)
         {
@@ -211,6 +208,58 @@ namespace CompileScore
                 {
                     ConfigurationChanged?.Invoke();
                 }
+            }
+        }
+        private void CheckAlreadyOpenedContext()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            solution.GetSolutionInfo(out string dir, out string file, out string ops);
+            RootPath = dir;
+            
+            solution.GetProperty((int)__VSPROPID.VSPROPID_IsSolutionOpen, out object open);
+            if ((bool)open)
+            {
+
+                solution.GetProperty((int)__VSPROPID7.VSPROPID_IsInOpenFolderMode, out object folderMode);
+                if ((bool)folderMode)
+                {
+                    GatherFolderConfiguration();
+                    SetMode(EditorMode.Folder);
+                }
+                else
+                {
+                    GatherSolutionConfiguration();
+                    SetMode(EditorMode.VisualStudio);
+                }
+            }
+            else
+            {
+                SetMode(EditorMode.None);
+            }
+        }
+
+        private void GatherFolderConfiguration()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            //Add file watcher for configuration change notification on CMake projects  
+            SetConfiguration(FolderConfigurationUtils.GetActiveConfigurationName(RootPath));
+            FileWatcher.Watch(FolderConfigurationUtils.GetActiveConfigurationFileName(RootPath));
+        }
+
+        private void GatherSolutionConfiguration()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            DTE2 dte = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
+            if (dte != null && dte.Solution != null && dte.Solution.Projects.Count > 0)
+            {
+                ConfigurationManager configmgr = dte.Solution.Projects.Item(1).ConfigurationManager;
+                Configuration config = configmgr.ActiveConfiguration;
+
+                SetConfiguration(config.ConfigurationName);
+                SetPlatform(config.PlatformName);
             }
         }
 
@@ -281,6 +330,9 @@ namespace CompileScore
             DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
             Assumes.Present(applicationObject);
             RootPath = Path.GetDirectoryName(applicationObject.Solution.FullName)+'\\';
+
+            GatherSolutionConfiguration();
+
             SetMode(EditorMode.VisualStudio);
 
             return VSConstants.S_OK;
@@ -309,11 +361,7 @@ namespace CompileScore
             ThreadHelper.ThrowIfNotOnUIThread();
 
             RootPath = folderPath + '\\';
-
-            //Add file watcher for configuration change notification on CMake projects  
-            SetConfiguration(FolderConfigurationUtils.GetActiveConfigurationName(RootPath));
-            FileWatcher.Watch(FolderConfigurationUtils.GetActiveConfigurationFileName(RootPath));
-          
+            GatherFolderConfiguration();
             SetMode(EditorMode.Folder);
         }
         public void OnBeforeCloseFolder(string folderPath) 
