@@ -158,13 +158,13 @@ namespace CompileScore
 
             try
             {
-                //TODO ~ ramonv ~ find a way to call Build All in CMake projects
+                //TODO ~ ramonv ~ find a way to call Build All in 'Open Folder' projects
                 //DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
 
                 //applicationObject.ExecuteCommand("Build.BuildSolution");
                 //applicationObject.ExecuteCommand("Build.RebuildSolution");
 
-                //TODO ~ Ramonv ~ CMAKE does not trigger build events! 
+                //TODO ~ Ramonv ~ 'Open Folder' does not trigger build events! 
 
                 DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
                 Assumes.Present(applicationObject);
@@ -218,12 +218,7 @@ namespace CompileScore
 
         private void SetState(StateType newState)
         {
-            if (State != newState)
-            {
-                State = newState;
-
-                //TODO ~ Notify menu items commands to enable/disable
-            }
+            State = newState;
         }
         private void OnBuildBegin(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
         {
@@ -243,19 +238,18 @@ namespace CompileScore
 
         private void OnBuildDone(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
         {
-            //TODO ~ ramonv ~ call Async here
-
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (State == StateType.Building)
             {
+                //async call for the Data Gathering
                 if (Action == EnvDTE.vsBuildAction.vsBuildActionClean)
                 {
-                    CancelGathering();
+                    _ = CancelGatheringAsync();
                 }
                 else if (Action == EnvDTE.vsBuildAction.vsBuildActionBuild || Action == EnvDTE.vsBuildAction.vsBuildActionRebuildAll)
                 {
-                    Gather();
+                    _ = GatherAsync();
                 }
             }
             else
@@ -294,42 +288,6 @@ namespace CompileScore
             return GetToolPath(@"External\VCPerf\vcperf.exe");
         }
 
-        private int TriggerProcess(string toolPath, string arguments)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            System.Diagnostics.Process process = new System.Diagnostics.Process();
-
-            process.StartInfo.FileName = toolPath;
-            process.StartInfo.Arguments = arguments;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            
-            // Start process and handlers
-            process.Start();
-
-            //Handle output
-            while (!process.StandardOutput.EndOfStream || !process.StandardError.EndOfStream)
-            {
-                if (!process.StandardOutput.EndOfStream)
-                {
-                    OutputLog.LogLine(process.StandardOutput.ReadLine());
-                }
-
-                if (!process.StandardError.EndOfStream)
-                {
-                    OutputLog.LogLine(process.StandardError.ReadLine());
-                }
-            }
-
-            process.WaitForExit();
-
-            return process.ExitCode;
-        }
-
         private void PrepareGathering()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -343,7 +301,7 @@ namespace CompileScore
                 string commandLine = "/start" + level + " CompileScore";
 
                 OutputLog.Log("Executing VCPERF " + commandLine);
-                var exitCode = TriggerProcess(GetVCPerfToolPath(), commandLine);
+                int exitCode = ExternalProcess.ExecuteSync(GetVCPerfToolPath(), commandLine);
 
                 if (exitCode != 0)
                 {
@@ -354,26 +312,26 @@ namespace CompileScore
             OutputLog.Log("Building...");
         }
 
-        private void CancelGathering()
+        private async System.Threading.Tasks.Task CancelGatheringAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             SetState(StateType.Canceling);
 
-            StopGathering();
+            await StopGatheringAsync();
 
             SetState(StateType.Idle);
         }
 
-        private void Gather()
+        private async System.Threading.Tasks.Task GatherAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             OutputLog.Focus();
 
             SetState(StateType.Gathering);
 
-            StopGathering();
+            await StopGatheringAsync();
 
             //Stop watching as the data extractor might modify the watched file
             DocumentLifetimeManager.UnWatchFile();
@@ -385,29 +343,31 @@ namespace CompileScore
             CreateDirectory(Path.GetDirectoryName(outputPath));
 
             string finalInputPath = CompilerSource == Compiler.MSVC ? inputPath + ETLFileName : inputPath;
-            string platform       = CompilerSource == Compiler.MSVC? "-msvc" : "-clang";
-            string detail         = " -d " + (int)OverviewDetail;
-            string timeline       = TimelinePacking == 0? " -nt" : " -tp " + TimelinePacking + " -td " + (int)TimelineDetail;
+            string platform = CompilerSource == Compiler.MSVC ? "-msvc" : "-clang";
+            string detail = " -d " + (int)OverviewDetail;
+            string timeline = TimelinePacking == 0 ? " -nt" : " -tp " + TimelinePacking + " -td " + (int)TimelineDetail;
 
             string commandLine = platform + timeline + detail + " -i " + finalInputPath + " -o " + outputPath;
 
             OutputLog.Log("Executing Compile Score Extractor " + commandLine);
-            var exitCode = TriggerProcess(GetScoreExtractorToolPath(), commandLine);
-            
+            int exitCode = await ExternalProcess.ExecuteAsync(GetScoreExtractorToolPath(), commandLine);
+
             if (exitCode != 0)
             {
-                DisplayError("Compile Score Data Extractor process failed with code "+ exitCode +". Please check the output pane for more information.");
+                DisplayError("Compile Score Data Extractor process failed with code " + exitCode + ". Please check the output pane for more information.");
             }
-            
+
             CompilerData.Instance.ForceLoadFromFilename(outputPath);
             EditorUtils.FocusOverviewWindow();
+
+            OutputLog.Log("Score generation completed!");
 
             SetState(StateType.Idle);
         }
 
-        private void StopGathering()
+        private async System.Threading.Tasks.Task StopGatheringAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             if (CompilerSource == Compiler.MSVC)
             {
@@ -418,7 +378,8 @@ namespace CompileScore
                 string commandLine = "/stopnoanalyze CompileScore " + path + ETLFileName;
 
                 OutputLog.Log("Executing VCPERF " + commandLine);
-                var exitCode = TriggerProcess(GetVCPerfToolPath(), commandLine);
+                
+                int exitCode = await ExternalProcess.ExecuteAsync(GetVCPerfToolPath(), commandLine);
 
                 if (exitCode != 0)
                 {

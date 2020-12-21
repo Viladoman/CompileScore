@@ -45,6 +45,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Common\ExternalProcess.cs" />
     <Compile Include="Editor\CustomCommands.cs" />
     <Compile Include="Editor\Profiler.cs" />
     <Compile Include="Common\ColorTheme.cs" />
