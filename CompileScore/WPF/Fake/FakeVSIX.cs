@@ -32,8 +32,15 @@ namespace CompileScore
 
     public class EditorContext
     {
+        public enum EditorMode
+        {
+            None,
+        }
+
         private static readonly Lazy<EditorContext> lazy = new Lazy<EditorContext>(() => new EditorContext());
         public static EditorContext Instance { get { return lazy.Value; } }
+
+        public EditorMode Mode { set; get; } = EditorMode.None;
 
         public string RootPath { get; } = "";
 
