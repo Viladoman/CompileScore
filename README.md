@@ -57,7 +57,7 @@ For more information check the [Score Generation Page](https://github.com/Vilado
 
 ## Documentation
 - [Configurations and Options](https://github.com/Viladoman/CompileScore/wiki/Configurations)
-- [Scpre Generaton And Data Extractor](https://github.com/Viladoman/CompileScore/wiki/Score-Generation)
+- [Score Generaton And Data Extractor](https://github.com/Viladoman/CompileScore/wiki/Score-Generation)
 
 ## References
 - [Visual Studio 2019](https://visualstudio.microsoft.com/vs/)
