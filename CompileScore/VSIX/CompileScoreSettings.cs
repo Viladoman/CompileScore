@@ -7,19 +7,26 @@ namespace CompileScore
 
     public class GeneralSettingsPageGrid : DialogPage
     {
+        public enum HighlightMode
+        {
+            Disabled,
+            Simple, 
+            Full,
+        }
+
         private bool optionNormalizedSeverity = true;
-        private bool optionHighlightEnabled = true;
+        private HighlightMode optionHighlightMode = HighlightMode.Full;
         private List<uint> optionSeverities = new List<uint> { 250u, 1000u, 25000u, 100000u, 500000u };
 
         public List<uint> GetOptionSeverities() { return optionSeverities; }
 
         [Category("Display")]
         [DisplayName("Text Highlight")]
-        [Description("If true, the text will be highlighted with the severity color")]
-        public bool OptionHighlightEnabled
+        [Description("Select the highlight mode for the text editor")]
+        public HighlightMode OptionHighlightMode 
         {
-            get { return optionHighlightEnabled; }
-            set { bool hasChanged = optionHighlightEnabled != value; optionHighlightEnabled = value; if (hasChanged) { CompilerData.Instance.OnHighlightEnabledChanged(); } }
+            get { return optionHighlightMode; }
+            set { bool hasChanged = optionHighlightMode != value; optionHighlightMode = value; if (hasChanged) { CompilerData.Instance.OnHighlightModeChanged(); } }
         }
 
         [Category("Display")]

@@ -154,7 +154,7 @@ namespace CompileScore
 
         //events
         public event Notify ScoreDataChanged;
-        public event Notify HighlightEnabledChanged;
+        public event Notify HighlightModeChanged;
 
         private CompilerData() { }
 
@@ -180,7 +180,7 @@ namespace CompileScore
             if (EditorContext.Instance.Mode != EditorContext.EditorMode.None)
             {
                 OnSolutionSettingsChanged();
-                OnHighlightEnabledChanged(); 
+                OnHighlightModeChanged(); 
             }
         }
 
@@ -556,9 +556,9 @@ namespace CompileScore
             ScoreDataChanged?.Invoke();
         }
 
-        public void OnHighlightEnabledChanged()
+        public void OnHighlightModeChanged()
         {
-            HighlightEnabledChanged?.Invoke();
+            HighlightModeChanged?.Invoke();
         }
     }
 }

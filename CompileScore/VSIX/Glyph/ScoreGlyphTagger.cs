@@ -25,6 +25,7 @@
         private ITextBuffer _buffer;
         private readonly string _filename;
         private Dictionary<ITrackingSpan, CompileValue> _trackingSpans;
+        private bool IsEnabled { set; get; } = false;
 
         public ScoreGlyphTagger(ITextView view, ITextBuffer sourceBuffer)
         {
@@ -34,9 +35,32 @@
             _filename = GetFileName(sourceBuffer);
 
             CompilerData.Instance.ScoreDataChanged += OnDataChanged;
+            CompilerData.Instance.HighlightModeChanged += OnEnabledChanged;
             DocumentLifetimeManager.DocumentSavedTrigger += OnDocumentSaved;
 
+            RefreshEnable();
+
             CreateTrackingSpans();
+        }
+
+        private void OnEnabledChanged()
+        {
+            if (RefreshEnable())
+            {
+                RefreshTags();
+            }
+        }
+
+        private bool RefreshEnable()
+        {
+            GeneralSettingsPageGrid settings = CompilerData.Instance.GetGeneralSettings();
+            bool newValue = settings != null ? settings.OptionHighlightMode != GeneralSettingsPageGrid.HighlightMode.Disabled : false;
+            if (IsEnabled != newValue)
+            {
+                IsEnabled = newValue;
+                return true;
+            }
+            return false;
         }
 
         private string GetFileName(ITextBuffer buffer)
@@ -67,6 +91,9 @@
         private void CreateTrackingSpans()
         {
             _trackingSpans = new Dictionary<ITrackingSpan, CompileValue>();
+
+            if (!IsEnabled) return;
+
             var currentSnapshot = _buffer.CurrentSnapshot;
             MatchCollection matches = Regex.Matches(currentSnapshot.GetText(), @"#\s*include\s*[<""](.+)[>""]");
             foreach (Match match in matches)

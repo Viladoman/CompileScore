@@ -41,7 +41,7 @@
     {
         private ITagAggregator<ScoreGlyphTag> _tagAggregator;
         private ITextBuffer _buffer;
-        private bool _enabled = false;
+        private bool IsEnabled { set; get; } = false;
 
         public HighlightTagger(ITextBuffer sourceBuffer, ITagAggregator<ScoreGlyphTag> tagAggregator)
         {
@@ -49,7 +49,7 @@
             _tagAggregator = tagAggregator;
             _tagAggregator.TagsChanged += OnTagsChanged;
 
-            CompilerData.Instance.HighlightEnabledChanged += OnEnabledChanged;
+            CompilerData.Instance.HighlightModeChanged += OnEnabledChanged;
 
             RefreshEnable();
         }
@@ -70,10 +70,10 @@
         private bool RefreshEnable()
         {
             GeneralSettingsPageGrid settings = CompilerData.Instance.GetGeneralSettings();
-            bool isEnabled = settings != null? settings.OptionHighlightEnabled : false; 
-            if (isEnabled != _enabled)
+            bool newValue = settings != null? settings.OptionHighlightMode == GeneralSettingsPageGrid.HighlightMode.Full : false; 
+            if (IsEnabled != newValue)
             {
-                _enabled = isEnabled;
+                IsEnabled = newValue;
                 return true; 
             }
             return false;
@@ -83,7 +83,7 @@
 
         public IEnumerable<ITagSpan<HighlightTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
-            if (spans.Count == 0 || !_enabled)
+            if (spans.Count == 0 || !IsEnabled)
                 yield break;
 
             ITextSnapshot snapshot = spans[0].Snapshot;
