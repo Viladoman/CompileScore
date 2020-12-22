@@ -34,13 +34,9 @@ DataExtractor/Cpp/x86/*
 DataExtractor/Cpp/packages/*
 DataExtractor/Cpp/.vs/*
 
-TestProjects/ClangJS/tmp/*
-TestProjects/ClangJS/bin/*
-TestProjects/ClangJS/.vs/*
-
-TestProjects/ClangCpp/tmp/*
-TestProjects/ClangCpp/bin/*
-TestProjects/ClangCpp/.vs/*
+TestProjects/CMake/tmp/*
+TestProjects/CMake/bin/*
+TestProjects/CMake/.vs/*
 
 TestProjects/MSVC/.vs/*
 TestProjects/MSVC/packages/*

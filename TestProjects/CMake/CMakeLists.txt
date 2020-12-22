@@ -7,7 +7,6 @@ project(CompileScoreTest VERSION 1.0.0 LANGUAGES CXX)
 ###########
 
 set(MAIN_TARGET CompileScoreTest)
-option(COMPILER_PROFILING "Enables the data extraction for compilation times" OFF)
 option(WARNINGS_AS_ERRORS "Treat warnings as errors" ON)
 
 #This will generate compile_comands.json for visualization on what gets executed on the compiler
@@ -50,6 +49,8 @@ function(BaseCompilerSetup TARGET_NAME)
 			target_compile_options(${TARGET_NAME} PRIVATE -Werror)
 		endif()
 
+		#export profiling data
+		target_compile_options(${MAIN_TARGET} PRIVATE -ftime-trace)
 	endif()
 
 	# Preprocessor 
@@ -70,18 +71,3 @@ add_executable(${MAIN_TARGET})
 target_sources(${MAIN_TARGET} PRIVATE "src/main.cpp")
 
 BaseCompilerSetup(${MAIN_TARGET})
-
-############################
-# Compiler Profiling Trace #
-############################
-
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND ${COMPILER_PROFILING})
-	target_compile_options(${MAIN_TARGET} PRIVATE -ftime-trace)
-
-	#Command to gather the data
-	add_custom_command(TARGET ${MAIN_TARGET} POST_BUILD
-		COMMAND node ${CMAKE_CURRENT_SOURCE_DIR}/../../DataExtractor/JS/main.js -i CMakeFiles/${MAIN_TARGET}.dir -o ${CMAKE_CURRENT_SOURCE_DIR}/compileData.scor
-		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-		COMMENT "Parsing compile time trace data..."
-	)
-endif()

@@ -1,0 +1,11 @@
+{
+  "ScoreLocation": "$(SolutionDir)CompileData\\$(Configuration)\\compileData.scor",
+  "ScoreGenerator": {
+    "Compiler": 1,
+    "InputPath": "$(SolutionDir)bin\\$(Configuration)\\CMakeFiles\\CompileScoreTest.dir",
+    "OutputPath": "$(SolutionDir)CompileData\\$(Configuration)\\compileData.scor",
+    "OverviewDetail": 1,
+    "TimelineDetail": 1,
+    "TimelinePacking": 100
+  }
+}
