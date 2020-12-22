@@ -1,0 +1,11 @@
+{
+  "ScoreLocation": "$(SolutionDir)CompileData\\$(Configuration)\\$(Generator_OverviewDetail)\\$(SolutionName).scor",
+  "ScoreGenerator": {
+    "Compiler": 0,
+    "InputPath": "$(SolutionDir)CompileData\\$(Configuration)\\$(Generator_OverviewDetail)",
+    "OutputPath": "$(SolutionDir)CompileData\\$(Configuration)\\$(Generator_OverviewDetail)\\$(SolutionName).scor",
+    "OverviewDetail": 3,
+    "TimelineDetail": 3,
+    "TimelinePacking": 100
+  }
+}

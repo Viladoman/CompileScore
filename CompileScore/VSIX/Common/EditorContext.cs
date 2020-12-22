@@ -185,6 +185,22 @@ namespace CompileScore
             }
         }
 
+        public string GetWorkspaceName()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            switch (Mode)
+            {
+                case EditorMode.VisualStudio:
+                    {
+                        DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
+                        Assumes.Present(applicationObject);
+                        return Path.GetFileNameWithoutExtension(applicationObject.Solution.FullName);
+                    }
+                case EditorMode.Folder:
+                    return Path.GetFileName(Path.GetDirectoryName(RootPath));
+            }
+            return null;
+        } 
 
         private void SetMode(EditorMode input)
         {

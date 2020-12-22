@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.Shell;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 
 namespace CompileScore
@@ -46,8 +47,7 @@ namespace CompileScore
             }
             else if (macroStr == @"$(SolutionName)")
             {
-                //TODO~  ramonv ~ to be implemented
-                return null;
+                return EditorContext.Instance.GetWorkspaceName();
             }
             else if (macroStr == @"$(Configuration)")
             {
@@ -56,6 +56,14 @@ namespace CompileScore
             else if (macroStr == "$(Platform)")
             {
                 return EditorContext.Instance.PlatformName;
+            }
+            else if ( macroStr == "$(Generator_OverviewDetail)")
+            {
+                return SettingsManager.Instance.Settings.ScoreGenerator.OverviewDetail.ToString();
+            }
+            else if (macroStr == "$(Generator_TimelineDetail)")
+            {
+                return SettingsManager.Instance.Settings.ScoreGenerator.TimelineDetail.ToString();
             }
 
             return null;
