@@ -37,6 +37,14 @@ namespace CompileScore
             None,
         }
 
+        public enum ExecutionEnvironment
+        {
+            Standalone,
+            VisualStudio, 
+        }
+
+        public const ExecutionEnvironment Environment = ExecutionEnvironment.Standalone;
+
         private static readonly Lazy<EditorContext> lazy = new Lazy<EditorContext>(() => new EditorContext());
         public static EditorContext Instance { get { return lazy.Value; } }
 

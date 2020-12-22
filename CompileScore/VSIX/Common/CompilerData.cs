@@ -141,7 +141,7 @@ namespace CompileScore
         private List<UnitValue> UnitsCollection { set; get; } = new List<UnitValue>();
         private List<UnitTotal> Totals { set; get; } = new List<UnitTotal>();
 
-        private DataSource Source { set; get; } = DataSource.Default;
+        public DataSource Source { private set; get; } = DataSource.Default;
 
         public class CompileDataset
         {
@@ -188,6 +188,7 @@ namespace CompileScore
         {
             return Package == null ? null : Package.GetGeneralSettings();
         }
+
         public List<UnitTotal> GetTotals()
         {
             return Totals;
@@ -275,11 +276,38 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            SetSource(DataSource.Forced);
-            DocumentLifetimeManager.UnWatchFile();
+            bool locationChanged = SetScoreLocation(filename);
 
-            SetScoreLocation(filename);
-            LoadSeverities(ScoreLocation);
+            if (Source == DataSource.Default)
+            {
+                if (locationChanged)
+                {
+                    //requested a force file different than current ( force it and disable file watching ) 
+                    SetSource(DataSource.Forced);
+                    DocumentLifetimeManager.UnWatchFile();
+                }
+                else
+                {
+                    //if the forced file is the same as the current deafult file, then just reenabled the file watcher
+                    WatchScoreFile();
+                }
+
+                LoadSeverities(ScoreLocation);
+            }
+            else
+            {
+                MacroEvaluator evaluator = new MacroEvaluator();
+                string defaultPath = evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreLocation);
+                if (defaultPath == filename)
+                {
+                    //We are forcing back to default
+                    LoadDefaultSource();
+                }
+                else
+                {
+                    LoadSeverities(ScoreLocation);
+                }
+            }
         }
 
         private void SetSource(DataSource input)

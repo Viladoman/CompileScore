@@ -39,10 +39,15 @@ namespace CompileScore
             commandService.AddCommand(new MenuCommand(Execute_OverviewWindow,   new CommandID(CommandSet_OverviewWindow, CommandId_OverviewWindow)));
             commandService.AddCommand(new MenuCommand(Execute_TimelineWindow,   new CommandID(CommandSet_TimelineWindow, CommandId_TimelineWindow)));
 
-            commandService.AddCommand(new MenuCommand(Execute_LoadDefault,   new CommandID(CommandSet_Custom, CommandId_LoadDefault)));
             commandService.AddCommand(new MenuCommand(Execute_Settings,      new CommandID(CommandSet_Custom, CommandId_Settings)));
             commandService.AddCommand(new MenuCommand(Execute_Documentation, new CommandID(CommandSet_Custom, CommandId_Documentation)));
             commandService.AddCommand(new MenuCommand(Execute_About,         new CommandID(CommandSet_Custom, CommandId_About)));
+
+            {
+                var menuItem = new OleMenuCommand(Execute_LoadDefault, new CommandID(CommandSet_Custom, CommandId_LoadDefault));
+                menuItem.BeforeQueryStatus += Query_CanLoadDefault;
+                commandService.AddCommand(menuItem);
+            }
 
             {
                 var menuItem = new OleMenuCommand(Execute_Build, new CommandID(CommandSet_Custom, CommandId_Build));
@@ -63,6 +68,15 @@ namespace CompileScore
             if (menuCommand != null)
             {
                 menuCommand.Visible = menuCommand.Enabled = Profiler.Instance.IsAvailable();
+            }
+        }
+
+        private static void Query_CanLoadDefault(object sender, EventArgs args)
+        {
+            var menuCommand = sender as OleMenuCommand;
+            if (menuCommand != null)
+            {
+                menuCommand.Visible = menuCommand.Enabled = CompilerData.Instance.Source == CompilerData.DataSource.Forced;
             }
         }
 

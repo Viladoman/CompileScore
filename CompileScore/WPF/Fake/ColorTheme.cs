@@ -32,6 +32,9 @@ namespace CompileScore.Common
         public static readonly object Slider_Background = "Slider_Background";
         public static readonly object Slider_Foreground = "Slider_Foreground";
 
+        public static readonly object ComboBox_MouseOverBackground = "TabItem_SelectedBackground";
+        public static readonly object ComboBox_MouseOverForeground = "TabItem_SelectedForeground";
+
         static public void AddThemeToApplicationResources()
         {
             ResourceDictionary resources = new ResourceDictionary();
