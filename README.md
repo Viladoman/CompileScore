@@ -1,8 +1,9 @@
 # CompileScore
 
-[![Clang](https://img.shields.io/badge/Clang-Full-green)]() [![MSVC](https://img.shields.io/badge/MSVC-Full-green)]() 
-
 VisualStudio extension used to display and highlight compilation profiling data. Know the real compilation cost of your code directly inside Visual Studio. Keep the compile times in check. 
+
+[![MarketPlace](https://img.shields.io/badge/Visual_Studio_Marketplace-v1.4.1-green.svg)](https://marketplace.visualstudio.com/items?itemName=RamonViladomat.CompileScore)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate?hosted_button_id=QWTUS8PNK5X5A)
 
 [Download latest from the Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=RamonViladomat.CompileScore)
 
@@ -11,6 +12,10 @@ VisualStudio extension used to display and highlight compilation profiling data.
 Compile times are one of the most important things that affect productivity and iterations while developing in C/C++. Slow compile times can be very frustrating, as they are usual case scenarios in big code productions. Being able to identify which pieces are expensive in the same place you code is key in order to keep tech debt under control.
 
 ## Features
+
+### Build and Profile
+
+**Missing image**
 
 ### Text Highlight on include costs
 ![Hihglight screenshot](https://github.com/Viladoman/CompileScore/wiki/data/highlightScreenshot.png?raw=true)
@@ -36,124 +41,36 @@ Navigation controls:
 
 This repository also contains a standalone app with the same visualization and code as the VS extension. It can prove useful to compare results or open reports without having to open Visual Studio. 
 
-The app needs to be build. The solution can be found at *CompileScore/WPF/CompileScoreWPF.sln*
+The app needs to be build. The solution can be found at [CompileScore/WPF/CompileScoreWPF.sln](https://github.com/Viladoman/CompileScore/tree/master/CompileScore/WPF).
 
 ## How it works
 
-Setup the C++ compiler to output a trace for what happened during the build. We can then aggregate all that data using the DataExtractor in this repository, and use it together with the VS plugin in order to visualize the data inside Visual Studio. 
+The main idea is to get the C++ compiler to output a trace for what happened during the build. We can then aggregate all that data using the Data Extractor in this repository, and consume it with the VS plugin or the standalone app. 
 
-The data extraction is a different process, due to the fact that in big codebases you might want to just extract the data in a build machine. Also, you might want to have the programmers just sync the reports to avoid having to do expensive full compilations locally. 
+The data extraction is an independent process in order to allow things like building the score file on a build server and consume it remotely. This can be useful in big codebases where we want the production floor to just use the reports from last night inside VS without having to profile locally.
 
 ![pipeline flow](https://github.com/Viladoman/CompileScore/wiki/data/Dataextraction.png?raw=true)
 
-In the VS extension settings there is a field to tell the plugin where to find the report file (this is next to the solution file or root folder by default). 
+In the VS extension [options](https://github.com/Viladoman/CompileScore/wiki/Configurations) there is a field to tell the plugin where to find the report file (this is next to the solution file or root folder by default). 
 
-For small projects, like the Test Projects included in this repo, you can perform the data extraction as a build post process in a given configuration in order to keep your compile data up to date.
+For more information check the [Score Generation Page](https://github.com/Viladoman/CompileScore/wiki/Score-Generation).
 
-### Clang
-
-Clang 9 (or newer) is needed in order to use the '-ftime-trace' option. This flag outputs a detailed report for each translation unit executed by the compiler.
-
-The following command will parse all the directories recursively, and process all clang trace files. 
-#### C++ Extractor
-```
-ScoreDataExtractor.exe -clang -i TempFolderWithObj/ -o compileData.scor
-```
-#### JavaScript Extractor
-```
-node DataExtractorFolder/main.js -i TempFolderWithObj/ -o compileData.scor
-```
-
-### MSVC
-
-For the Microsoft compiler we are using [C++ Build Insights SDK](https://docs.microsoft.com/cpp/build-insights/get-started-with-cpp-build-insights) and [vcperf](https://github.com/microsoft/vcperf). You can vcperf directly from the github repository or by downloading the **Microsoft.Cpp.BuildInsights** package inside VS using the Nuget manager.
-
-#### Generate the ETL build trace
-- Open an elevated command-line prompt.
-- Run the following command: ```vcperf /start SessionName``` (Add ```/level3``` to gather template instance data).
-- Build your C++ project from anywhere, even from within Visual Studio (vcperf collects events system-wide).
-- Run the following command: ```vcperf /stopnoanalyze SessionName buildTraceFile.etl```
-
-> :warning: **If you are doing incremental builds**: *vcperf* only tracks what is being compiled in the current session. This means that incremental builds will only display the data from the last build, not the overall project data. 
-
-#### C++ Data Exporter
-The following command will extract and pack the build data from the *.etl* trace file generated
-```
-ScoreDataExtractor.exe -msvc -i buildTraceFile.etl -o compileData.scor
-```
-
-## Building the C++ Data Extractor
-
-The Data Extractor can be build using the Visual Studio solution located at **DataExtractor/Cpp/ScoreDataExtractor.sln**. This solution contains the extractors for both pipelines (Clang and MSVC). 
-
-## Data Extractor Options
-
-| Executable Flag           | Arguments and description                                                             | Mandatory |
-|---------------------------|---------------------------------------------------------------------------------------|-----------|
-| `-clang` or `-msvc`       | Sets the system to use the Clang (.json traces) or MSVC (.etl traces) importer        | Yes       |
-| `-input` (`-i`)           | `Path to Input File`                                                                  | Yes       |
-|                           | The path to the input folder to parse for -ftime-trace data or .etl file              |           |
-| `-output` (`-o`)          | `Output file` (**compileData.scor by default**)                                       | No        |
-|                           | The output file full path for the results                                             |           |
-| `-detail` (`-d`)          | `Level` (**3 by default**)                                                            | No        |
-|                           | The exported detail level for the overview and globals tables.                        |           |
-|                           | Details table below. Useful to reduce the *.scor* file size on big projects           |           |
-| `-timelinedetail` (`-td`) | `Level` (**3 by default**)                                                            | No        |
-|                           | The exported detail level for the timeline nodes                                      |           |
-|                           | Details table below. Useful to reduce the *.scor.txxxx* file sizes or improve packing |           |
-| `-notimeline` (`-nt`)     | No timeline files will be generated                                                   | No        |
-| `-timelinepack` (`-tp`)   | `Number`                                                                              | No        |
-|                           | The number of timelines packed in the same file (**100** by default)                  |           |
-| `-verbosity` (`-v`)       | `Level`                                                                               | No        |
-|                           | Sets the verbosity level:                                                             |           |
-|                           | 0 : Silent                                                                            |           |
-|                           | 1 : Progress (**default**)                                                            |           |
-|                           | 2 - Full"                                                                             |           |
-
-Detail level table: 
-
-| # | Desc     | General | Include | Parse | Instantiate | Code Generation |
-|---|----------|---------|---------|-------|-------------|-----------------|
-| 0 | None     | Yes     | No      | No    | No          | No              |
-| 1 | Basic    | Yes     | Yes     | No    | No          | No              |
-| 2 | FrontEnd | Yes     | Yes     | Yes   | Yes         | No              |
-| 3 | Full     | Yes     | Yes     | Yes   | Yes         | Yes             |
-
-## Running the Test Project 
-
-### Clang & Javascript DataExtractor
-- Install the plugin. 
-- Make sure you have node.js installed in your machine. 
-- Select 'Open Folder' in VS 2019 to the 'TestProject/ClangJS' folder directy. This will open VS and setup using the CMake configuration provided. 
-- Compile 'x64-Clang-Debug-Profile' in order to generate the compilation data and see the plugin in action.
-
-This setup uses the JavaScript DataExporter.
-The configurations provided with the suffix 'Profile' add the *-ftime-trace* flag to clang and extract the data once the build is finished. 
-
-### Clang & C++ DataExtractor
-- Install the plugin. 
-- Build the 'DataExtractor/Cpp' project (**x64** & **Release** configuration)
-- Select 'Open Folder' in VS 2019 to the 'TestProject/ClangCpp' folder directy. This will open VS and setup using the CMake configuration provided. 
-- Compile 'x64-Clang-Debug-Profile' in order to generate the compilation data and see the plugin in action.
-
-This setup uses the JavaScript DataExporter.
-The configurations provided with the suffix 'Profile' add the *-ftime-trace* flag to clang and extract the data once the build is finished. 
-
-### MSVC
-- Install the plugin
-- Build the 'DataExtractor/Cpp' project (**x64** & **Release** configuration)
-- Open the VS solution located in 'TestProject/MSVC' with Visual Studio in **Elevated** mode.
-- Compile 'Debug-Profile' in order to generate the compilation data and see the plugin in action
-
-The configurations provided with the suffix 'Profile' add the required prebuild and postbuild steps.
+## Documentation
+- [Configurations and Options](https://github.com/Viladoman/CompileScore/wiki/Configurations)
+- [Scpre Generaton And Data Extractor](https://github.com/Viladoman/CompileScore/wiki/Score-Generation)
 
 ## References
 - [Visual Studio 2019](https://visualstudio.microsoft.com/vs/)
 - [Clang 9+](https://releases.llvm.org/download.html) ( support for -ftime-trace ) 
 - [Microsoft vcperf](https://github.com/microsoft/vcperf)
 - [Microsoft C++ Build Insights SDK](https://docs.microsoft.com/cpp/build-insights/get-started-with-cpp-build-insights)
-- [node.js](https://nodejs.org/) to run the data extraction script
 
 ## Related 
-
 If you're not using Visual Studio but are still interested in the data aggregation, you can use [SeeProfiler](https://github.com/Viladoman/SeeProfiler), a standalone C++ compiler profiler which aggregates all the exported data from clang for a global view.
+
+## Contributing
+This project is open to code contributions. 
+
+If you found this extension useful you can always buy me a cup coffee. 
+
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/donate?hosted_button_id=QWTUS8PNK5X5A)
