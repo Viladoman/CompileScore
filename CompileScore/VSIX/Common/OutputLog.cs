@@ -1,11 +1,10 @@
-﻿namespace CompileScore
-{
-    using EnvDTE80;
-    using Microsoft;
-    using Microsoft.VisualStudio.Shell;
-    using Microsoft.VisualStudio.Shell.Interop;
-    using System;
+﻿using Microsoft;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using System;
 
+namespace CompileScore
+{
     public static class OutputLog
     {
         private static IVsOutputWindowPane pane;

@@ -1,7 +1,7 @@
-﻿namespace CompileScore.Common
-{
-    using System.Windows.Media;
+﻿using System.Windows.Media;
 
+namespace CompileScore.Common
+{
     class Colors
     {
         static Brush IncludeBrush              = new SolidColorBrush(Color.FromRgb(85,  0,   85));

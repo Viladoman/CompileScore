@@ -1,14 +1,14 @@
-﻿namespace CompileScore
-{
-    using EnvDTE;
-    using EnvDTE80;
-    using Microsoft;
-    using Microsoft.VisualStudio.Shell;
-    using Microsoft.VisualStudio.Shell.Interop;
-    using System;
-    using System.IO;
-    using System.Security.Permissions;
+﻿using EnvDTE;
+using EnvDTE80;
+using Microsoft;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using System;
+using System.IO;
+using System.Security.Permissions;
 
+namespace CompileScore
+{
     public delegate void NotifyFile(string filename);  // delegate
 
     public static class DocumentLifetimeManager

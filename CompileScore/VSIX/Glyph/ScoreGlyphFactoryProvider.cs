@@ -1,10 +1,10 @@
-﻿namespace CompileScore.Glyph
-{
-    using Microsoft.VisualStudio.Text.Editor;
-    using Microsoft.VisualStudio.Text.Tagging;
-    using Microsoft.VisualStudio.Utilities;
-    using System.ComponentModel.Composition;
+﻿using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Text.Tagging;
+using Microsoft.VisualStudio.Utilities;
+using System.ComponentModel.Composition;
 
+namespace CompileScore.Glyph
+{
     [Export(typeof(IGlyphFactoryProvider))]
     [Name("ScoreGlyph")]
     [Order(Before = "VsTextMarker")]

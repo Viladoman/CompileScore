@@ -1,10 +1,10 @@
-﻿namespace CompileScore
-{
-    using System;
-    using System.Collections.Generic;
-    using Microsoft.VisualStudio.Text;
-    using Microsoft.VisualStudio.Text.Tagging;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Tagging;
 
+namespace CompileScore
+{
     internal static class SpanExtensions
     {
         private const PositionAffinity positionAffinity = PositionAffinity.Successor;

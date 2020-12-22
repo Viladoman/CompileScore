@@ -1,6 +1,5 @@
 ﻿using Microsoft.VisualStudio.Shell;
 using System.Collections.Generic;
-using System.IO;
 using System.Text.RegularExpressions;
 
 namespace CompileScore

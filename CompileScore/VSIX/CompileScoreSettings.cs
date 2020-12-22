@@ -1,10 +1,10 @@
 ﻿
+using System.Collections.Generic;
+using System.ComponentModel;
+using Microsoft.VisualStudio.Shell;
+
 namespace CompileScore
 {
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using Microsoft.VisualStudio.Shell;
-
     public class GeneralSettingsPageGrid : DialogPage
     {
         public enum HighlightMode

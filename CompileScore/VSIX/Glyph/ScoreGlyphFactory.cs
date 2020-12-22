@@ -1,10 +1,10 @@
-﻿namespace CompileScore.Glyph
-{
-    using Microsoft.VisualStudio.Text.Editor;
-    using Microsoft.VisualStudio.Text.Formatting;
-    using System.Windows;
-    using System.Windows.Shapes;
+﻿using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Text.Formatting;
+using System.Windows;
+using System.Windows.Shapes;
 
+namespace CompileScore.Glyph
+{
     internal class ScoreGlyphFactory : IGlyphFactory
     {
         public UIElement GenerateGlyph(IWpfTextViewLine line, IGlyphTag tag)

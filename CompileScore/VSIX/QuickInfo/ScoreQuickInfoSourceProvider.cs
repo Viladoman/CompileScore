@@ -1,10 +1,10 @@
-﻿namespace CompileScore
-{
-    using Microsoft.VisualStudio.Language.Intellisense;
-    using Microsoft.VisualStudio.Text;
-    using Microsoft.VisualStudio.Utilities;
-    using System.ComponentModel.Composition;
+﻿using Microsoft.VisualStudio.Language.Intellisense;
+using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Utilities;
+using System.ComponentModel.Composition;
 
+namespace CompileScore
+{
     [Export(typeof(IAsyncQuickInfoSourceProvider))]
     [Name("Score Async Quick Info Provider")]
     [ContentType("C/C++")]

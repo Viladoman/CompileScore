@@ -1,18 +1,11 @@
-﻿namespace CompileScore.Overview
-{
-    using EnvDTE;
-    using Microsoft.VisualStudio.PlatformUI;
-    using Microsoft.VisualStudio.Shell;
-    using System;
-    using System.Collections.ObjectModel;
-    using System.Diagnostics.CodeAnalysis;
-    using System.IO;
-    using System.Text.RegularExpressions;
-    using System.Windows;
-    using System.Windows.Controls;
-    using System.Windows.Data;
-    using System.Windows.Media;
+﻿using Microsoft.VisualStudio.Shell;
+using System;
+using System.IO;
+using System.Windows;
+using System.Windows.Controls;
 
+namespace CompileScore.Overview
+{
     public partial class OverviewWindowControl : UserControl
     {
         public OverviewWindowControl()

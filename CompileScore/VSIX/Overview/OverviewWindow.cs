@@ -1,9 +1,8 @@
-﻿namespace CompileScore.Overview
-{
-    using System;
-    using System.Runtime.InteropServices;
-    using Microsoft.VisualStudio.Shell;
+﻿using System;
+using System.Runtime.InteropServices;
 
+namespace CompileScore.Overview
+{
     /// <summary>
     /// This class implements the tool window exposed by this package and hosts a user control.
     /// </summary>

@@ -1,10 +1,8 @@
-﻿namespace CompileScore.Timeline
-{
-    using Microsoft.VisualStudio.Shell;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Windows;
-    using System.Windows.Controls;
+﻿using Microsoft.VisualStudio.Shell;
+using System.Windows.Controls;
 
+namespace CompileScore.Timeline
+{
     /// <summary>
     /// Interaction logic for TimelineWindowControl.
     /// </summary>

@@ -1,10 +1,10 @@
-﻿namespace CompileScore
-{
-    using System.ComponentModel.Composition;
-    using System.Windows.Media;
-    using Microsoft.VisualStudio.Text.Classification;
-    using Microsoft.VisualStudio.Utilities;
+﻿using System.ComponentModel.Composition;
+using System.Windows.Media;
+using Microsoft.VisualStudio.Text.Classification;
+using Microsoft.VisualStudio.Utilities;
 
+namespace CompileScore
+{
     internal class HighlightTagDefinitionBase : MarkerFormatDefinition
     {
         public HighlightTagDefinitionBase(uint severity)

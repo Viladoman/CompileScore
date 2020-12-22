@@ -1,11 +1,11 @@
-﻿namespace CompileScore
-{
-    using System.ComponentModel.Composition;
-    using Microsoft.VisualStudio.Text;
-    using Microsoft.VisualStudio.Text.Editor;
-    using Microsoft.VisualStudio.Text.Tagging;
-    using Microsoft.VisualStudio.Utilities;
+﻿using System.ComponentModel.Composition;
+using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Text.Tagging;
+using Microsoft.VisualStudio.Utilities;
 
+namespace CompileScore
+{
     [Export(typeof(IViewTaggerProvider))]
     [ContentType("C/C++")]
     [TagType(typeof(ScoreGlyphTag))]

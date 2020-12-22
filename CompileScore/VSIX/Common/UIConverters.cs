@@ -1,10 +1,10 @@
-﻿namespace CompileScore.Common
-{
-    using System;
-    using System.Text.RegularExpressions;
-    using System.Windows.Data;
-    using System.Windows.Media;
+﻿using System;
+using System.Text.RegularExpressions;
+using System.Windows.Data;
+using System.Windows.Media;
 
+namespace CompileScore.Common
+{
     public static class Order
     {
         public static CompilerData.CompileCategory[] CategoryDisplay = new CompilerData.CompileCategory[] {
