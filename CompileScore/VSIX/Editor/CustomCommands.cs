@@ -19,6 +19,7 @@ namespace CompileScore
 
         public const int CommandId_Build         = 256;
         public const int CommandId_Rebuild       = 257;
+        public const int CommandId_Generate      = 259;
 
         public const int CommandId_LoadDefault   = 260;
         public const int CommandId_Settings      = 261;
@@ -57,6 +58,12 @@ namespace CompileScore
 
             {
                 var menuItem = new OleMenuCommand(Execute_Rebuild, new CommandID(CommandSet_Custom, CommandId_Rebuild));
+                menuItem.BeforeQueryStatus += Query_CanBuild;
+                commandService.AddCommand(menuItem);
+            }
+
+            {
+                var menuItem = new OleMenuCommand(Execute_Generate, new CommandID(CommandSet_Custom, CommandId_Generate));
                 menuItem.BeforeQueryStatus += Query_CanBuild;
                 commandService.AddCommand(menuItem);
             }
@@ -103,8 +110,13 @@ namespace CompileScore
         private static void Execute_Rebuild(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            Profiler profiler = Profiler.Instance;
-            profiler.RebuildSolution();
+            Profiler.Instance.RebuildSolution();
+        }
+
+        private static void Execute_Generate(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            Profiler.Instance.GenerateScore();
         }
 
         private static void Execute_LoadDefault(object sender, EventArgs e)

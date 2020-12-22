@@ -78,13 +78,13 @@
           <ButtonText>Clean Profile Data</ButtonText>
         </Strings>
       </Button>
+      -->
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdGenerate" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
         <Strings>
           <ButtonText>Run Score Generator</ButtonText>
         </Strings>
       </Button>
-      -->
       
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdLoadDefault" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />

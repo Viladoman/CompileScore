@@ -4,11 +4,8 @@ using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
-using System.Windows;
-using System.Diagnostics;
 using System.IO;
 using System.Security.Principal;
-using Microsoft.VisualStudio;
 
 namespace CompileScore
 {
@@ -95,7 +92,7 @@ namespace CompileScore
             ThreadHelper.ThrowIfNotOnUIThread();
 
             SetGeneratorProperties();
-            if (Validate())
+            if (ValidateBuild())
             {
                 CleanSolution();
                 TriggerBuildSolution();
@@ -107,9 +104,20 @@ namespace CompileScore
             ThreadHelper.ThrowIfNotOnUIThread();
 
             SetGeneratorProperties();
-            if (Validate())
+            if (ValidateBuild())
             {
                 TriggerBuildSolution();
+            }
+        }
+
+        public void GenerateScore()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            SetGeneratorProperties();
+            if (ValidateGenerator())
+            {
+                _ = TriggerGeneratorAsync();
             }
         }
 
@@ -169,12 +177,38 @@ namespace CompileScore
                 DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
                 Assumes.Present(applicationObject);
                 applicationObject.Solution.SolutionBuild.Build();
+
+                /*
+                // Rebuild - direct call alternative for .sln projects  
+                IVsSolutionBuildManager2 buildManager = ServiceProvider.GlobalProvider.GetService(typeof(SVsSolutionBuildManager)) as IVsSolutionBuildManager2;
+                if (ErrorHandler.Failed(buildManager.StartSimpleUpdateSolutionConfiguration((uint)(VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_FORCE_UPDATE | VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD),
+                    (uint)VSSOLNBUILDQUERYRESULTS.VSSBQR_OUTOFDATE_QUERY_YES, 0)))
+                {
+                    //handle the error
+                }
+                */
+
             }
             catch(Exception e)
             {
                 DisplayError("Unable to Trigger the build. " + e.Message);
                 SetState(StateType.Idle);
             }
+        }
+
+        private async System.Threading.Tasks.Task TriggerGeneratorAsync()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            OutputLog.Focus();
+            OutputLog.Clear();
+            Evaluator.Clear();
+
+            SetState(StateType.Gathering);
+
+            await GenerateScoreAsync();
+
+            SetState(StateType.Idle);
         }
 
         private void DisplayError(string message)
@@ -185,7 +219,7 @@ namespace CompileScore
             MessageWindow.Display(new MessageContent(message));
         }
 
-        private bool Validate()
+        private bool ValidateBuild()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -193,17 +227,36 @@ namespace CompileScore
             {
                 DisplayError("Visual Studio needs to be running in administrator mode. Microsoft Build Insights requirement.");
                 return false;
-            }
-
-            if (GetScoreExtractorToolPath() == null)
-            {
-                DisplayError("Unable to find the score extractor program.");
-                return false;
-            }
+            }          
 
             if (GetVCPerfToolPath() == null)
             {
                 DisplayError("Unable to find the vcperf program.");
+                return false;
+            }
+
+            //TODO ~ ramonv ~ placeholder while we find a soltuion for 'open folder' build events 
+            if (EditorContext.Instance.Mode == EditorContext.EditorMode.Folder)
+            {
+                DisplayError("Build and Profile is not supported on 'Open Folder' projects.\n" +
+                    "I have been unable to get build events from the VS SDK on 'Open Folder' mode.\n" +
+                    "\n" +
+                    "CLANG WORKAROUND:\n" +
+                    "When usingclang with -ftime-trace flag, run the 'Run Score Generator' command once the build process has finished.\n" +
+                    "Can be found under 'Extensions' -> 'Compile Score'");
+                return false;
+            }
+
+            return ValidateGenerator();
+        }
+
+        private bool ValidateGenerator()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (GetScoreExtractorToolPath() == null)
+            {
+                DisplayError("Unable to find the score extractor program.");
                 return false;
             }
 
@@ -220,7 +273,7 @@ namespace CompileScore
         {
             State = newState;
         }
-        private void OnBuildBegin(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
+        private void OnBuildBegin(vsBuildScope Scope, vsBuildAction Action)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -236,18 +289,18 @@ namespace CompileScore
             }
         }
 
-        private void OnBuildDone(EnvDTE.vsBuildScope Scope, EnvDTE.vsBuildAction Action)
+        private void OnBuildDone(vsBuildScope Scope, vsBuildAction Action)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (State == StateType.Building)
             {
                 //async call for the Data Gathering
-                if (Action == EnvDTE.vsBuildAction.vsBuildActionClean)
+                if (Action == vsBuildAction.vsBuildActionClean)
                 {
                     _ = CancelGatheringAsync();
                 }
-                else if (Action == EnvDTE.vsBuildAction.vsBuildActionBuild || Action == EnvDTE.vsBuildAction.vsBuildActionRebuildAll)
+                else if (Action == vsBuildAction.vsBuildActionBuild || Action == vsBuildAction.vsBuildActionRebuildAll)
                 {
                     _ = GatherAsync();
                 }
@@ -332,6 +385,14 @@ namespace CompileScore
             SetState(StateType.Gathering);
 
             await StopGatheringAsync();
+            await GenerateScoreAsync();
+
+            SetState(StateType.Idle);
+        }
+
+        private async System.Threading.Tasks.Task GenerateScoreAsync()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             //Stop watching as the data extractor might modify the watched file
             DocumentLifetimeManager.UnWatchFile();
@@ -361,8 +422,6 @@ namespace CompileScore
             EditorUtils.FocusOverviewWindow();
 
             OutputLog.Log("Score generation completed!");
-
-            SetState(StateType.Idle);
         }
 
         private async System.Threading.Tasks.Task StopGatheringAsync()
