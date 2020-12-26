@@ -13,4 +13,8 @@ namespace IO
 		 struct Impl; 
 		 Impl* m_impl;
 	};
+
+	bool Exists(const char* path);
+	bool IsDirectory(const char* path);
+	bool IsExtension(const char* path, const char* extension);
 }

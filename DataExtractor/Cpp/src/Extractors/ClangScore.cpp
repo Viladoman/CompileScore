@@ -2,7 +2,7 @@
 
 #include "../Common/CommandLine.h"
 #include "../Common/Context.h"
-#include "../Common/DirectoryScanner.h"
+#include "../Common/DirectoryUtils.h"
 #include "../Common/JsonParser.h"
 #include "../Common/IOStream.h"
 #include "../Common/ScoreDefinitions.h"
@@ -13,6 +13,9 @@
 
 namespace Clang 
 { 
+	constexpr int FAILURE = -1;
+	constexpr int SUCCESS = 0;
+
 	namespace Utils
 	{ 
 		//------------------------------------------------------------------------------------------
@@ -274,8 +277,47 @@ namespace Clang
 		return true;
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	// -----------------------------------------------------------------------------------------------------------
-	int ExtractScore(const ExportParams& params)
+	int StopRecordingTrace(const ExportParams& params)
+	{ 
+		//TODO ~ ramonv ~ to be implemented
+		LOG_ERROR("Clang output trace not implemented!");
+
+		//Open input folder and search for the timestamp placed by the start function
+		//Parse directory and compare against the timestamp
+		//store all files as a trace and save it on the output file
+
+		return FAILURE;
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	int StopRecordingGenerate(const ExportParams& params)
+	{ 
+		//TODO ~ ramonv ~ to be implemented
+		LOG_ERROR("Clang output trace not implemented!");
+
+		//Open input folder and search for the timestamp placed by the start function
+		//Parse directory and compare against the timestamp
+		//Process all files
+
+		return FAILURE; 
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	int GenerateScoreTrace(const ExportParams& params)
+	{
+		//TODO ~ ramonv ~ to be implemented
+		LOG_ERROR("Clang output trace not implemented!");
+
+		//Process all files found in the input trace 
+
+		return FAILURE; 
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	int GenerateScoreDirectory(const ExportParams& params)
 	{ 
 		ScoreData scoreData;
 
@@ -303,6 +345,83 @@ namespace Clang
 
 		binarizer.Get().Binarize(scoreData);
 
-		return 0;
+		return SUCCESS;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// -----------------------------------------------------------------------------------------------------------
+	int Extractor::StartRecording(const ExportParams& params)
+	{
+		//TODO ~ ramonv ~ to be implemented
+		LOG_ERROR("Clang output trace not implemented!");
+
+		//Got to the input folder and store a timestamp for comparison later
+
+		return FAILURE;
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	int Extractor::CancelRecording(const ExportParams& params)
+	{
+		//TODO ~ ramonv ~ to be implemented
+		LOG_ERROR("Clang output trace not implemented!");
+
+		//Got to the input folder and store a timestamp for comparison later
+
+		return FAILURE;
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	int Extractor::StopRecording(const ExportParams& params)
+	{
+		//Check extension
+		if (params.output == nullptr)
+		{ 
+			LOG_ERROR("No output file provided.");
+			return FAILURE;
+		}
+
+		if (IO::IsExtension(params.output,".scor"))
+		{ 
+			return StopRecordingGenerate(params);
+		}
+
+		if (IO::IsExtension(params.output,".ctl"))
+		{ 
+			return StopRecordingTrace(params);
+		}
+
+		LOG_ERROR("Unknown output file extension provided. The Clang generator only knows how to generate .scor or .ctl files.");
+		return FAILURE;
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	int Extractor::GenerateScore(const ExportParams& params)
+	{ 
+		if (params.input == nullptr)
+		{ 
+			LOG_ERROR("No input path provided.");
+			return FAILURE;
+		}
+
+		if (IO::IsDirectory(params.input))
+		{ 
+			return GenerateScoreDirectory(params);
+		}
+
+		if (IO::IsExtension(params.input,".ctl"))
+		{ 
+			return GenerateScoreTrace(params);
+		}
+
+		if (!IO::Exists(params.input))
+		{
+			LOG_ERROR("Could not find input: %s",params.input);
+			return FAILURE;
+		}
+
+		LOG_ERROR("Input file is not a folder or a .ctl file.");
+	    return FAILURE;
 	} 
 }

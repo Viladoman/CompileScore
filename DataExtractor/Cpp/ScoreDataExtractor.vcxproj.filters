@@ -17,9 +17,6 @@
     <ClCompile Include="src\Common\ScoreProcessor.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="src\Common\DirectoryScanner.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="src\Common\JsonParser.cpp">
       <Filter>Common</Filter>
     </ClCompile>
@@ -27,6 +24,9 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="src\Common\Timers.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Common\DirectoryUtils.cpp">
       <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
@@ -84,9 +84,6 @@
     <ClInclude Include="src\Common\ScoreProcessor.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="src\Common\DirectoryScanner.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="src\Common\JsonParser.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -97,6 +94,9 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="src\Common\Context.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Common\DirectoryUtils.h">
       <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>

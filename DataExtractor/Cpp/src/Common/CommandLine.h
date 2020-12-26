@@ -10,6 +10,14 @@ struct ExportParams
         Invalid
     };
 
+    enum class Command
+    { 
+        Start, 
+        Cancel,
+        Stop,
+        Generate,
+    };
+
     enum class Detail
     { 
         None,
@@ -31,6 +39,7 @@ struct ExportParams
     const char*  input; 
     const char*  output;
     Source       source; 
+    Command      command;
     Detail       detail;
     Timeline     timeline;
     Detail       timelineDetail;

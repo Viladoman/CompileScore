@@ -1,4 +1,4 @@
-#include "DirectoryScanner.h"
+#include "DirectoryUtils.h"
 
 //TODO ~ ramonv ~ This include hurts a lot - I need to find a substitution that works on all platforms
 #include <filesystem>
@@ -27,7 +27,7 @@ namespace IO
     // -----------------------------------------------------------------------------------------------------------
     DirectoryScanner::DirectoryScanner(const char* pathToScan, const char* extension)
         : m_impl( new Impl(extension) )
-    {
+    {     
         m_impl->cursor = fs::recursive_directory_iterator(pathToScan);
     }
 
@@ -52,6 +52,27 @@ namespace IO
         ++m_impl->cursor;
         return m_impl->cursorPath.c_str();
     }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // -----------------------------------------------------------------------------------------------------------
+    bool Exists(const char* path)
+    { 
+        return fs::exists(path);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    bool IsDirectory(const char* path)
+    { 
+        return fs::is_directory(path);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    bool IsExtension(const char* path, const char* extension)
+    { 
+        return fs::path(path).extension() == extension;
+    }
+
 }
 
 

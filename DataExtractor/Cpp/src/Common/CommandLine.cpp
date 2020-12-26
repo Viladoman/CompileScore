@@ -6,6 +6,7 @@ ExportParams::ExportParams()
     : input(nullptr)
     , output("compileData.scor")
     , source(Source::Invalid)
+    , command(Command::Generate)
     , detail(Detail::Full)
     , timeline(Timeline::Enabled)
     , timelineDetail(Detail::Full)
@@ -14,6 +15,9 @@ ExportParams::ExportParams()
 
 namespace CommandLine
 { 
+    constexpr int FAILURE = -1;
+    constexpr int SUCCESS = 0;
+
     namespace Utils
     { 
         // -----------------------------------------------------------------------------------------------------------
@@ -55,10 +59,15 @@ namespace CommandLine
         LOG_ALWAYS("");
         LOG_ALWAYS("Command Legend:"); 
 
+        LOG_ALWAYS("-clang  |  -msvc      : Sets the system to use the Clang or MSVC recorders and generators (mandatory)");         
+        
         LOG_ALWAYS("-input          (-i)  : The path to the input folder to parse for -ftime-trace data or the direct path to the .etl file"); 
         LOG_ALWAYS("-output         (-o)  : The output file full path for the results ('%s' by default)",defaultParams.output); 
-
-        LOG_ALWAYS("-clang  |  -msvc      : Sets the system to use the Clang (.json traces) or MSVC (.etl traces) importer"); 
+        
+        LOG_ALWAYS("-start                : The system will start recording build data for the given compiler. (Clang: needs input folder to inspect)");
+        LOG_ALWAYS("-cancel               : The system will stop the current recording for the given compiler without generating anything.");
+        LOG_ALWAYS("-stop                 : The system will stop recording. Supported output types are .scor, .etl (MSVC only) and .ctl (Clang only)");
+        LOG_ALWAYS("-extract              : The system will just perform a data extraction, meaning valid input files are .etl (MSVC only), .ctl (Cland only) and folder (Clang only)");
 
         LOG_ALWAYS("-detail         (-d)  : Sets the level of detail exported (3 by default), check the table below - example: '-d 1'");        
         LOG_ALWAYS("-timelinedetail (-td) : Sets the level of detail for the timelines exported (3 by default), check the table below - example: '-td 1'"); 
@@ -90,7 +99,7 @@ namespace CommandLine
         if (argc <= 1) 
         {
             LOG_ERROR("No arguments found. Type '?' for help.");
-            return -1;
+            return FAILURE;
         }
 
         //Check for Help
@@ -99,7 +108,7 @@ namespace CommandLine
             if (Utils::StringCompare(argv[i],"?") == 0)
             { 
                 DisplayHelp();
-                return -1;
+                return FAILURE;
             }
         }
 
@@ -126,6 +135,22 @@ namespace CommandLine
                 else if (Utils::StringCompare(argValue,"-clang") == 0)
                 { 
                     params.source = ExportParams::Source::Clang; 
+                }
+                else if (Utils::StringCompare(argValue,"-start") == 0)
+                { 
+                    params.command = ExportParams::Command::Start;
+                }
+                else if (Utils::StringCompare(argValue,"-cancel") == 0)
+                { 
+                    params.command = ExportParams::Command::Cancel;
+                }
+                else if (Utils::StringCompare(argValue,"-stop") == 0)
+                { 
+                    params.command = ExportParams::Command::Stop;
+                }
+                else if (Utils::StringCompare(argValue,"-extract") == 0)
+                { 
+                    params.command = ExportParams::Command::Generate;
                 }
                 else if ((Utils::StringCompare(argValue,"-nt")==0 || Utils::StringCompare(argValue,"-notimeline")==0))
                 {
@@ -175,21 +200,22 @@ namespace CommandLine
             }
         }
 
-        if (params.input == nullptr)
+
+        //Move this to be handled by each command implementation
+        //MSVC Start recording does not require a valid input
+        /*
+        if (params.input == nullptr && (params.command != ExportParams::Command::Start || params.source != ExportParams::Source::MSVC)) 
         { 
             LOG_ERROR("No input found. Type '?' for help.");
-            return -1;
+            return FAILURE;
         }
+        */
+        //TODO ~ ramonv ~ fix here STOP to STOPsubcategory
 
         //TODO ~ validation and auto type deduction if not present 
-        // - .etl == MSVC 
-        // - isFolder == Clang
-        
-        if (params.source == ExportParams::Source::Invalid)
-        {
-            LOG_ERROR("Ambigous input. Define the input source using '-clang' or '-msvc'");
-            return -1;
-        }
+        //Clang input is folder
+        //MSVC  input is etl
+        //stop has valid output extension
 
         return 0;
     }

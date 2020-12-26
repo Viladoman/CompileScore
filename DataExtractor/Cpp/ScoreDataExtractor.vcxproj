@@ -36,7 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Common\CommandLine.cpp" />
-    <ClCompile Include="src\Common\DirectoryScanner.cpp" />
+    <ClCompile Include="src\Common\DirectoryUtils.cpp" />
     <ClCompile Include="src\Common\IOStream.cpp" />
     <ClCompile Include="src\Common\JsonParser.cpp" />
     <ClCompile Include="src\Common\ScoreProcessor.cpp" />
@@ -53,7 +53,7 @@
     <ClInclude Include="src\Common\BasicTypes.h" />
     <ClInclude Include="src\Common\CommandLine.h" />
     <ClInclude Include="src\Common\Context.h" />
-    <ClInclude Include="src\Common\DirectoryScanner.h" />
+    <ClInclude Include="src\Common\DirectoryUtils.h" />
     <ClInclude Include="src\Common\IOStream.h" />
     <ClInclude Include="src\Common\JsonParser.h" />
     <ClInclude Include="src\Common\ScoreDefinitions.h" />

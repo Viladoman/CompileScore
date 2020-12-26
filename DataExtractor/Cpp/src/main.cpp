@@ -8,6 +8,26 @@
 constexpr int FAILURE = -1;
 
 // -----------------------------------------------------------------------------------------------------------
+template<typename Extractor>
+int ExecuteCommand(const ExportParams& params)
+{ 
+    switch(params.command)
+    { 
+    case ExportParams::Command::Start:    
+        return Extractor::StartRecording(params);
+    case ExportParams::Command::Cancel:    
+        return Extractor::CancelRecording(params);
+    case ExportParams::Command::Stop:     
+        return Extractor::StopRecording(params);
+    case ExportParams::Command::Generate: 
+        return Extractor::GenerateScore(params);
+    default:
+        LOG_ERROR("Unknown command provided.");
+        return FAILURE;
+    }
+}
+
+// -----------------------------------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
     Time::Timer timer;
@@ -25,16 +45,16 @@ int main(int argc, char* argv[])
 
     switch(params.Get().source)
     { 
-    case ExportParams::Source::Clang: 
-        result = Clang::ExtractScore(params.Get()); 
+    case ExportParams::Source::Clang:  
+        result = ExecuteCommand<Clang::Extractor>(params.Get()); 
         break;
 
     case ExportParams::Source::MSVC:  
-        result = MSVC::ExtractScore(params.Get()); 
+        result = ExecuteCommand<MSVC::Extractor>(params.Get()); 
         break;
 
     default: 
-        LOG_ERROR("Unknown exporter requested"); 
+        LOG_ERROR("No compiler specificed. Define the input source using '-clang' or '-msvc'");
         return FAILURE;
     }
 

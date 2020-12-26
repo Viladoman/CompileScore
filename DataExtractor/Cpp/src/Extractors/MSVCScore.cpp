@@ -7,6 +7,7 @@
 #include "../fastl/string.h"
 #include "../Common/CommandLine.h"
 #include "../Common/Context.h"
+#include "../Common/DirectoryUtils.h"
 #include "../Common/IOStream.h"
 #include "../Common/ScoreDefinitions.h"
 #include "../Common/ScoreProcessor.h"
@@ -14,6 +15,11 @@
 
 namespace MSVC
 { 
+    constexpr int         FAILURE = EXIT_FAILURE;
+    constexpr int         SUCCESS = EXIT_SUCCESS;
+    constexpr const char* MSBI_SessionName = "COMPILE_SCORE";
+    constexpr int         MSBI_NumberOfPasses = 1;
+
     namespace MSBI = Microsoft::Cpp::BuildInsights; 
 
     using TTimeStamp = unsigned long long;
@@ -72,6 +78,10 @@ namespace MSVC
         size_t             sectionStartIndex; 
     };
     using TMSVCCompileTracks = fastl::vector<MSVCCompileTrack>;
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    class DummyGatherer : public MSBI::IAnalyzer{};
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -455,10 +465,209 @@ namespace MSVC
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // -----------------------------------------------------------------------------------------------------------
-    int ExtractScore(const ExportParams& params)
+    const char* GetErrorText(const MSBI::RESULT_CODE failureCode)
+    {
+        switch (failureCode)
+        {
+        case MSBI::RESULT_CODE_FAILURE_INSUFFICIENT_PRIVILEGES:
+            return "This operation requires administrator privileges.";
+
+        case MSBI::RESULT_CODE_FAILURE_DROPPED_EVENTS:
+            return "Events were dropped during the recording. Please try recording again.";
+
+        case MSBI::RESULT_CODE_FAILURE_UNSUPPORTED_OS:
+            return "The version of Microsoft Visual C++ Build Insights that CompileScore is using does not support the version of the operating system used for the recording.";
+
+        case MSBI::RESULT_CODE_FAILURE_START_SYSTEM_TRACE:
+        case MSBI::RESULT_CODE_FAILURE_START_MSVC_TRACE:
+            return "A recording is currently in progress on your system is preventing CompileScore from starting a new one."
+                   "This can occur if you forgot to stop a CompileScore recording prior to running the start command, or if other processes have started ETW traces of their own."
+                   "Please try running the CompileScore -stop command.\n"
+                   "You can use the 'tracelog -l' command from an elevated command prompt to list all ongoing tracing sessions on your system."
+                   "Your currently ongoing CompileScore recording will show up as MSVC_BUILD_INSIGHTS_SESSION_COMPILE_SCORE." 
+                   "If no MSVC_BUILD_INSIGHTS_SESSION_COMPILE_SCORE is found, it could mean a kernel ETW trace is currently being collected."
+                   "This trace will show up as 'NT Kernel Logger' in your tracelog output, and will also prevent you from starting a new trace."
+                   "You can stop the 'NT Kernel Logger' session by running 'xperf -stop' from an elevated command prompt.";
+        default:
+            return nullptr;
+        }
+    }
+
+    void PrintError(const MSBI::RESULT_CODE errorCode)
     { 
-        constexpr int numberOfPasses = 1;
+        if (const char* errorMsg = GetErrorText(errorCode))
+        { 
+            LOG_ERROR("%s",errorMsg);
+        }
+        else 
+        {
+            LOG_ERROR("ERROR CODE: %d", errorCode);
+        }
+    }
+
+    void PrintTraceStatistics(const MSBI::TRACING_SESSION_STATISTICS& stats)
+    {
+        if (stats.MSVCEventsLost)    LOG_PROGRESS("Dropped MSVC events: %lu",stats.MSVCEventsLost);
+        if (stats.MSVCBuffersLost)   LOG_PROGRESS("Dropped MSVC buffers: %lu",stats.MSVCBuffersLost);
+        if (stats.SystemEventsLost)  LOG_PROGRESS("Dropped system events: %lu",stats.SystemEventsLost);
+        if (stats.SystemBuffersLost) LOG_PROGRESS("Dropped system buffers: %lu",stats.SystemBuffersLost);
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // -----------------------------------------------------------------------------------------------------------
+    int StopRecordingTrace(const ExportParams& params)
+    { 
+        MSBI::TRACING_SESSION_STATISTICS statistics{};
+
+        LOG_PROGRESS("Stopping MSVC recording...");
+
+        auto result = StopTracingSession(MSBI_SessionName, params.output, &statistics);
+
+        PrintTraceStatistics(statistics);
+
+        if (result != MSBI::RESULT_CODE_SUCCESS)
+        {
+            LOG_ERROR("Failed to stop the recording.");
+            PrintError(result);
+            return FAILURE;
+        }
+
+        LOG_ALWAYS("The trace file %s may contain personally identifiable information. This includes, but is not limited to, paths of files that were accessed and names of processes that were running during the collection. Please be aware of this when sharing this trace with others.",params.output);
+        LOG_PROGRESS("Recording has stopped successfully!");
+
+        return SUCCESS;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    int StopRecordingGenerate(const ExportParams& params)
+    { 
+        Context::Scoped<IO::Binarizer> binarizer(params.output,params.timelinePacking);
+
+        LOG_PROGRESS("Stopping MSVC recording and Generating Score...");
+
+        MSBI::TRACING_SESSION_STATISTICS statistics{};
+
+        Gatherer gatherer;
+        auto group = MSBI::MakeStaticAnalyzerGroup(&gatherer);
+        MSBI::RESULT_CODE result = MSBI::StopAndAnalyzeTracingSession(MSBI_SessionName, MSBI_NumberOfPasses, &statistics, group);
+
+        if (result == MSBI::RESULT_CODE_SUCCESS)
+        { 
+            binarizer.Get().Binarize(gatherer.GetScoreData());
+        }
+        else 
+        {
+            LOG_ERROR("Failed to stop the recording.");
+            PrintError(result);
+            return FAILURE;
+        }
+
+        return SUCCESS;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // -----------------------------------------------------------------------------------------------------------
+    int Extractor::StartRecording(const ExportParams& params)
+    {
+        MSBI::TRACING_SESSION_OPTIONS options{};
+
+        const ExportParams::Detail recordingDetail = params.detail; //TODO ~ ramonv ~ get max between detail and timelinedetail
+
+        switch(recordingDetail)
+        { 
+        case ExportParams::Detail::Full:
+            options.MsvcEventFlags |= MSBI::TRACING_SESSION_MSVC_EVENT_FLAGS_BACKEND_FUNCTIONS;
+        case ExportParams::Detail::FrontEnd:
+            options.MsvcEventFlags |= MSBI::TRACING_SESSION_MSVC_EVENT_FLAGS_FRONTEND_TEMPLATE_INSTANTIATIONS;
+            options.MsvcEventFlags |= MSBI::TRACING_SESSION_MSVC_EVENT_FLAGS_FRONTEND_FILES;
+        case ExportParams::Detail::None:
+        case ExportParams::Detail::Basic:
+            options.MsvcEventFlags |= MSBI::TRACING_SESSION_MSVC_EVENT_FLAGS_BASIC;
+        }
+
+        LOG_PROGRESS("Starting MSVC recording...");
+
+        const MSBI::RESULT_CODE result = StartTracingSession(MSBI_SessionName, options);
+
+        if (result != MSBI::RESULT_CODE_SUCCESS) 
+        {
+            LOG_ERROR("Failed to start recording.");
+            PrintError(result);
+            return FAILURE;
+        }
+
+        LOG_PROGRESS("Recording session started successfully!");
+        return SUCCESS;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    int Extractor::CancelRecording(const ExportParams& params)
+    { 
+        LOG_PROGRESS("Cancelling MSVC recording and Generating Score...");
+
+        MSBI::TRACING_SESSION_STATISTICS statistics{};
+
+        DummyGatherer gatherer;
+        auto group = MSBI::MakeStaticAnalyzerGroup(&gatherer);
+        MSBI::RESULT_CODE result = MSBI::StopAndAnalyzeTracingSession(MSBI_SessionName, MSBI_NumberOfPasses, &statistics, group);
+
+        if (result != MSBI::RESULT_CODE_SUCCESS)
+        { 
+            LOG_ERROR("Failed to cancel the recording.");
+            PrintError(result);
+            return FAILURE;
+        }
+
+        LOG_PROGRESS("Recording session cancelled successfully!");
+        return SUCCESS;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    int Extractor::StopRecording(const ExportParams& params)
+    { 
+        //Check extension
+        if (params.output == nullptr)
+        { 
+            LOG_ERROR("No output file provided.");
+            return FAILURE;
+        }
+
+        if (IO::IsExtension(params.output,".scor"))
+        { 
+            return StopRecordingGenerate(params);
+        }
+        
+        if (IO::IsExtension(params.output,".etl"))
+        { 
+            return StopRecordingTrace(params);
+        }
+
+        LOG_ERROR("Unknown output file extension provided. The MSVC generator only knows how to generate .scor or .etl files.");
+        return FAILURE;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    int Extractor::GenerateScore(const ExportParams& params)
+    { 
+        if (params.input == nullptr)
+        { 
+            LOG_ERROR("No input path provided.");
+            return FAILURE;
+        }
+
+        if (!IO::IsExtension(params.input,".etl"))
+        { 
+            LOG_ERROR("Input file is not an .etl trace log file.");
+            return FAILURE;
+        }
+
+        if (!IO::Exists(params.input))
+        {
+            LOG_ERROR("Could not find input: %s",params.input);
+            return FAILURE;
+        }
 
         Context::Scoped<IO::Binarizer> binarizer(params.output,params.timelinePacking);
         
@@ -466,7 +675,7 @@ namespace MSVC
 
         Gatherer gatherer;
         auto group = MSBI::MakeStaticAnalyzerGroup(&gatherer);
-        int result = MSBI::Analyze(params.input, numberOfPasses, group); 
+        const MSBI::RESULT_CODE result = MSBI::Analyze(params.input, MSBI_NumberOfPasses, group); 
 
         if (result == 0) 
         { 
@@ -474,6 +683,6 @@ namespace MSVC
         }
 
         return result;
-    } 
+    }
 }
 
