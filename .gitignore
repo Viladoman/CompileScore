@@ -30,7 +30,7 @@ CompileScore/WPF/obj/
 *.scor.*
 
 DataExtractor/Cpp/x64/*
-DataExtractor/Cpp/x86/*
+DataExtractor/Cpp/win32/*
 DataExtractor/Cpp/packages/*
 DataExtractor/Cpp/.vs/*
 
