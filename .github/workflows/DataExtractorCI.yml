@@ -38,13 +38,11 @@ jobs:
       working-directory: ${{env.baseDir}}
       run: msbuild /m /p:Configuration=${{matrix.buildconfig}} /p:Platform=${{matrix.buildplatform}} ${{ env.solutionName }}
       
-    - name: Generate Artifact
-      working-directory: ${{env.baseDir}}/bin/${{matrix.buildplatform}}/${{matrix.buildconfig}}
-      run: Compress-Archive -Path ScoreDataExtractor.exe,CppBuildInsights.dll,KernelTraceControl.dll -DestinationPath CompileScoreExtractor.zip
-      
-    - name: Upload Artifact
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v1
       with:
         name: CompileScore-Extractor-${{matrix.buildplatform}}-${{matrix.buildconfig}}
-        path: ${{env.baseDir}}/bin/${{matrix.buildplatform}}/${{matrix.buildconfig}}/CompileScoreExtractor.zip
-
+        path: |
+          ${{env.baseDir}}/bin/${{matrix.buildplatform}}/${{matrix.buildconfig}}/ScoreDataExtractor.exe
+          ${{env.baseDir}}/bin/${{matrix.buildplatform}}/${{matrix.buildconfig}}/CppBuildInsights.dll
+          ${{env.baseDir}}/bin/${{matrix.buildplatform}}/${{matrix.buildconfig}}/KernelTraceControl.dll
