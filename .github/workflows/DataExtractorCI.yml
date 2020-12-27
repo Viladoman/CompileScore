@@ -39,7 +39,7 @@ jobs:
       run: msbuild /m /p:Configuration=${{matrix.buildconfig}} /p:Platform=${{matrix.buildplatform}} ${{ env.solutionName }}
       
     - name: Generate Artifact
-      working-directory: ${{env.baseDir}}/${{matrix.buildplatform}}/${{matrix.buildconfig}}
+      working-directory: ${{env.baseDir}}/bin/${{matrix.buildplatform}}/${{matrix.buildconfig}}
       run: Compress-Archive -Path ScoreDataExtractor.exe,CppBuildInsights.dll,KernelTraceControl.dll -DestinationPath CompileScoreExtractor.zip
       
     - name: Upload Artifact
