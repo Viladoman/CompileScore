@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         buildconfig: [Debug, Release]
-        buildplatform: [Win32, x64]
+        buildplatform: [x86, x64]
     
     steps:
     - name: Checkout
