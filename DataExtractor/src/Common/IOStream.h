@@ -44,17 +44,30 @@ namespace IO
 
     RawBuffer ReadRawFile(const char* filename);
     bool WriteRawFile(const char* filename, RawBuffer buffer);
+    void DestroyBuffer(RawBuffer& buffer);
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // Text File IO
 
     using FileTextBuffer = char*; 
     
-    FileTextBuffer ReadFile(const char* filename);
+    FileTextBuffer ReadTextFile(const char* filename);
     void DestroyBuffer(FileTextBuffer& buffer);
+    /*
+    class TextOutputStream
+    { 
+    public:
+        TextOutputStream(const char* filename);
+        ~TextOutputStream();
 
-    //TODO ~ ramonv ~ missing: save list of strings
 
+        //AddLine(const char* line)
+        //close
+    private:
+        class Impl;
+        Impl* m_impl;
+    };
+    */
     //////////////////////////////////////////////////////////////////////////////////////////
     // Score Output
 

@@ -147,7 +147,7 @@ namespace IO
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // -----------------------------------------------------------------------------------------------------------
-    FileTextBuffer ReadFile(const char* filename)
+    FileTextBuffer ReadTextFile(const char* filename)
     {
         FileTextBuffer content = nullptr; 
 
@@ -180,7 +180,26 @@ namespace IO
         
         return content;
     }
-   
+   /*
+    // -----------------------------------------------------------------------------------------------------------
+    bool WriteTextFile(const char* filename, const FileTextBuffer buffer)
+    {
+        FILE* stream;
+        const errno_t result = fopen_s(&stream,filename,"wb");
+
+        if (result) 
+        { 
+            LOG_ERROR("Unable to open output file: %s.", filename);
+            return false;
+        }
+
+        //record.nameLength = strlen(name);
+        //fwrite(record.name,sizeof(char),record.nameLength,fp);
+        fclose(stream);
+
+        return true;
+    }
+    */
     // -----------------------------------------------------------------------------------------------------------
     void DestroyBuffer(FileTextBuffer& buffer)
     {

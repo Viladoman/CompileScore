@@ -140,15 +140,15 @@
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="16.2.3074" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\DataExtractor\Cpp\x64\Release\CppBuildInsights.dll">
+    <Content Include="..\..\DataExtractor\bin\x64\Release\CppBuildInsights.dll">
       <Link>External\ScoreExtractor\CppBuildInsights.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\..\DataExtractor\Cpp\x64\Release\KernelTraceControl.dll">
+    <Content Include="..\..\DataExtractor\bin\x64\Release\KernelTraceControl.dll">
       <Link>External\ScoreExtractor\KernelTraceControl.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\..\DataExtractor\Cpp\x64\Release\ScoreDataExtractor.exe">
+    <Content Include="..\..\DataExtractor\bin\x64\Release\ScoreDataExtractor.exe">
       <Link>External\ScoreExtractor\ScoreDataExtractor.exe</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>

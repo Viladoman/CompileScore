@@ -378,7 +378,7 @@ namespace Clang
 		while (const char* path = dirScan.SeekNext())
 		{ 
 			LOG_INFO("Found file %s", path);
-			if (IO::FileTextBuffer fileBuffer = IO::ReadFile(path))
+			if (IO::FileTextBuffer fileBuffer = IO::ReadTextFile(path))
 			{ 
 				ProcessFile(scoreData,path,fileBuffer);
 				IO::DestroyBuffer(fileBuffer);
