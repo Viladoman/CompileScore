@@ -1,0 +1,31 @@
+name: Build Score Data Extractor
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  extractor-dir: ./DataExtractor/Cpp
+  build-configuration: Release
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    strategy:
+      matrix:
+        buildconfig: [Debug, Release]
+        buildplatform: [x86, x64]
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1
+     
+    - name: Build Score Data Extractor
+      working-directory: ${{env.extractor-dir}}
+      run: msbuild /m /p:Configuration=${{matrix.buildconfig}} /p:Platform=${{matrix.buildplatform}} ScoreDataExtractor.sln
