@@ -158,8 +158,6 @@ namespace CompileScore
             OutputLog.Clear();
             Evaluator.Clear();
 
-            //TODO ~ ramonv ~ ask if possible to add a way to query MS build insights for a session in progress. If in progress STOP it here.
-
             SetState(StateType.Triggering);
 
             try
@@ -376,7 +374,7 @@ namespace CompileScore
                 extraArgs += " -i " + FixPath(Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.InputPath));
             }
 
-            string commandLine = GetPlatformFlag() + extraArgs;
+            string commandLine = GetPlatformFlag() + " -start" + extraArgs;
 
             OutputLog.Log("Calling ScoreDataExtractor with " + commandLine);
             int exitCode = ExternalProcess.ExecuteSync(GetScoreExtractorToolPath(), commandLine);
