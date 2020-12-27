@@ -46,3 +46,9 @@ jobs:
     - name: Build Score Data Extractor
       working-directory: ${{env.vsixDir}}
       run: msbuild /m /p:Configuration=${{matrix.buildconfig}} ${{ env.vsixSolutionName }}
+      
+    - name: Upload VSIX artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: CompileScore-VSIX-${{matrix.buildconfig}}
+        path: ${{env.vsixDir}}/bin/${{matrix.buildconfig}}/CompileScore.vsix
