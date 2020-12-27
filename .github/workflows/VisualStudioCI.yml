@@ -1,0 +1,48 @@
+name: Build Visual Studio Extension
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    env:
+      extractorDir: ./DataExtractor/Cpp
+      extractorSolutionName: ScoreDataExtractor.sln
+      vsixDir: ./CompileScore/VSIX
+      vsixSolutionName: CompileScore.sln
+    
+    strategy:
+      matrix:
+        buildconfig: [Debug, Release]
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1
+     
+    - uses: nuget/setup-nuget@v1
+      with:
+        nuget-version: '5.x'
+    
+    - name: NuGet restore ${{ env.extractorSolutionName }}
+      working-directory: ${{env.extractorDir}}
+      run: nuget restore ${{ env.extractorSolutionName }}
+    
+    - name: Build Score Data Extractor
+      working-directory: ${{env.extractorDir}}
+      run: msbuild /m /p:Configuration=Release /p:Platform=x64 ${{ env.extractorSolutionName }}
+        
+    - name: NuGet restore ${{ env.vsixSolutionName }}
+      working-directory: ${{env.vsixDir}}
+      run: nuget restore ${{ env.vsixSolutionName }}
+     
+    - name: Build Score Data Extractor
+      working-directory: ${{env.vsixDir}}
+      run: msbuild /m /p:Configuration=${{matrix.buildconfig}} ${{ env.vsixSolutionName }}
