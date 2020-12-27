@@ -23,10 +23,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Nerdbank.GitVersioning
-      uses: aarnott/nbgv@v0.3
-      id: nbgv
-
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1
      
@@ -34,7 +30,7 @@ jobs:
       with:
         nuget-version: '5.x'
         
-    - name: NuGet restore ${{ env.solutionName }}
+    - name: NuGet restore 
       working-directory: ${{env.baseDir}}
       run: nuget restore ${{ env.solutionName }}
      
@@ -49,6 +45,6 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v1
       with:
-        name: CompileScore-Extractor-${{matrix.buildplatform}}-${{matrix.buildconfig}}-${{ steps.nbgv.outputs.SemVer2 }}
+        name: CompileScore-Extractor-${{matrix.buildplatform}}-${{matrix.buildconfig}}
         path: ${{env.baseDir}}/${{matrix.buildplatform}}/${{matrix.buildconfig}}/CompileScoreExtractor.zip
 
