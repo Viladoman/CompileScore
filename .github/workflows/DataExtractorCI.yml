@@ -11,13 +11,13 @@ jobs:
     runs-on: windows-latest
     
     env:
-      baseDir: ./DataExtractor/Cpp
+      baseDir: ./DataExtractor
       solutionName: ScoreDataExtractor.sln
     
     strategy:
       matrix:
         buildconfig: [Debug, Release]
-        buildplatform: [x64]
+        buildplatform: [x86, x64]
     
     steps:
     - name: Checkout
@@ -46,5 +46,5 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: CompileScore-Extractor-${{matrix.buildplatform}}-${{matrix.buildconfig}}
-        path: ${{env.baseDir}}/${{matrix.buildplatform}}/${{matrix.buildconfig}}/CompileScoreExtractor.zip
+        path: ${{env.baseDir}}/bin/${{matrix.buildplatform}}/${{matrix.buildconfig}}/CompileScoreExtractor.zip
 
