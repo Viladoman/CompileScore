@@ -6,13 +6,13 @@ on:
   pull_request:
     branches: [ master ]
 
-env:
-  extractor-dir: ./DataExtractor/Cpp
-  build-configuration: Release
-
 jobs:
   build:
     runs-on: windows-latest
+    
+    env:
+      baseDir: ./DataExtractor/Cpp
+      solutionName: ScoreDataExtractor.sln
     
     strategy:
       matrix:
@@ -26,6 +26,14 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1
      
+    - uses: nuget/setup-nuget@v1
+      with:
+        nuget-version: '5.x'
+        
+    - name: NuGet restore ${{ env.solutionName }}
+      working-directory: ${{env.baseDir}}
+      run: nuget restore ${{ env.solutionName }}
+     
     - name: Build Score Data Extractor
-      working-directory: ${{env.extractor-dir}}
-      run: msbuild /m /p:Configuration=${{matrix.buildconfig}} /p:Platform=${{matrix.buildplatform}} ScoreDataExtractor.sln
+      working-directory: ${{env.baseDir}}
+      run: msbuild /m /p:Configuration=${{matrix.buildconfig}} /p:Platform=${{matrix.buildplatform}} ${{ env.solutionName }}
