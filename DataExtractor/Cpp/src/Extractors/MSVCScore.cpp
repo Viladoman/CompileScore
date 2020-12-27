@@ -542,7 +542,7 @@ namespace MSVC
     // -----------------------------------------------------------------------------------------------------------
     int StopRecordingGenerate(const ExportParams& params)
     { 
-        Context::Scoped<IO::Binarizer> binarizer(params.output,params.timelinePacking);
+        Context::Scoped<IO::ScoreBinarizer> binarizer(params.output,params.timelinePacking);
 
         LOG_PROGRESS("Stopping MSVC recording and Generating Score...");
 
@@ -571,9 +571,11 @@ namespace MSVC
     // -----------------------------------------------------------------------------------------------------------
     int Extractor::StartRecording(const ExportParams& params)
     {
+        LOG_PROGRESS("Starting MSVC recording...");
+
         MSBI::TRACING_SESSION_OPTIONS options{};
 
-        const ExportParams::Detail recordingDetail = params.detail; //TODO ~ ramonv ~ get max between detail and timelinedetail
+        const ExportParams::Detail recordingDetail = params.detail > params.timelineDetail? params.detail : params.timelineDetail;
 
         switch(recordingDetail)
         { 
@@ -586,8 +588,6 @@ namespace MSVC
         case ExportParams::Detail::Basic:
             options.MsvcEventFlags |= MSBI::TRACING_SESSION_MSVC_EVENT_FLAGS_BASIC;
         }
-
-        LOG_PROGRESS("Starting MSVC recording...");
 
         const MSBI::RESULT_CODE result = StartTracingSession(MSBI_SessionName, options);
 
@@ -669,7 +669,7 @@ namespace MSVC
             return FAILURE;
         }
 
-        Context::Scoped<IO::Binarizer> binarizer(params.output,params.timelinePacking);
+        Context::Scoped<IO::ScoreBinarizer> binarizer(params.output,params.timelinePacking);
         
         LOG_PROGRESS("Analyzing trace file %s",params.input);
 

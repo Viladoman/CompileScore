@@ -101,7 +101,7 @@ namespace CompileScore
 			ProcessTimelineTrack(scoreData,unit,track,gatherLimit);
 		}
 
-		IO::Binarizer* binarizer = Context::Get<IO::Binarizer>(); 
+		IO::ScoreBinarizer* binarizer = Context::Get<IO::ScoreBinarizer>(); 
 		if (binarizer && exportParams && exportParams->timeline == ExportParams::Timeline::Enabled) 
 		{
 			//Remove unwanted elements from the timeline

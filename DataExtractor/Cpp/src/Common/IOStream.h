@@ -27,21 +27,42 @@ namespace IO
     void LogTime(const Verbosity level, const char* prefix, long miliseconds);
 
     //////////////////////////////////////////////////////////////////////////////////////////
-    // File Input
+    // File System 
 
-    using FileBuffer = char*; 
-    
-    FileBuffer ReadFile(const char* filename);
-    void DestroyBuffer(FileBuffer& buffer);
+    bool DeleteFile(const char* filename);
 
     //////////////////////////////////////////////////////////////////////////////////////////
-    // File Output
+    // Binary File IO
 
-    class Binarizer
+    struct RawBuffer
+    { 
+        RawBuffer();
+
+        char*  buff; 
+        size_t size;
+    };
+
+    RawBuffer ReadRawFile(const char* filename);
+    bool WriteRawFile(const char* filename, RawBuffer buffer);
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // Text File IO
+
+    using FileTextBuffer = char*; 
+    
+    FileTextBuffer ReadFile(const char* filename);
+    void DestroyBuffer(FileTextBuffer& buffer);
+
+    //TODO ~ ramonv ~ missing: save list of strings
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // Score Output
+
+    class ScoreBinarizer
     { 
     public: 
-        Binarizer(const char* baseFileName, unsigned int timelinePacking);
-        ~Binarizer();
+        ScoreBinarizer(const char* baseFileName, unsigned int timelinePacking);
+        ~ScoreBinarizer();
         
         void Binarize(const ScoreData& data);
         void Binarize(const ScoreTimeline& timeline);
@@ -50,4 +71,5 @@ namespace IO
         class Impl; 
         Impl* m_impl;
     };
+
 }

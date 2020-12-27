@@ -13,20 +13,29 @@ namespace IO
 
     struct DirectoryScanner::Impl
     { 
-        DirectoryScanner::Impl(const char* _extension)
+        using TTimestamp = fs::file_time_type::clock::time_point;
+
+        DirectoryScanner::Impl(const char* _extension, TTimestamp _timeThreshold)
             : extension(_extension)
+            , timeThreshold(_timeThreshold)
         {}
+
+        bool IsValidPath(const fs::path& path) const
+        {
+            return path.extension().string() == extension && fs::last_write_time(path) >= timeThreshold;
+        }
 
         const char* extension;    
         fs::recursive_directory_iterator cursor; 
+        TTimestamp timeThreshold;
         std::string cursorPath;
     };
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // -----------------------------------------------------------------------------------------------------------
-    DirectoryScanner::DirectoryScanner(const char* pathToScan, const char* extension)
-        : m_impl( new Impl(extension) )
+    DirectoryScanner::DirectoryScanner(const char* pathToScan, const char* extension, FileTimeStamp threshold)
+        : m_impl( new Impl(extension,reinterpret_cast<Impl::TTimestamp&>(threshold)) )
     {     
         m_impl->cursor = fs::recursive_directory_iterator(pathToScan);
     }
@@ -40,7 +49,7 @@ namespace IO
     // -----------------------------------------------------------------------------------------------------------
     const char* DirectoryScanner::SeekNext()
     {
-        for(; m_impl->cursor != fs::recursive_directory_iterator() && m_impl->cursor->path().extension().string() != m_impl->extension; ++m_impl->cursor ){}
+        for(; m_impl->cursor != fs::recursive_directory_iterator() && !m_impl->IsValidPath(m_impl->cursor->path()); ++m_impl->cursor ){}
 
         if (m_impl->cursor == fs::recursive_directory_iterator())
         { 
@@ -71,6 +80,13 @@ namespace IO
     bool IsExtension(const char* path, const char* extension)
     { 
         return fs::path(path).extension() == extension;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    FileTimeStamp GetCurrentTime()
+    { 
+        auto timestamp = fs::file_time_type::clock::now();
+        return reinterpret_cast<FileTimeStamp&>(timestamp);
     }
 
 }

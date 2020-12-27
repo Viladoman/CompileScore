@@ -280,29 +280,77 @@ namespace Clang
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// -----------------------------------------------------------------------------------------------------------
-	int StopRecordingTrace(const ExportParams& params)
+	fastl::string GetTimestampTokenPath(const char* directory)
 	{ 
-		//TODO ~ ramonv ~ to be implemented
-		LOG_ERROR("Clang output trace not implemented!");
+		fastl::string path = directory;
+		
+		if (!path.empty())
+		{ 
+			char lastChar = path[path.length()-1];
+			
+			//Fix end of directory if missing
+			if (lastChar != '/' && lastChar != '\\')
+			{ 
+				path += '/';
+			}
+			path += "CompileScoreToken";
+		}
 
-		//Open input folder and search for the timestamp placed by the start function
-		//Parse directory and compare against the timestamp
-		//store all files as a trace and save it on the output file
-
-		return FAILURE;
+		return path;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	int StopRecordingGenerate(const ExportParams& params)
+	bool SaveRecordToken(const char* directory, const IO::FileTimeStamp timeStamp)
+	{
+		IO::RawBuffer outputBuffer; 
+		outputBuffer.buff = (char*)&timeStamp;
+		outputBuffer.size = sizeof(IO::FileTimeStamp);
+
+		if (!IO::WriteRawFile(GetTimestampTokenPath(directory).c_str(),outputBuffer)) 
+		{ 
+			LOG_ERROR("Failed to start recording.");
+			return false;
+		}
+
+		return true;
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	bool LoadRecordToken(IO::FileTimeStamp& output, const char* directory)
 	{ 
-		//TODO ~ ramonv ~ to be implemented
-		LOG_ERROR("Clang output trace not implemented!");
+		IO::RawBuffer buffer = IO::ReadRawFile(GetTimestampTokenPath(directory).c_str());
 
-		//Open input folder and search for the timestamp placed by the start function
-		//Parse directory and compare against the timestamp
-		//Process all files
+		if (buffer.buff != nullptr && buffer.size >= sizeof(IO::FileTimeStamp))
+		{ 
+			output = reinterpret_cast<IO::FileTimeStamp&>(*buffer.buff);
+			return true;
+		}
 
-		return FAILURE; 
+		return false;
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	bool DeleteRecordToken(const char* directory)
+	{ 
+		return IO::DeleteFile(GetTimestampTokenPath(directory).c_str());
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	bool CheckInputPath(const char* directory)
+	{ 
+		if (directory == nullptr)
+		{ 
+			LOG_ERROR("No input path provided.");
+			return false;
+		}
+
+		if (!IO::IsDirectory(directory))
+		{ 
+			LOG_ERROR("input path is not a directory.");
+			return false;
+		}
+
+		return true;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
@@ -311,26 +359,26 @@ namespace Clang
 		//TODO ~ ramonv ~ to be implemented
 		LOG_ERROR("Clang output trace not implemented!");
 
-		//Process all files found in the input trace 
+		//Process all files found in the input trace
 
 		return FAILURE; 
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	int GenerateScoreDirectory(const ExportParams& params)
+	int GenerateScoreDirectory(const ExportParams& params, IO::FileTimeStamp timeThreshold = IO::NO_TIMESTAMP)
 	{ 
 		ScoreData scoreData;
 
 		LOG_PROGRESS("Scanning dir: %s",params.input);
 
-		Context::Scoped<IO::Binarizer> binarizer(params.output,params.timelinePacking);
+		Context::Scoped<IO::ScoreBinarizer> binarizer(params.output,params.timelinePacking);
 
 		size_t filesFound = 0u;
-		IO::DirectoryScanner dirScan(params.input,".json");
+		IO::DirectoryScanner dirScan(params.input,".json",timeThreshold);
 		while (const char* path = dirScan.SeekNext())
 		{ 
 			LOG_INFO("Found file %s", path);
-			if (IO::FileBuffer fileBuffer = IO::ReadFile(path))
+			if (IO::FileTextBuffer fileBuffer = IO::ReadFile(path))
 			{ 
 				ProcessFile(scoreData,path,fileBuffer);
 				IO::DestroyBuffer(fileBuffer);
@@ -348,28 +396,88 @@ namespace Clang
 		return SUCCESS;
 	}
 
+	// -----------------------------------------------------------------------------------------------------------
+	int StopRecordingTrace(const ExportParams& params)
+	{ 
+		IO::FileTimeStamp timethreshold; 
+		if (!LoadRecordToken(timethreshold,params.input))
+		{ 
+			return FAILURE;
+		}
+
+		DeleteRecordToken(params.input);
+
+		//TODO ~ ramonv ~ open CTL file
+
+		size_t filesFound = 0u;
+		IO::DirectoryScanner dirScan(params.input,".json",timethreshold);
+		while (const char* path = dirScan.SeekNext())
+		{ 
+			LOG_INFO("Found file %s", path);
+			
+			//TODO ~ APPEND TO CTL file
+
+			//TODO ~ ramonv ~ append file path to CTL file
+			LOG_ERROR("Clang output trace not implemented!");
+			return FAILURE;
+
+			IO::Log(IO::Verbosity::Progress,"Parsing... %u files\r",++filesFound);
+		}
+
+		//TODO ~ ramovn ~ close CTL file 
+
+		return SUCCESS;
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	int StopRecordingGenerate(const ExportParams& params)
+	{ 
+		IO::FileTimeStamp timethreshold; 
+		if (!LoadRecordToken(timethreshold,params.input))
+		{ 
+			LOG_ERROR("Unable to find the recording token file in path %s.", params.input);
+			return FAILURE;
+		}
+
+		DeleteRecordToken(params.input);
+
+		return GenerateScoreDirectory(params,timethreshold);
+	}
+
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// -----------------------------------------------------------------------------------------------------------
 	int Extractor::StartRecording(const ExportParams& params)
 	{
-		//TODO ~ ramonv ~ to be implemented
-		LOG_ERROR("Clang output trace not implemented!");
+		if (!CheckInputPath(params.input))
+		{ 
+			return FAILURE;
+		}
 
-		//Got to the input folder and store a timestamp for comparison later
+		LOG_PROGRESS("Starting Clang recording...");
 
-		return FAILURE;
+		SaveRecordToken(params.input,IO::GetCurrentTime());
+
+		LOG_PROGRESS("Recording session started successfully!");
+		return SUCCESS;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
 	int Extractor::CancelRecording(const ExportParams& params)
 	{
-		//TODO ~ ramonv ~ to be implemented
-		LOG_ERROR("Clang output trace not implemented!");
+		if (!CheckInputPath(params.input))
+		{ 
+			return FAILURE;
+		}
 
-		//Got to the input folder and store a timestamp for comparison later
+		if (!DeleteRecordToken(params.input))
+		{ 
+			LOG_ERROR("Unable to delete the token file at %s.", params.input);
+			return FAILURE;
+		}
 
-		return FAILURE;
+		LOG_PROGRESS("Clang Recording session cancelled successfully!");
+		return SUCCESS;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
@@ -379,6 +487,11 @@ namespace Clang
 		if (params.output == nullptr)
 		{ 
 			LOG_ERROR("No output file provided.");
+			return FAILURE;
+		}
+
+		if (!CheckInputPath(params.input))
+		{ 
 			return FAILURE;
 		}
 

@@ -66,12 +66,90 @@ namespace IO
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Input File
+    // File System 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    FileBuffer ReadFile(const char* filename)
+    // -----------------------------------------------------------------------------------------------------------
+    bool DeleteFile(const char* filename)
+    { 
+        return remove(filename) == 0;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Binary File IO
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // -----------------------------------------------------------------------------------------------------------
+    RawBuffer::RawBuffer()
+        : buff(nullptr) 
+        , size(0u)
+    {}
+
+    // -----------------------------------------------------------------------------------------------------------
+    RawBuffer ReadRawFile(const char* filename)
+    { 
+        RawBuffer content; 
+
+        FILE* stream;
+        const errno_t result = fopen_s(&stream,filename,"rb");
+
+        if (result) 
+        { 
+            LOG_ERROR("Unable to open input file: %s.", filename);
+        }
+        else 
+        { 
+            fseek(stream, 0, SEEK_END);
+            long fsize = ftell(stream);
+            fseek(stream, 0, SEEK_SET);  // same as rewind(f);
+
+            content.size = fsize;
+            content.buff = new char[fsize];
+            if (fread(content.buff, 1, fsize, stream) == 0)
+            { 
+                LOG_ERROR("Something went wrong while reading the file %s.",filename);
+                DestroyBuffer(content.buff);
+            }
+
+            fclose(stream);
+        }
+
+        return content;
+    }
+
+    bool WriteRawFile(const char* filename, RawBuffer buffer)
     {
-        FileBuffer content = nullptr; 
+        FILE* stream;
+        const errno_t result = fopen_s(&stream,filename,"wb");
+
+        if (result) 
+        { 
+            LOG_ERROR("Unable to open output file: %s.", filename);
+            return false;
+        }
+
+        fwrite(buffer.buff,sizeof(char),buffer.size,stream);
+
+        fclose(stream);
+        return true;
+    } 
+
+    // -----------------------------------------------------------------------------------------------------------
+    void DestroyBuffer(RawBuffer& buffer)
+    {
+        delete [] buffer.buff;
+        buffer.buff = nullptr;
+        buffer.size = 0;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Text File IO
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // -----------------------------------------------------------------------------------------------------------
+    FileTextBuffer ReadFile(const char* filename)
+    {
+        FileTextBuffer content = nullptr; 
 
         FILE* stream;
         const errno_t result = fopen_s(&stream,filename,"rb");
@@ -102,16 +180,16 @@ namespace IO
         
         return content;
     }
-
+   
     // -----------------------------------------------------------------------------------------------------------
-    void DestroyBuffer(FileBuffer& buffer)
+    void DestroyBuffer(FileTextBuffer& buffer)
     {
         delete [] buffer;
         buffer = nullptr;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Binarization
+    // Score Output
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     namespace Utils
@@ -204,7 +282,7 @@ namespace IO
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    class Binarizer::Impl
+    class ScoreBinarizer::Impl
     {
     public: 
         Impl(const char* _path, unsigned int _timelinesPerFile)
@@ -234,7 +312,7 @@ namespace IO
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // -----------------------------------------------------------------------------------------------------------
-    bool Binarizer::Impl::AppendTimelineExtension(fastl::string& filename)
+    bool ScoreBinarizer::Impl::AppendTimelineExtension(fastl::string& filename)
     { 
         size_t extensionNumber = timelineCount / timelinesPerFile;
 
@@ -260,7 +338,7 @@ namespace IO
     }
 
     // -----------------------------------------------------------------------------------------------------------
-    FILE* Binarizer::Impl::NextTimelineStream()
+    FILE* ScoreBinarizer::Impl::NextTimelineStream()
     {
         if ((timelineCount % timelinesPerFile) == 0)
         { 
@@ -286,7 +364,7 @@ namespace IO
     } 
 
     // -----------------------------------------------------------------------------------------------------------
-    void Binarizer::Impl::CloseTimelineStream()
+    void ScoreBinarizer::Impl::CloseTimelineStream()
     { 
         if (timelineStream)
         {
@@ -297,19 +375,19 @@ namespace IO
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // -----------------------------------------------------------------------------------------------------------
-    Binarizer::Binarizer(const char* path, unsigned int timelinesPacking)
+    ScoreBinarizer::ScoreBinarizer(const char* path, unsigned int timelinesPacking)
         : m_impl( new Impl(path, timelinesPacking))
     {}
 
     // -----------------------------------------------------------------------------------------------------------
-    Binarizer::~Binarizer()
+    ScoreBinarizer::~ScoreBinarizer()
     { 
         m_impl->CloseTimelineStream();
         delete m_impl;
     }
 
     // -----------------------------------------------------------------------------------------------------------
-    void Binarizer::Binarize(const ScoreData& data)
+    void ScoreBinarizer::Binarize(const ScoreData& data)
     { 
         const char* filename = m_impl->path;
         LOG_PROGRESS("Writing to file %s",filename);
@@ -339,7 +417,7 @@ namespace IO
     }
 
     // -----------------------------------------------------------------------------------------------------------
-    void Binarizer::Binarize(const ScoreTimeline& timeline)
+    void ScoreBinarizer::Binarize(const ScoreTimeline& timeline)
     { 
         if (FILE* stream = m_impl->NextTimelineStream())
         { 

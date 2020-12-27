@@ -200,23 +200,6 @@ namespace CommandLine
             }
         }
 
-
-        //Move this to be handled by each command implementation
-        //MSVC Start recording does not require a valid input
-        /*
-        if (params.input == nullptr && (params.command != ExportParams::Command::Start || params.source != ExportParams::Source::MSVC)) 
-        { 
-            LOG_ERROR("No input found. Type '?' for help.");
-            return FAILURE;
-        }
-        */
-        //TODO ~ ramonv ~ fix here STOP to STOPsubcategory
-
-        //TODO ~ validation and auto type deduction if not present 
-        //Clang input is folder
-        //MSVC  input is etl
-        //stop has valid output extension
-
         return 0;
     }
 }
