@@ -17,11 +17,15 @@ jobs:
     strategy:
       matrix:
         buildconfig: [Debug, Release]
-        buildplatform: [x86, x64]
+        buildplatform: [x64]
     
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+
+    - name: Nerdbank.GitVersioning
+      uses: aarnott/nbgv@v0.3
+      id: nbgv
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1
@@ -37,3 +41,14 @@ jobs:
     - name: Build Score Data Extractor
       working-directory: ${{env.baseDir}}
       run: msbuild /m /p:Configuration=${{matrix.buildconfig}} /p:Platform=${{matrix.buildplatform}} ${{ env.solutionName }}
+      
+    - name: Generate Artifact
+      working-directory: ${{env.baseDir}}/${{matrix.buildplatform}}/${{matrix.buildconfig}}
+      run: Compress-Archive -Path ScoreDataExtractor.exe,CppBuildInsights.dll,KernelTraceControl.dll -DestinationPath CompileScoreExtractor.zip
+      
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: CompileScore-Extractor-${{matrix.buildplatform}}-${{matrix.buildconfig}}-${{ steps.nbgv.outputs.SemVer2 }}
+        path: ${{env.baseDir}}/${{matrix.buildplatform}}/${{matrix.buildconfig}}/CompileScoreExtractor.zip
+
