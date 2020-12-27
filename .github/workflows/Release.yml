@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  export:    
+    runs-on: windows-latest
+
+    env:
+      extractorDir: ./DataExtractor
+      extractorSolutionName: ScoreDataExtractor.sln
+      vsixDir: ./CompileScore/VSIX
+      vsixSolutionName: CompileScore.sln
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1
+     
+    - uses: nuget/setup-nuget@v1
+      with:
+        nuget-version: '5.x'
+    
+    - name: NuGet restore Score Data Extractor
+      working-directory: ${{env.extractorDir}}
+      run: nuget restore ${{ env.extractorSolutionName }}
+    
+    - name: Build Score Data Extractor
+      working-directory: ${{env.extractorDir}}
+      run: msbuild /m /p:Configuration=Release /p:Platform=x64 ${{ env.extractorSolutionName }}
+      
+    - name: Generate Extractor Asset
+      working-directory: ${{env.extractorDir}}/bin/x64/Release
+      run: Compress-Archive -Path ScoreDataExtractor.exe,CppBuildInsights.dll,KernelTraceControl.dll -DestinationPath CompileScoreExtractor.zip
+      
+    - name: Upload Extractor Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ${{env.extractorDir}}/bin/x64/Release/CompileScoreExtractor.zip
+        asset_name: CompileScoreExtractor.zip
+        asset_content_type: application/zip
+
+    - name: NuGet restore Compile Score VSIX
+      working-directory: ${{env.vsixDir}}
+      run: nuget restore ${{ env.vsixSolutionName }}
+     
+    - name: Build Compile Score VSIX
+      working-directory: ${{env.vsixDir}}
+      run: msbuild /m /p:Configuration=Release ${{ env.vsixSolutionName }}
+      
+    - name: Upload VSIX Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ${{env.vsixDir}}/bin/Release/CompileScore.vsix
+        asset_name: CompileScore.vsix
+        asset_content_type: application/zip
