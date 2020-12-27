@@ -11,7 +11,7 @@ jobs:
     runs-on: windows-latest
     
     env:
-      extractorDir: ./DataExtractor/Cpp
+      extractorDir: ./DataExtractor
       extractorSolutionName: ScoreDataExtractor.sln
       vsixDir: ./CompileScore/VSIX
       vsixSolutionName: CompileScore.sln
