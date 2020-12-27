@@ -43,7 +43,7 @@ jobs:
       working-directory: ${{env.vsixDir}}
       run: nuget restore ${{ env.vsixSolutionName }}
      
-    - name: Build Score Data Extractor
+    - name: Build Compile Score VSIX
       working-directory: ${{env.vsixDir}}
       run: msbuild /m /p:Configuration=${{matrix.buildconfig}} ${{ env.vsixSolutionName }}
       
