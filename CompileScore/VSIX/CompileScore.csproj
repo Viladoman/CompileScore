@@ -152,26 +152,6 @@
       <Link>External\ScoreExtractor\ScoreDataExtractor.exe</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\..\vcperf\out\Release\x64\CppBuildInsights.dll">
-      <Link>External\VCPerf\CppBuildInsights.dll</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
-    <Content Include="..\..\vcperf\out\Release\x64\CppBuildInsightsEtw.xml">
-      <Link>External\VCPerf\CppBuildInsightsEtw.xml</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
-    <Content Include="..\..\vcperf\out\Release\x64\KernelTraceControl.dll">
-      <Link>External\VCPerf\KernelTraceControl.dll</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
-    <Content Include="..\..\vcperf\out\Release\x64\perf_msvcbuildinsights.dll">
-      <Link>External\VCPerf\perf_msvcbuildinsights.dll</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
-    <Content Include="..\..\vcperf\out\Release\x64\vcperf.exe">
-      <Link>External\VCPerf\vcperf.exe</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
     <Content Include="Editor\Resources\icons.png" />
     <Content Include="Icon.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

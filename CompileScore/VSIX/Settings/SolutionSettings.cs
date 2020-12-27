@@ -9,16 +9,14 @@ namespace CompileScore
     public class UIDescription : Attribute
     {
         public string Label { get; set; }
-        public string Tooltip { get; set; }        
+        public string Tooltip { get; set; }
     }
 
     public class ScoreGeneratorSettings
     {
+        //Attributes
         [UIDescription(Label = "Compiler", Tooltip = "Sets the system to use the Clang (.json traces) or MSVC (.etl traces) generator")]
         public Profiler.Compiler Compiler { set; get; } = Profiler.Compiler.MSVC;
-
-        [UIDescription(Label = "Input Path", Tooltip = "Path to the compiler data.")]
-        public string InputPath { set; get; } = "$(SolutionDir)";
 
         [UIDescription(Label = "Output File", Tooltip = "Location where the .scor file will be generated")]
         public string OutputPath { set; get; } = @"$(SolutionDir)compileData.scor";
@@ -31,6 +29,9 @@ namespace CompileScore
 
         [UIDescription(Label="Timeline Packing", Tooltip = "The number of timelines packed in the same file. if 0 no timeline will be created.")]
         public uint TimelinePacking { set; get; } = 100;
+
+        [UIDescription(Label = "Clang Traces Path", Tooltip = "Path to the Clang '-ftime-trace' compiler data.")]
+        public string InputPath { set; get; } = "$(SolutionDir)";
     }
 
     public class SolutionSettings

@@ -19,7 +19,7 @@ namespace CompileScore
 
         public const int CommandId_Build         = 256;
         public const int CommandId_Rebuild       = 257;
-        public const int CommandId_Generate      = 259;
+        public const int CommandId_PLACEHOLDER_Generate      = 259;
 
         public const int CommandId_LoadDefault   = 260;
         public const int CommandId_Settings      = 261;
@@ -63,8 +63,8 @@ namespace CompileScore
             }
 
             {
-                var menuItem = new OleMenuCommand(Execute_Generate, new CommandID(CommandSet_Custom, CommandId_Generate));
-                menuItem.BeforeQueryStatus += Query_CanBuild;
+                var menuItem = new OleMenuCommand(Execute_PLACEHOLDER_Generate, new CommandID(CommandSet_Custom, CommandId_PLACEHOLDER_Generate));
+                menuItem.BeforeQueryStatus += Query_PLACHOLDER_Generate_CanBuild;
                 commandService.AddCommand(menuItem);
             }
         }
@@ -75,6 +75,15 @@ namespace CompileScore
             if (menuCommand != null)
             {
                 menuCommand.Visible = menuCommand.Enabled = Profiler.Instance.IsAvailable();
+            }
+        }
+
+        private static void Query_PLACHOLDER_Generate_CanBuild(object sender, EventArgs args)
+        {
+            var menuCommand = sender as OleMenuCommand;
+            if (menuCommand != null)
+            {
+                menuCommand.Visible = menuCommand.Enabled = Profiler.Instance.IsAvailable() && SettingsManager.Instance.Settings.ScoreGenerator.Compiler == Profiler.Compiler.Clang;
             }
         }
 
@@ -113,10 +122,10 @@ namespace CompileScore
             Profiler.Instance.RebuildSolution();
         }
 
-        private static void Execute_Generate(object sender, EventArgs e)
+        private static void Execute_PLACEHOLDER_Generate(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            Profiler.Instance.GenerateScore();
+            Profiler.Instance.PLACEHOLDER_GenerateScore();
         }
 
         private static void Execute_LoadDefault(object sender, EventArgs e)

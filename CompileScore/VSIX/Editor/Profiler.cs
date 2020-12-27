@@ -55,8 +55,6 @@ namespace CompileScore
 
         static bool IsElevated => new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
 
-        const string ETLFileName = "buildTraceFile.etl";        
-
         public void Initialize(IServiceProvider provider)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -110,14 +108,14 @@ namespace CompileScore
             }
         }
 
-        public void GenerateScore()
+        public void PLACEHOLDER_GenerateScore()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             SetGeneratorProperties();
             if (ValidateGenerator())
             {
-                _ = TriggerGeneratorAsync();
+                _ = PLACEHOLDER_TriggerGeneratorAsync();
             }
         }
 
@@ -196,7 +194,7 @@ namespace CompileScore
             }
         }
 
-        private async System.Threading.Tasks.Task TriggerGeneratorAsync()
+        private async System.Threading.Tasks.Task PLACEHOLDER_TriggerGeneratorAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -206,7 +204,7 @@ namespace CompileScore
 
             SetState(StateType.Gathering);
 
-            await GenerateScoreAsync();
+            await PLACEHOLDER_GenerateScoreAsync();
 
             SetState(StateType.Idle);
         }
@@ -229,12 +227,6 @@ namespace CompileScore
                 return false;
             }          
 
-            if (GetVCPerfToolPath() == null)
-            {
-                DisplayError("Unable to find the vcperf program.");
-                return false;
-            }
-
             //TODO ~ ramonv ~ placeholder while we find a soltuion for 'open folder' build events 
             if (EditorContext.Instance.Mode == EditorContext.EditorMode.Folder)
             {
@@ -242,7 +234,7 @@ namespace CompileScore
                     "I have been unable to get build events from the VS SDK on 'Open Folder' mode.\n" +
                     "\n" +
                     "CLANG WORKAROUND:\n" +
-                    "When usingclang with -ftime-trace flag, run the 'Run Score Generator' command once the build process has finished.\n" +
+                    "When usingclang with -ftime-trace flag, run the 'Clang Full Score Generation' command once the build process has finished.\n" +
                     "Can be found under 'Extensions' -> 'Compile Score'");
                 return false;
             }
@@ -266,7 +258,33 @@ namespace CompileScore
                 return false;
             }
 
-            return true;
+            string outputPath = Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.OutputPath);
+
+            if (Path.GetExtension(outputPath) != ".scor")
+            {
+                DisplayError("'Output File' is not a .scor file.\nCurrent Value: "+ outputPath);
+                return false;
+            }
+
+            if (CompilerSource == Compiler.Clang )
+            {
+                string inputPath = Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.InputPath);
+
+                if (!File.Exists(inputPath))
+                {
+                    DisplayError("The 'Clang Traces Path' does not exist.\nCurrent value: " + inputPath);
+                    return false;
+                }
+
+                FileAttributes attr = File.GetAttributes(inputPath);
+                if ((attr & FileAttributes.Directory) != FileAttributes.Directory)
+                {
+                    DisplayError("The 'Clang Traces Path' is not a directory.\nCurrent value: " + inputPath);
+                    return false;
+                }
+            }
+
+             return true;
         }
 
         private void SetState(StateType newState)
@@ -283,7 +301,8 @@ namespace CompileScore
                     SetState(StateType.BuildingExternal); 
                     break;
                 case StateType.Triggering: 
-                    PrepareGathering(); 
+                    PrepareGathering();
+                    OutputLog.Log("Building...");
                     SetState(StateType.Building); 
                     break;
             }
@@ -336,9 +355,9 @@ namespace CompileScore
             return GetToolPath(@"External\ScoreExtractor\ScoreDataExtractor.exe");
         }
 
-        private string GetVCPerfToolPath()
+        private string GetPlatformFlag()
         {
-            return GetToolPath(@"External\VCPerf\vcperf.exe");
+            return CompilerSource == Compiler.MSVC ? "-msvc" : "-clang";
         }
 
         private void PrepareGathering()
@@ -347,22 +366,25 @@ namespace CompileScore
 
             SetState(StateType.Preparing);
 
+            string extraArgs = "";
             if (CompilerSource == Compiler.MSVC)
             {
-                string level = OverviewDetail >= ExtractorDetail.Frontend || (TimelinePacking > 0 && TimelineDetail >= ExtractorDetail.Frontend) ? " /level3" : "";
-                
-                string commandLine = "/start" + level + " CompileScore";
-
-                OutputLog.Log("Executing VCPERF " + commandLine);
-                int exitCode = ExternalProcess.ExecuteSync(GetVCPerfToolPath(), commandLine);
-
-                if (exitCode != 0)
-                {
-                    DisplayError("VCPerf process failed to start the gathering session with code " + exitCode + ". The current build data won't be captured. Please check the output pane for more information.");
-                }
+                extraArgs += " -d " + (int)OverviewDetail + (TimelinePacking == 0 ? "" : " -td " + (int)TimelineDetail);
+            } 
+            else
+            {
+                extraArgs += " -i " + FixPath(Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.InputPath));
             }
 
-            OutputLog.Log("Building...");
+            string commandLine = GetPlatformFlag() + extraArgs;
+
+            OutputLog.Log("Calling ScoreDataExtractor with " + commandLine);
+            int exitCode = ExternalProcess.ExecuteSync(GetScoreExtractorToolPath(), commandLine);
+
+            if (exitCode != 0)
+            {
+                DisplayError("Score Data Extractor failed to start the recording session with code " + exitCode + ". The current build data won't be captured. Please check the output pane for more information.");
+            }
         }
 
         private async System.Threading.Tasks.Task CancelGatheringAsync()
@@ -371,7 +393,21 @@ namespace CompileScore
 
             SetState(StateType.Canceling);
 
-            await StopGatheringAsync();
+            string extraArgs = "";
+            if (CompilerSource == Compiler.Clang)
+            {
+                extraArgs += " -i " + FixPath(Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.InputPath));
+            }
+
+            string commandLine = GetPlatformFlag() + " -cancel" + extraArgs;
+
+            OutputLog.Log("Calling ScoreDataExtractor with " + commandLine);
+            int exitCode = ExternalProcess.ExecuteSync(GetScoreExtractorToolPath(), commandLine);
+
+            if (exitCode != 0)
+            {
+                DisplayError("Score Data Extractor failed to cancel the recording session with code " + exitCode + ".");
+            }
 
             SetState(StateType.Idle);
         }
@@ -384,15 +420,42 @@ namespace CompileScore
 
             SetState(StateType.Gathering);
 
-            await StopGatheringAsync();
-            await GenerateScoreAsync();
+            DocumentLifetimeManager.UnWatchFile();
 
+            string inputPath = CompilerSource == Compiler.Clang ? FixPath(Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.InputPath)) : "";
+            string inputCommand = inputPath.Length > 0 ? " -i " + inputPath : "";
+
+            string outputPath = Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.OutputPath);
+            string outputCommand = outputPath.Length > 0 ? " -o " + outputPath : "";
+
+            string detail = " -d " + (int)OverviewDetail;
+            string timeline = TimelinePacking == 0 ? " -nt" : " -tp " + TimelinePacking + " -td " + (int)TimelineDetail;
+
+            string commandLine = GetPlatformFlag() + " -stop" + timeline + detail + inputCommand + outputCommand;
+
+            OutputLog.Log("Calling ScoreDataExtractor with " + commandLine);
+            int exitCode = ExternalProcess.ExecuteSync(GetScoreExtractorToolPath(), commandLine);
+
+            if (exitCode != 0)
+            {
+                DisplayError("Score Data Extractor process failed with code " + exitCode + ". Please check the output pane for more information.");
+            }
+
+            CompilerData.Instance.ForceLoadFromFilename(outputPath);
+            EditorUtils.FocusOverviewWindow();
+
+            OutputLog.Log("Score generation completed!");
             SetState(StateType.Idle);
         }
 
-        private async System.Threading.Tasks.Task GenerateScoreAsync()
+        private async System.Threading.Tasks.Task PLACEHOLDER_GenerateScoreAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (CompilerSource != Compiler.Clang)
+            {
+                return;
+            } 
 
             //Stop watching as the data extractor might modify the watched file
             DocumentLifetimeManager.UnWatchFile();
@@ -400,17 +463,14 @@ namespace CompileScore
             //Process Data
             string inputPath = FixPath(Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.InputPath));
             string outputPath = Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.OutputPath);
-
             CreateDirectory(Path.GetDirectoryName(outputPath));
 
-            string finalInputPath = CompilerSource == Compiler.MSVC ? inputPath + ETLFileName : inputPath;
-            string platform = CompilerSource == Compiler.MSVC ? "-msvc" : "-clang";
             string detail = " -d " + (int)OverviewDetail;
             string timeline = TimelinePacking == 0 ? " -nt" : " -tp " + TimelinePacking + " -td " + (int)TimelineDetail;
 
-            string commandLine = platform + timeline + detail + " -i " + finalInputPath + " -o " + outputPath;
+            string commandLine = "-clang -extract" + timeline + detail + " -i " + inputPath + " -o " + outputPath;
 
-            OutputLog.Log("Executing Compile Score Extractor " + commandLine);
+            OutputLog.Log("Calling ScoreDataExtractor with " + commandLine);
             int exitCode = await ExternalProcess.ExecuteAsync(GetScoreExtractorToolPath(), commandLine);
 
             if (exitCode != 0)
@@ -422,29 +482,6 @@ namespace CompileScore
             EditorUtils.FocusOverviewWindow();
 
             OutputLog.Log("Score generation completed!");
-        }
-
-        private async System.Threading.Tasks.Task StopGatheringAsync()
-        {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            if (CompilerSource == Compiler.MSVC)
-            {
-                string path = FixPath(Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.InputPath));
-
-                CreateDirectory(path);
-
-                string commandLine = "/stopnoanalyze CompileScore " + path + ETLFileName;
-
-                OutputLog.Log("Executing VCPERF " + commandLine);
-                
-                int exitCode = await ExternalProcess.ExecuteAsync(GetVCPerfToolPath(), commandLine);
-
-                if (exitCode != 0)
-                {
-                    DisplayError("VCPerf process failed to stop the data gathering with code " + exitCode + ". Please check the output pane for more information.");
-                }
-            }
         }
 
         private string FixPath(string path)

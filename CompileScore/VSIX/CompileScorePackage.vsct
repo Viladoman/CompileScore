@@ -79,20 +79,20 @@
         </Strings>
       </Button>
       -->
-      <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdGenerate" priority="0x0100" type="Button">
-        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
-        <Strings>
-          <ButtonText>Run Score Generator</ButtonText>
-        </Strings>
-      </Button>
-      
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdLoadDefault" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
         <Strings>
           <ButtonText>Load Default Score</ButtonText>
         </Strings>
       </Button>
-      
+
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdGenerate" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
+        <Strings>
+          <ButtonText>Clang Full Score Generation</ButtonText>
+        </Strings>
+      </Button>
+
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdidBuild" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreBuild" />
         <Icon guid="guidImages" id="icon" />
