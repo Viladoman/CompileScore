@@ -12,7 +12,9 @@ jobs:
     
     env:
       baseDir: ./DataExtractor
+      artifactDir: ${{env.baseDir}}/bin/${{matrix.buildplatform}}/${{matrix.buildconfig}}
       solutionName: ScoreDataExtractor.sln
+      artifactName: CompileScore-Extractor-${{matrix.buildplatform}}-${{matrix.buildconfig}}
     
     strategy:
       matrix:
@@ -38,8 +40,14 @@ jobs:
       working-directory: ${{env.baseDir}}
       run: msbuild /m /p:Configuration=${{matrix.buildconfig}} /p:Platform=${{matrix.buildplatform}} ${{ env.solutionName }}
       
-    - name: Upload Artifacts
+    - name: Upload Artifacts 1
       uses: actions/upload-artifact@v2
       with:
-        name: CompileScore-Extractor-${{matrix.buildplatform}}-${{matrix.buildconfig}}
-        path: ${{env.baseDir}}/bin/${{matrix.buildplatform}}/${{matrix.buildconfig}}/*.[exe|dll]
+        name: ${{env.artifactName}}
+        path: ${{env.artifactDir}}/*.exe  
+        
+    - name: Upload Artifacts 2
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{env.artifactName}}
+        path: ${{env.artifactDir}}/*.dll  
