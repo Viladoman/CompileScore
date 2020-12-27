@@ -2,9 +2,9 @@ name: Build Score Data Extractor
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 env:
   extractor-dir: ./DataExtractor/Cpp
@@ -13,6 +13,11 @@ env:
 jobs:
   build:
     runs-on: windows-latest
+    
+    strategy:
+      matrix:
+        buildconfig: [Debug, Release]
+        buildplatform: [Win32, x64]
     
     steps:
     - name: Checkout
@@ -23,4 +28,4 @@ jobs:
      
     - name: Build Score Data Extractor
       working-directory: ${{env.extractor-dir}}
-      run: msbuild /m /p:Configuration=${{env.build-configuration}} /p:Platform=x64 ScoreDataExtractor.sln
+      run: msbuild /m /p:Configuration=${{matrix.buildconfig}} /p:Platform=${{matrix.buildplatform}} ScoreDataExtractor.sln
