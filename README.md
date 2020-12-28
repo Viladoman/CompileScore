@@ -54,7 +54,9 @@ For more information check the [Score Generation Page](https://github.com/Vilado
 - [Score Generaton And Data Extractor](https://github.com/Viladoman/CompileScore/wiki/Score-Generation)
 
 ## Building the Project 
-The [Release workflow action] contains the best step by step process for building the Data Extractor, the VISX and the Standalone App. 
+The [Release workflow action](https://github.com/Viladoman/CompileScore/blob/master/.github/workflows/Release.yml) contains a step by step process for building the Data Extractor, the VISX and the Standalone App. 
+
+Several [Test Projects](https://github.com/Viladoman/CompileScore/tree/master/TestProjects) have been included in the repository. 
 
 ## References
 - [Visual Studio 2019](https://visualstudio.microsoft.com/vs/)
