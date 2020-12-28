@@ -14,22 +14,16 @@ Compile times are one of the most important things that affect productivity and 
 ## Features
 
 ### Build and Profile
-
-**Missing image**
+![Build And Profile](https://github.com/Viladoman/CompileScore/wiki/data/BuildAndProfileCommand.gif?raw=true)
 
 ### Text Highlight on include costs
-![Hihglight screenshot](https://github.com/Viladoman/CompileScore/wiki/data/highlightScreenshot.png?raw=true)
+![Highlight screenshot](https://github.com/Viladoman/CompileScore/wiki/data/highlightScreenshot.png?raw=true)
 
 ### Tool window with full project aggregated data
-
-#### Translation Units
-![Overview screenshot](https://github.com/Viladoman/CompileScore/wiki/data/overview.png?raw=true)
-
-#### Include data
-![Includes screenshot](https://github.com/Viladoman/CompileScore/wiki/data/includes.png?raw=true)
+![Overview image](https://github.com/Viladoman/CompileScore/wiki/data/Overview.gif?raw=true)
 
 ### Detailed Timeline Graph for each translation unit
-![Timeline screenshot](https://github.com/Viladoman/CompileScore/wiki/data/timeline.png?raw=true)
+![Timeline image](https://github.com/Viladoman/CompileScore/wiki/data/CompileScoreTimeline.gif?raw=true)
 
 Double-click any entry in the compile score window to open its timeline. 
 
@@ -59,10 +53,12 @@ For more information check the [Score Generation Page](https://github.com/Vilado
 - [Configurations and Options](https://github.com/Viladoman/CompileScore/wiki/Configurations)
 - [Score Generaton And Data Extractor](https://github.com/Viladoman/CompileScore/wiki/Score-Generation)
 
+## Building the Project 
+The [Release workflow action] contains the best step by step process for building the Data Extractor, the VISX and the Standalone App. 
+
 ## References
 - [Visual Studio 2019](https://visualstudio.microsoft.com/vs/)
 - [Clang 9+](https://releases.llvm.org/download.html) ( support for -ftime-trace ) 
-- [Microsoft vcperf](https://github.com/microsoft/vcperf)
 - [Microsoft C++ Build Insights SDK](https://docs.microsoft.com/cpp/build-insights/get-started-with-cpp-build-insights)
 
 ## Related 
