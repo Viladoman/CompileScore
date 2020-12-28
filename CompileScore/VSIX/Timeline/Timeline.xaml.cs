@@ -132,7 +132,7 @@ namespace CompileScore.Timeline
         private Pen borderPen = new Pen(Brushes.Black, 1);
         private Typeface Font = new Typeface("Verdana");
 
-        private ToolTip tooltip = new ToolTip { Content = new TimelineNodeTooltip() };
+        private ToolTip tooltip = new ToolTip { Content = new TimelineNodeTooltip(), Padding = new Thickness(0) };
 
         private UnitValue Unit { set; get; }
         private TimelineNode Root { set; get; }
