@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace CompileScore.Timeline
 {
@@ -133,6 +134,7 @@ namespace CompileScore.Timeline
         private Typeface Font = new Typeface("Verdana");
 
         private ToolTip tooltip = new ToolTip { Content = new TimelineNodeTooltip(), Padding = new Thickness(0) };
+        private DispatcherTimer tooltipTimer = new DispatcherTimer() { Interval = new TimeSpan(4000000) };
 
         private UnitValue Unit { set; get; }
         private TimelineNode Root { set; get; }
@@ -148,6 +150,8 @@ namespace CompileScore.Timeline
             CompilerData.Instance.ScoreDataChanged += OnDataChanged;
 
             overlayBrush.Opacity = 0.3;
+
+            tooltipTimer.Tick += ShowTooltip;
 
             nodeSearchBox.SetPlaceholderText("Search Nodes");
             unitSearchBox.SetPlaceholderText("Search Units");
@@ -370,21 +374,31 @@ namespace CompileScore.Timeline
             }
         }
 
+        private void ShowTooltip(Object a, object b)
+        {
+            tooltipTimer.Stop();
+            (tooltip.Content as TimelineNodeTooltip).ReferenceNode = Hover;
+            tooltip.Placement = System.Windows.Controls.Primitives.PlacementMode.Mouse;
+            tooltip.IsOpen = true;
+            tooltip.PlacementTarget = this;
+        }
+
         private void SetHoverNode(TimelineNode node)
         {
             if (node != Hover)
             {
+                //Close Tooltip 
+                tooltip.IsOpen = false;
+                tooltipTimer.Stop();
+
                 Hover = node;
 
-                //Tooltip control 
-                (tooltip.Content as TimelineNodeTooltip).ReferenceNode = Hover;
-                tooltip.IsOpen = false;
+                //Start Tooltip if applicable
                 if (Hover != null)
                 {
-                    tooltip.Placement = System.Windows.Controls.Primitives.PlacementMode.Mouse;
-                    tooltip.IsOpen = true;
-                    tooltip.PlacementTarget = this;
+                    tooltipTimer.Start();
                 }
+
                 RenderOverlay();
             }
         }
