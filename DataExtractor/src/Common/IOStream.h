@@ -53,21 +53,29 @@ namespace IO
     
     FileTextBuffer ReadTextFile(const char* filename);
     void DestroyBuffer(FileTextBuffer& buffer);
-    /*
+    
+    //////////////////////////////////////////////////////////////////////////////////////////
     class TextOutputStream
     { 
     public:
         TextOutputStream(const char* filename);
         ~TextOutputStream();
 
+        TextOutputStream(const TextOutputStream& input) = delete;
+        TextOutputStream(TextOutputStream&& input) = delete;
+        TextOutputStream& operator = (const TextOutputStream& input) = delete;
+        TextOutputStream& operator = (TextOutputStream&& input) = delete;
 
-        //AddLine(const char* line)
-        //close
+        bool IsValid() const;
+        void Append(const char* txt, const size_t length);
+        void Append(const char* txt);
+        void Append(const char c);
+
     private:
         class Impl;
         Impl* m_impl;
     };
-    */
+    
     //////////////////////////////////////////////////////////////////////////////////////////
     // Score Output
 
@@ -76,7 +84,12 @@ namespace IO
     public: 
         ScoreBinarizer(const char* baseFileName, unsigned int timelinePacking);
         ~ScoreBinarizer();
-        
+
+        ScoreBinarizer(const ScoreBinarizer& input) = delete;
+        ScoreBinarizer(ScoreBinarizer&& input) = delete;
+        ScoreBinarizer& operator = (const ScoreBinarizer& input) = delete;
+        ScoreBinarizer& operator = (ScoreBinarizer&& input) = delete;
+
         void Binarize(const ScoreData& data);
         void Binarize(const ScoreTimeline& timeline);
 

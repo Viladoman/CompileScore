@@ -21,6 +21,7 @@ CompileScore/WPF/bin/
 CompileScore/WPF/obj/
 
 #Temporary and binaries
+*.ctl
 *.etl
 *.scor
 *.scor.*

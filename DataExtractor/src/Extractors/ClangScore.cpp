@@ -277,6 +277,20 @@ namespace Clang
 		return true;
 	}
 
+	// -----------------------------------------------------------------------------------------------------------
+	bool ProcessFile(ScoreData& scoreData, const char* path)
+	{ 
+		if (IO::FileTextBuffer fileBuffer = IO::ReadTextFile(path))
+		{ 
+			ProcessFile(scoreData,path,fileBuffer);
+			IO::DestroyBuffer(fileBuffer);
+			return true;
+		}
+		 
+		LOG_ERROR("Invalid file buffer for %s", path);
+		return false;
+	}
+
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// -----------------------------------------------------------------------------------------------------------
@@ -356,12 +370,45 @@ namespace Clang
 	// -----------------------------------------------------------------------------------------------------------
 	int GenerateScoreTrace(const ExportParams& params)
 	{
-		//TODO ~ ramonv ~ to be implemented
-		LOG_ERROR("Clang output trace not implemented!");
+		ScoreData scoreData;
 
-		//Process all files found in the input trace
+		IO::FileTextBuffer fileBuffer = IO::ReadTextFile(params.input);
+		if (fileBuffer == nullptr)
+		{ 
+			return FAILURE;
+		}
 
-		return FAILURE; 
+		Context::Scoped<IO::ScoreBinarizer> binarizer(params.output,params.timelinePacking);
+
+		const char* pathStart = fileBuffer;
+
+		while(*fileBuffer)
+		{ 
+			if (*fileBuffer == '\n')
+			{ 
+				*fileBuffer = '\0'; //Generate an end of string
+				
+				if (pathStart < fileBuffer)
+				{ 
+					ProcessFile(scoreData,pathStart);
+				}
+
+				pathStart = ++fileBuffer;
+			}
+			else
+			{ 
+				++fileBuffer; 
+			}
+		}
+
+		if (pathStart < fileBuffer)
+		{ 
+			ProcessFile(scoreData,pathStart);
+		}
+
+		binarizer.Get().Binarize(scoreData);
+
+		return SUCCESS;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
@@ -407,25 +454,26 @@ namespace Clang
 
 		DeleteRecordToken(params.input);
 
-		//TODO ~ ramonv ~ open CTL file
+		LOG_PROGRESS("Scanning dir: %s",params.input);
+
+		IO::TextOutputStream fileStream(params.output);
+
+		if (!fileStream.IsValid())
+		{ 
+			return FAILURE;
+		}
 
 		size_t filesFound = 0u;
 		IO::DirectoryScanner dirScan(params.input,".json",timethreshold);
 		while (const char* path = dirScan.SeekNext())
 		{ 
 			LOG_INFO("Found file %s", path);
-			
-			//TODO ~ APPEND TO CTL file
-
-			//TODO ~ ramonv ~ append file path to CTL file
-			LOG_ERROR("Clang output trace not implemented!");
-			return FAILURE;
-
+			fileStream.Append(path);
+			fileStream.Append('\n');
 			IO::Log(IO::Verbosity::Progress,"Parsing... %u files\r",++filesFound);
 		}
 
-		//TODO ~ ramovn ~ close CTL file 
-
+		LOG_PROGRESS("Found %d files", filesFound);
 		return SUCCESS;
 	}
 

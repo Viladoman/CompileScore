@@ -12,6 +12,17 @@ static_assert(TIMELINE_FILE_NUM_DIGITS > 0);
 
 namespace IO
 { 
+    namespace Utils
+    { 
+        // -----------------------------------------------------------------------------------------------------------
+        size_t StringLength(const char* s)
+        {
+            size_t len = 0u;
+            while(*s){++s; ++len;}
+            return len;
+        }
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Logging
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -156,7 +167,7 @@ namespace IO
 
         if (result) 
         { 
-            LOG_ERROR("Unable to open input file!");
+            LOG_ERROR("Unable to open the file %s", filename);
         }
         else 
         { 
@@ -180,26 +191,96 @@ namespace IO
         
         return content;
     }
-   /*
-    // -----------------------------------------------------------------------------------------------------------
-    bool WriteTextFile(const char* filename, const FileTextBuffer buffer)
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    class TextOutputStream::Impl
     {
-        FILE* stream;
-        const errno_t result = fopen_s(&stream,filename,"wb");
+    public: 
+        Impl(const char* filename) : file(nullptr) { Open(filename); }
+        ~Impl(){ Close(); }
+
+        Impl(const Impl& input) = delete;
+        Impl(Impl&& input) = delete;
+        Impl& operator = (const Impl& input) = delete;
+        Impl& operator = (Impl&& input) = delete;
+
+        bool IsValid() const { return file != nullptr; }
+        void Open(const char* filename);
+        void Close();
+        void Write(const void* buffer, const size_t elementSize, const size_t elementCount);
+
+    private: 
+        bool AppendTimelineExtension(fastl::string& filename);
+
+    private:
+        FILE* file; 
+    };
+
+    // -----------------------------------------------------------------------------------------------------------
+    void TextOutputStream::Impl::Open(const char* filename)
+    { 
+        const errno_t result = fopen_s(&file,filename,"wb");
 
         if (result) 
         { 
             LOG_ERROR("Unable to open output file: %s.", filename);
-            return false;
         }
-
-        //record.nameLength = strlen(name);
-        //fwrite(record.name,sizeof(char),record.nameLength,fp);
-        fclose(stream);
-
-        return true;
     }
-    */
+
+    // -----------------------------------------------------------------------------------------------------------
+    void TextOutputStream::Impl::Close()
+    {
+        if (file)
+        { 
+            fclose(file);
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    void TextOutputStream::Impl::Write(const void* buffer, const size_t elementSize, const size_t elementCount)
+    {
+        if (file)
+        { 
+            fwrite(buffer,elementSize,elementCount,file);
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // -----------------------------------------------------------------------------------------------------------
+    TextOutputStream::TextOutputStream(const char* filename)
+        : m_impl( new Impl(filename) )
+    {}
+
+    // -----------------------------------------------------------------------------------------------------------
+    TextOutputStream::~TextOutputStream()
+    { 
+        delete m_impl;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    void TextOutputStream::Append(const char* txt, const size_t length)
+    { 
+        m_impl->Write(txt,sizeof(char),length);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    bool TextOutputStream::IsValid() const
+    { 
+        return m_impl->IsValid();
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    void TextOutputStream::Append(const char* txt)
+    { 
+        Append(txt,Utils::StringLength(txt));
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    void TextOutputStream::Append(const char c)
+    { 
+        m_impl->Write(&c,sizeof(char),1);
+    }
+
     // -----------------------------------------------------------------------------------------------------------
     void DestroyBuffer(FileTextBuffer& buffer)
     {
