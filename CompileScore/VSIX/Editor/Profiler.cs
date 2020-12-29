@@ -268,16 +268,18 @@ namespace CompileScore
             {
                 string inputPath = Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.InputPath);
 
-                if (!File.Exists(inputPath))
+                try
                 {
-                    DisplayError("The 'Clang Traces Path' does not exist.\nCurrent value: " + inputPath);
-                    return false;
+                    FileAttributes attr = File.GetAttributes(inputPath);
+                    if ((attr & FileAttributes.Directory) != FileAttributes.Directory)
+                    {
+                        DisplayError("The 'Clang Traces Path' is not a directory.\nCurrent value: " + inputPath);
+                        return false;
+                    }
                 }
-
-                FileAttributes attr = File.GetAttributes(inputPath);
-                if ((attr & FileAttributes.Directory) != FileAttributes.Directory)
+                catch(Exception e)
                 {
-                    DisplayError("The 'Clang Traces Path' is not a directory.\nCurrent value: " + inputPath);
+                    DisplayError("The 'Clang Traces Path' is invalid.\n"+e.Message);
                     return false;
                 }
             }
