@@ -276,7 +276,7 @@ namespace CompileScore
             ThreadHelper.ThrowIfNotOnUIThread();
 
             DTE2 dte = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
-            if (dte != null && dte.Solution != null && dte.Solution.Projects.Count > 0)
+            if (dte != null && dte.Solution != null && dte.Solution.Projects.Count > 0 && dte.Solution.Projects.Item(1).ConfigurationManager != null)
             {
                 ConfigurationManager configmgr = dte.Solution.Projects.Item(1).ConfigurationManager;
                 Configuration config = configmgr.ActiveConfiguration;
