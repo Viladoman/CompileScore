@@ -295,7 +295,7 @@ namespace CompileScore.Timeline
             ((Rectangle)scrollViewer.Template.FindName("Corner", scrollViewer)).Fill = scrollViewer.Background;
 
             SetupCanvas();
-            FocusNode(FocusPending);
+            FocusNode(FocusPending == null? Root : FocusPending);
             FocusPending = null;
             RefreshAll();
         }
