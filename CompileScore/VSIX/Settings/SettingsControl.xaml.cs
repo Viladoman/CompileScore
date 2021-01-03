@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.Shell;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -11,20 +12,35 @@ namespace CompileScore
 {
     public partial class SettingsControl : UserControl
     {
+        private class UIConditionalField
+        {
+            public UIConditionalField(MethodInfo filter, UIElement element)
+            {
+                Filter = filter;
+                Element = element;
+            }
+
+            public MethodInfo Filter { set; get; }
+            public UIElement Element { set; get; }
+        }
+        
         public SolutionSettings Options { set; get; }
         private SettingsWindow Win { set; get; }
+        private List<UIConditionalField> ConditionalFields { set; get; }
 
         public SettingsControl(SettingsWindow window, SolutionSettings settings)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             Win = window;
-            Options = settings;
             InitializeComponent();
+
             CreateGrid();
+            Options = settings;
+            RefreshConditionalFields(Options);
         }
 
-        private void ObjectToUI(StackPanel panel, Type type, string prefix)
+        private void ObjectToUI(StackPanel panel, Type type, string prefix, List<UIConditionalField> conditionalFields)
         {
             PropertyInfo[] properties = type.GetProperties();
 
@@ -39,6 +55,8 @@ namespace CompileScore
                 string thisFullName = prefix + '.' + property.Name;
 
                 bool isComplexObject = !property.PropertyType.IsEnum && !property.PropertyType.IsPrimitive && property.PropertyType != typeof(string);
+
+                UIElement newElement;
 
                 if (isComplexObject)
                 {
@@ -59,8 +77,8 @@ namespace CompileScore
                     expander.Header = header;
                     expander.IsExpanded = true;
 
-                    ObjectToUI(stackpanel, property.PropertyType, thisFullName);
-                    panel.Children.Add(expander);
+                    ObjectToUI(stackpanel, property.PropertyType, thisFullName, conditionalFields);
+                    newElement = expander;
                 }
                 else
                 {
@@ -100,7 +118,7 @@ namespace CompileScore
                         inputControl.PreviewTextInput += NumberValidationTextBox;
                         inputControl.Margin = new Thickness(5);
                         Grid.SetColumn(inputControl, 1);
-                        elementGrid.Children.Add(inputControl);           
+                        elementGrid.Children.Add(inputControl);
                     }
                     else if (property.PropertyType.IsEnum)
                     {
@@ -108,14 +126,34 @@ namespace CompileScore
                         inputControl.ItemsSource = Enum.GetValues(property.PropertyType);
                         inputControl.SetBinding(ComboBox.SelectedValueProperty, new Binding(thisFullName));
                         inputControl.Margin = new Thickness(5);
+                        inputControl.SelectionChanged += OnFieldChanged;
                         Grid.SetColumn(inputControl, 1);
                         elementGrid.Children.Add(inputControl);
                     }
 
-                    panel.Children.Add(elementGrid);
+                    newElement = elementGrid;
+                }
+
+                panel.Children.Add(newElement);
+
+                if (!String.IsNullOrEmpty(description.FilterMethod))
+                {
+                    Type filtersType = typeof(UISettingsFilters);
+                    MethodInfo filterMethod = filtersType.GetMethod(description.FilterMethod);
+
+                    if (filterMethod != null)
+                    {
+                        conditionalFields.Add(new UIConditionalField(filterMethod,newElement));
+                    }
                 }
             }
         }
+
+        private void OnFieldChanged(object sender, object e)
+        {
+            RefreshConditionalFields(Options);
+        }
+
         private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
         {
             Regex regex = new Regex("[^0-9]+");
@@ -126,7 +164,17 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            ObjectToUI(optionStack, typeof(SolutionSettings), "Options");
+            var ConditionalFields = new List<UIConditionalField>();
+            ObjectToUI(optionStack, typeof(SolutionSettings), "Options", ConditionalFields);
+        }
+
+        private void RefreshConditionalFields(Object reference)
+        {
+            object[] arguments = { reference };
+            foreach (UIConditionalField field in ConditionalFields)
+            {
+                field.Element.Visibility = (bool)field.Filter.Invoke(null, arguments) ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         private void ApplyChanges()
