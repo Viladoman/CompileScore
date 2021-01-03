@@ -108,14 +108,14 @@ namespace CompileScore
             }
         }
 
-        public void PLACEHOLDER_GenerateScore()
+        public void GenerateClangScore()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             SetGeneratorProperties();
             if (ValidateGenerator())
             {
-                _ = PLACEHOLDER_TriggerGeneratorAsync();
+                _ = TriggerClangGeneratorAsync();
             }
         }
 
@@ -192,7 +192,7 @@ namespace CompileScore
             }
         }
 
-        private async System.Threading.Tasks.Task PLACEHOLDER_TriggerGeneratorAsync()
+        private async System.Threading.Tasks.Task TriggerClangGeneratorAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -202,7 +202,7 @@ namespace CompileScore
 
             SetState(StateType.Gathering);
 
-            await PLACEHOLDER_GenerateScoreAsync();
+            await GenerateClangScoreAsync();
 
             SetState(StateType.Idle);
         }
@@ -448,7 +448,7 @@ namespace CompileScore
             SetState(StateType.Idle);
         }
 
-        private async System.Threading.Tasks.Task PLACEHOLDER_GenerateScoreAsync()
+        private async System.Threading.Tasks.Task GenerateClangScoreAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
