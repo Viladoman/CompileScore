@@ -164,12 +164,14 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var ConditionalFields = new List<UIConditionalField>();
+            ConditionalFields = new List<UIConditionalField>();
             ObjectToUI(optionStack, typeof(SolutionSettings), "Options", ConditionalFields);
         }
 
         private void RefreshConditionalFields(Object reference)
         {
+            if (ConditionalFields == null) return;
+
             object[] arguments = { reference };
             foreach (UIConditionalField field in ConditionalFields)
             {
