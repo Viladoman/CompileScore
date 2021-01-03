@@ -113,19 +113,19 @@ namespace CompileScore
         private static void Execute_Build(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            Profiler.Instance.BuildSolution();
+            Profiler.Instance.TriggerOperation(Profiler.BuildOperation.Build);
         }
 
         private static void Execute_Rebuild(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            Profiler.Instance.RebuildSolution();
+            Profiler.Instance.TriggerOperation(Profiler.BuildOperation.Rebuild);
         }
 
         private static void Execute_Clang_Generate(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            Profiler.Instance.GenerateClangScore();
+            Profiler.Instance.TriggerOperation(Profiler.BuildOperation.GenerateClang);
         }
 
         private static void Execute_LoadDefault(object sender, EventArgs e)

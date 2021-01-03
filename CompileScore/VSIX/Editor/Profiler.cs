@@ -27,6 +27,13 @@ namespace CompileScore
             Full     = 3,
         }
 
+        public enum BuildOperation
+        {
+            Build, 
+            Rebuild, 
+            GenerateClang
+        }
+
         private enum StateType
         {
             Idle, 
@@ -47,6 +54,7 @@ namespace CompileScore
         private IServiceProvider ServiceProvider { set; get; }
         private BuildEvents BuildEvents { set; get; }
 
+        private BuildOperation Operation { set; get; } = BuildOperation.Build;
         private StateType State { set; get; } = StateType.Idle;
         private Compiler CompilerSource { set; get; } = Compiler.MSVC;
         private ExtractorDetail OverviewDetail { set; get; } = ExtractorDetail.Basic;
@@ -70,52 +78,18 @@ namespace CompileScore
             BuildEvents.OnBuildDone  += OnBuildDone;
         }
 
-        public bool CleanSolution()
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            try
-            {
-                DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
-                Assumes.Present(applicationObject);
-                applicationObject.Solution.SolutionBuild.Clean(true);
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-        public void RebuildSolution()
+        public void TriggerOperation(BuildOperation operation)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            Operation = operation;
             SetGeneratorProperties();
-            if (ValidateBuild())
+
+            switch(operation)
             {
-                CleanSolution();
-                TriggerBuildSolution();
-            }
-        }
-
-        public void BuildSolution()
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            SetGeneratorProperties();
-            if (ValidateBuild())
-            {
-                TriggerBuildSolution();
-            }
-        }
-
-        public void GenerateClangScore()
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            SetGeneratorProperties();
-            if (ValidateGenerator())
-            {
-                _ = TriggerClangGeneratorAsync();
+                case BuildOperation.Build:         TriggerBuildSolution(); break;
+                case BuildOperation.Rebuild:       TriggerBuildSolution(); break;
+                case BuildOperation.GenerateClang: _ = TriggerClangGeneratorAsync(); break;
             }
         }
 
@@ -154,6 +128,8 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            if (!ValidateBuild()) return;
+
             OutputLog.Focus();
             OutputLog.Clear();
             Evaluator.Clear();
@@ -163,16 +139,18 @@ namespace CompileScore
             try
             {
                 //TODO ~ ramonv ~ find a way to call Build All in 'Open Folder' projects
-                //DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
+                DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
+                Assumes.Present(applicationObject);
+                applicationObject.ExecuteCommand(Operation == BuildOperation.Rebuild? "Build.RebuildSolution" : "Build.BuildSolution");
 
                 //applicationObject.ExecuteCommand("Build.BuildSolution");
                 //applicationObject.ExecuteCommand("Build.RebuildSolution");
 
                 //TODO ~ Ramonv ~ 'Open Folder' does not trigger build events! 
 
-                DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
-                Assumes.Present(applicationObject);
-                applicationObject.Solution.SolutionBuild.Build();
+                //DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
+                //Assumes.Present(applicationObject);
+                //applicationObject.Solution.SolutionBuild.Build();
 
                 /*
                 // Rebuild - direct call alternative for .sln projects  
@@ -185,7 +163,7 @@ namespace CompileScore
                 */
 
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 DisplayError("Unable to Trigger the build. " + e.Message);
                 SetState(StateType.Idle);
@@ -195,6 +173,8 @@ namespace CompileScore
         private async System.Threading.Tasks.Task TriggerClangGeneratorAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (!ValidateGenerator()) return;
 
             OutputLog.Focus();
             OutputLog.Clear();
