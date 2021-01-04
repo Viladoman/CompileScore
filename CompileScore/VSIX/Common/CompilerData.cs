@@ -188,6 +188,17 @@ namespace CompileScore
             return Package == null ? null : Package.GetGeneralSettings();
         }
 
+        public string GetSettingsScoreLocation()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var settings = SettingsManager.Instance.Settings;
+            string rawPath = settings.ScoreSource == SolutionSettings.ScoreOrigin.Generator ? settings.ScoreGenerator.OutputPath : settings.ScoreLocation;
+
+            MacroEvaluator evaluator = new MacroEvaluator();
+            return evaluator.Evaluate(rawPath);
+        }
+
         public List<UnitTotal> GetTotals()
         {
             return Totals;
@@ -256,6 +267,7 @@ namespace CompileScore
             }
             return null;
         }
+
         public UnitValue GetUnit(int index)
         {
             return index >= 0 && index < UnitsCollection.Count ? UnitsCollection[index] : null;
@@ -265,8 +277,7 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             SetSource(DataSource.Default);
-            MacroEvaluator evaluator = new MacroEvaluator();
-            SetScoreLocation(evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreLocation));
+            SetScoreLocation(GetSettingsScoreLocation());
             WatchScoreFile();
             LoadSeverities(ScoreLocation);
         }
@@ -295,8 +306,7 @@ namespace CompileScore
             }
             else
             {
-                MacroEvaluator evaluator = new MacroEvaluator();
-                string defaultPath = evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreLocation);
+                string defaultPath = GetSettingsScoreLocation();
                 if (defaultPath == filename)
                 {
                     //We are forcing back to default
@@ -540,8 +550,7 @@ namespace CompileScore
 
             if (Source == DataSource.Default)
             {
-                MacroEvaluator evaluator = new MacroEvaluator();
-                if (SetScoreLocation(evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreLocation)))
+                if (SetScoreLocation(GetSettingsScoreLocation()))
                 {
                     WatchScoreFile();
                     LoadSeverities(ScoreLocation);

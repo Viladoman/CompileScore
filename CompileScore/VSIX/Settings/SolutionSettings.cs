@@ -19,6 +19,11 @@ namespace CompileScore
         { 
             return input.ScoreGenerator.Compiler == Profiler.Compiler.Clang; 
         }
+
+        static public bool IsCustomScoreSource(SolutionSettings input)
+        {
+            return input.ScoreSource == SolutionSettings.ScoreOrigin.Custom;
+        }
     }
 
     public class ScoreGeneratorSettings
@@ -45,7 +50,16 @@ namespace CompileScore
 
     public class SolutionSettings
     {
-        [UIDescription(Label = "Score File Location")]
+        public enum ScoreOrigin
+        {
+            Generator,
+            Custom
+        }
+
+        [UIDescription(Label = "Score File Source")]
+        public ScoreOrigin ScoreSource { set; get; } = ScoreOrigin.Generator;
+
+        [UIDescription(Label = "Score File Location", FilterMethod = "IsCustomScoreSource")]
         public string ScoreLocation { set; get; } = @"$(SolutionDir)compileData.scor";
 
         [UIDescription(Label = "Generator")]
