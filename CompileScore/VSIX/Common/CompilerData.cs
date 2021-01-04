@@ -196,7 +196,7 @@ namespace CompileScore
             string rawPath = settings.ScoreSource == SolutionSettings.ScoreOrigin.Generator ? settings.ScoreGenerator.OutputPath : settings.ScoreLocation;
 
             MacroEvaluator evaluator = new MacroEvaluator();
-            return evaluator.Evaluate(rawPath);
+            return EditorUtils.NormalizePath(evaluator.Evaluate(rawPath));
         }
 
         public List<UnitTotal> GetTotals()
@@ -286,7 +286,7 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            bool locationChanged = SetScoreLocation(filename);
+            bool locationChanged = SetScoreLocation(EditorUtils.NormalizePath(filename));
 
             if (Source == DataSource.Default)
             {

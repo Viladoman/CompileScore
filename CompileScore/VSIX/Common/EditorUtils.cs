@@ -1,6 +1,7 @@
 ﻿using CompileScore.Overview;
 using Microsoft.VisualStudio.Shell;
 using System;
+using System.IO;
 
 namespace CompileScore
 {
@@ -11,6 +12,11 @@ namespace CompileScore
         static public void Initialize(AsyncPackage package)
         {
             Package = package;
+        }
+
+        static public string NormalizePath(string input)
+        {
+            return Path.IsPathRooted(input) ? Path.GetFullPath(input) : input;
         }
 
         static public OverviewWindow FocusOverviewWindow()
