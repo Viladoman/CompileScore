@@ -236,7 +236,7 @@ namespace CompileScore.Timeline
                 
                 //Initialize nodes
                 InitializeNodeRecursive(tree, GetBaseDepthLevel(root,tree));
-                root.MaxDepthLevel = tree.MaxDepthLevel;
+                root.MaxDepthLevel = Math.Max(root.MaxDepthLevel, tree.MaxDepthLevel);
 
                 root.AddChild(tree);
             }
