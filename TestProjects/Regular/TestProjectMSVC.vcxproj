@@ -21,9 +21,6 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -153,13 +150,4 @@
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="packages\Microsoft.Cpp.BuildInsights.1.1.0\build\native\Microsoft.Cpp.BuildInsights.targets" Condition="Exists('packages\Microsoft.Cpp.BuildInsights.1.1.0\build\native\Microsoft.Cpp.BuildInsights.targets')" />
-  </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('packages\Microsoft.Cpp.BuildInsights.1.1.0\build\native\Microsoft.Cpp.BuildInsights.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.Cpp.BuildInsights.1.1.0\build\native\Microsoft.Cpp.BuildInsights.targets'))" />
-  </Target>
 </Project>
