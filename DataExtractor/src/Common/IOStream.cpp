@@ -450,7 +450,7 @@ namespace IO
                 const errno_t result = fopen_s(&timelineStream,filename.c_str(),"wb");
                 if (result) 
                 { 
-                    LOG_ERROR("Unable to create output file %s",filename);
+                    LOG_ERROR("Unable to create output file %s",filename.c_str());
                     timelineStream = nullptr;
                 }
 

@@ -407,11 +407,13 @@ namespace CompileScore
 
             string outputPath = Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.OutputPath);
             string outputCommand = outputPath.Length > 0 ? " -o " + outputPath : "";
-
+            
             string detail = " -d " + (int)OverviewDetail;
             string timeline = TimelinePacking == 0 ? " -nt" : " -tp " + TimelinePacking + " -td " + (int)TimelineDetail;
 
             string commandLine = GetPlatformFlag() + " -stop" + timeline + detail + inputCommand + outputCommand;
+
+            CreateDirectory(Path.GetDirectoryName(outputPath));
 
             OutputLog.Log("Calling ScoreDataExtractor with " + commandLine);
             int exitCode = ExternalProcess.ExecuteSync(GetScoreExtractorToolPath(), commandLine);
