@@ -56,11 +56,25 @@ namespace CompileScore
         {
             InitializeComponent();
 
-            var manifest = Company.Product.VsixManifest.GetManifest();
+#pragma warning disable 414, CS0162
+            if (EditorContext.Environment == EditorContext.ExecutionEnvironment.VisualStudio)
+            {
+                var manifest = Company.Product.VsixManifest.GetManifest();
 
-            descriptionTxt.Text = manifest.Description;
-            extVersionTxt.Text = "Version: " + manifest.Version;
-            dataVersionTxt.Text = "Data Version: " + CompilerData.VERSION;
+                descriptionTxt.Text = manifest.Description;
+                appVersionTxt.Text = "Version: " + manifest.Version;
+                dataVersionTxt.Text = "Data Version: " + CompilerData.VERSION;
+            }
+            else
+            {
+                var asm = Assembly.GetEntryAssembly();
+                var asmName = asm.GetName();
+                descriptionTxt.Text = "App for build times and compilation data visualization.";
+                appVersionTxt.Text = "Application Version: "+ asmName.Version.ToString();
+                dataVersionTxt.Text = "Data Version: "+CompilerData.VERSION;
+            }
+#pragma warning restore CS0162
+
         }
 
         private void OnReportIssue(object sender, object e)

@@ -59,7 +59,7 @@
                     <TextBlock Text="@Viladoman"/>
                 </Hyperlink>
             </TextBlock>
-            <TextBlock x:Name="extVersionTxt"/>
+            <TextBlock x:Name="appVersionTxt"/>
             <TextBlock x:Name="dataVersionTxt"/>
         </StackPanel>
         <WrapPanel Grid.Row="1" HorizontalAlignment="Right">

@@ -11,8 +11,28 @@ namespace CompileScore
         public string Evaluate(string input) { return input; }
     }
 
+    public class ScoreGeneratorSettings
+    {
+        public string OutputPath { get; set; } = "";
+    }
+
+    static public class EditorUtils
+    {
+        static public string NormalizePath(string input) { return input; }
+    }
+
     public class SolutionSettings
     {
+        public enum ScoreOrigin
+        {
+            Generator, 
+            Custom
+        }
+
+        public ScoreGeneratorSettings ScoreGenerator { set; get; } = new ScoreGeneratorSettings();
+
+        public ScoreOrigin ScoreSource { set; get; } = ScoreOrigin.Generator;
+
         public string ScoreLocation { set; get; } = "";
     }
 

@@ -58,6 +58,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="..\VSIX\Common\Documentation.cs">
+      <Link>Shared\Common\Documentation.cs</Link>
+    </Compile>
+    <Compile Include="..\VSIX\Settings\AboutWindow.xaml.cs">
+      <Link>Shared\Settings\AboutWindow.xaml.cs</Link>
+	  <DependentUpon>AboutWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="..\VSIX\Timeline\Timeline.xaml.cs">
       <Link>Shared\Timeline\Timeline.xaml.cs</Link>
       <DependentUpon>Timeline.xaml</DependentUpon>
@@ -90,6 +97,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="..\VSIX\Settings\AboutWindow.xaml">
+      <Link>Shared\Settings\AboutWindow.xaml</Link>
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="..\VSIX\Timeline\Timeline.xaml">
       <Link>Shared\Timeline\Timeline.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
@@ -109,10 +121,6 @@
       <Link>Shared\Timeline\TimelineWindowControl.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Extras\AboutWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -162,9 +170,6 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Extras\AboutWindow.xaml.cs">
-      <DependentUpon>AboutWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Fake\FakeVSIX.cs" />
     <Compile Include="Fake\ColorTheme.cs" />

@@ -1,20 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace CompileScore
 {
@@ -94,7 +80,7 @@ namespace CompileScore
 
         private void OnMenuFileExit(object sender, RoutedEventArgs e)
         {
-            System.Windows.Application.Current.Shutdown();
+            Application.Current.Shutdown();
         }
         private void OnReloadFile(object sender, RoutedEventArgs e)
         {
@@ -103,14 +89,12 @@ namespace CompileScore
 
         private void OnHelp(object sender, RoutedEventArgs e)
         {
-            //TODO ~ ramonv ~ move to use the documentation file
-            Process.Start("https://github.com/Viladoman/CompileScore");
+            Documentation.OpenLink(Documentation.Link.MainPage);
         }
 
         private void OnMenuAbout(object sender, RoutedEventArgs e)
         {
-            //TODO ~ unify abouts 
-            Extras.AboutWindow dlg = new Extras.AboutWindow();
+            AboutWindow dlg = new AboutWindow();
             dlg.Owner = this;
             dlg.ShowDialog();
         }
