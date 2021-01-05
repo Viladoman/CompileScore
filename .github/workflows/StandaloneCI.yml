@@ -33,7 +33,7 @@ jobs:
       working-directory: ${{env.baseDir}}
       run: nuget restore ${{ env.solutionName }}
      
-    - name: Build Score Data Extractor
+    - name: Build Compile Score App
       working-directory: ${{env.baseDir}}
       run: msbuild /m /p:Configuration=${{matrix.buildconfig}} ${{ env.solutionName }}
       
