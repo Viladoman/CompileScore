@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Navigation;
 using System.Xml;
 
+#if CS_VSIX
 namespace Company.Product
 {
     public class VsixManifest
@@ -44,36 +45,29 @@ namespace Company.Product
         }
     }
 }
+#endif
 
 namespace CompileScore
 {
-    /// <summary>
-    /// Interaction logic for AboutWindow.xaml
-    /// </summary>
     public partial class AboutWindow : Window
     {
         public AboutWindow()
         {
             InitializeComponent();
 
-#pragma warning disable 414, CS0162
-            if (EditorContext.Environment == EditorContext.ExecutionEnvironment.VisualStudio)
-            {
-                var manifest = Company.Product.VsixManifest.GetManifest();
+#if CS_VSIX
+            var manifest = Company.Product.VsixManifest.GetManifest();
 
-                descriptionTxt.Text = manifest.Description;
-                appVersionTxt.Text = "Version: " + manifest.Version;
-                dataVersionTxt.Text = "Data Version: " + CompilerData.VERSION;
-            }
-            else
-            {
-                var asm = Assembly.GetEntryAssembly();
-                var asmName = asm.GetName();
-                descriptionTxt.Text = "App for build times and compilation data visualization.";
-                appVersionTxt.Text = "Application Version: "+ asmName.Version.ToString();
-                dataVersionTxt.Text = "Data Version: "+CompilerData.VERSION;
-            }
-#pragma warning restore CS0162
+            descriptionTxt.Text = manifest.Description;
+            appVersionTxt.Text = "Version: " + manifest.Version;
+            dataVersionTxt.Text = "Data Version: " + CompilerData.VERSION;
+#else
+            var asm = Assembly.GetEntryAssembly();
+            var asmName = asm.GetName();
+            descriptionTxt.Text = "App for build times and compilation data visualization.";
+            appVersionTxt.Text = "Application Version: "+ asmName.Version.ToString();
+            dataVersionTxt.Text = "Data Version: "+CompilerData.VERSION;
+#endif
 
         }
 
