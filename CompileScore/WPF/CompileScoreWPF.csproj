@@ -63,7 +63,7 @@
     </Compile>
     <Compile Include="..\VSIX\Settings\AboutWindow.xaml.cs">
       <Link>Shared\Settings\AboutWindow.xaml.cs</Link>
-	  <DependentUpon>AboutWindow.xaml</DependentUpon>
+      <DependentUpon>AboutWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="..\VSIX\Timeline\Timeline.xaml.cs">
       <Link>Shared\Timeline\Timeline.xaml.cs</Link>
