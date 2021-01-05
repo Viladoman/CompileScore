@@ -36,3 +36,9 @@ jobs:
     - name: Build Score Data Extractor
       working-directory: ${{env.baseDir}}
       run: msbuild /m /p:Configuration=${{matrix.buildconfig}} ${{ env.solutionName }}
+      
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: CompileScore-App-${{matrix.buildconfig}}
+        path: ${{env.baseDir}}/bin/${{matrix.buildconfig}}/*
