@@ -14,6 +14,8 @@ jobs:
       extractorSolutionName: ScoreDataExtractor.sln
       vsixDir: ./CompileScore/VSIX
       vsixSolutionName: CompileScore.sln
+      wpfDir: ./CompileScore/WPF
+      wpfSolutionName: CompileScoreWPF.sln
 
     steps:
     - name: Checkout
@@ -64,4 +66,26 @@ jobs:
         upload_url: ${{ github.event.release.upload_url }}
         asset_path: ${{env.vsixDir}}/bin/Release/CompileScore.vsix
         asset_name: CompileScore.vsix
+        asset_content_type: application/zip
+    
+    - name: NuGet restore Compile Score App
+      working-directory: ${{env.wpfDir}}
+      run: nuget restore ${{ env.wpfSolutionName }}
+     
+    - name: Build Score Data Extractor
+      working-directory: ${{env.wpfDir}}
+      run: msbuild /m /p:Configuration=Release ${{ env.wpfSolutionName }}
+      
+    - name: Generate App Asset
+      working-directory: ${{env.wpfDir}}/bin/Release
+      run: Compress-Archive -Path CompileScoreWPF.exe -DestinationPath CompileScoreApp.zip
+      
+    - name: Upload App Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ${{env.wpfDir}}/bin/Release/CompileScoreApp.zip
+        asset_name: CompileScoreApp.zip
         asset_content_type: application/zip
