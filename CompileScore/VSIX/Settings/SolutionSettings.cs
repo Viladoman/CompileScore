@@ -57,7 +57,7 @@ namespace CompileScore
         }
 
         [UIDescription(Label = "Score File Source")]
-        public ScoreOrigin ScoreSource { set; get; } = ScoreOrigin.Generator;
+        public ScoreOrigin ScoreSource { set; get; } = ScoreOrigin.Custom;
 
         [UIDescription(Label = "Score File Location", FilterMethod = "IsCustomScoreSource")]
         public string ScoreLocation { set; get; } = @"$(SolutionDir)compileData.scor";
