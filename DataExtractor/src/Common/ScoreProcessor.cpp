@@ -17,23 +17,21 @@ namespace CompileScore
 	// -----------------------------------------------------------------------------------------------------------
 	CompileData& CreateGlobalEntry(ScoreData& scoreData, CompileEvent& element)
 	{ 
-		//TODO ~ ramonv ~ use a string hash for this double lookups
-
 		const CompileCategoryType globalIndex = ToUnderlying(element.category);
 		TCompileDatas& global = scoreData.globals[globalIndex];
 		TCompileDataDictionary& dictionary = scoreData.globalsDictionary[globalIndex];
-		TCompileDataDictionary::iterator found = dictionary.find(element.name);
 
-		if (found == dictionary.end())
+		const U32 nextIndex = static_cast<U32>(global.size());
+		std::pair<TCompileDataDictionary::iterator,bool> const& result = dictionary.insert(TCompileDataDictionary::value_type(element.name,nextIndex));
+		if (result.second) 
 		{ 
-			//insert new
-			element.nameId = static_cast<U32>(global.size()); //TODO ~ ramonv ~ careful with overflow
-			dictionary[element.name] = element.nameId; //double lookup not great
+			//the element got inserted
+			element.nameId = nextIndex;
 			global.emplace_back(element.name);
 			return global.back();
 		} 
-
-		element.nameId = found->second;
+		
+		element.nameId = result.first->second;
 		return global[element.nameId];
 	}
 
