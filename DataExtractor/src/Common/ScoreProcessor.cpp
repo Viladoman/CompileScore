@@ -22,7 +22,7 @@ namespace CompileScore
 		TCompileDataDictionary& dictionary = scoreData.globalsDictionary[globalIndex];
 
 		const U32 nextIndex = static_cast<U32>(global.size());
-		std::pair<TCompileDataDictionary::iterator,bool> const& result = dictionary.insert(TCompileDataDictionary::value_type(element.name,nextIndex));
+		auto const& result = dictionary.insert(TCompileDataDictionary::value_type(element.name,nextIndex));
 		if (result.second) 
 		{ 
 			//the element got inserted

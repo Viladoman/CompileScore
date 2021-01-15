@@ -39,6 +39,7 @@ namespace fastl
 		
 		iterator insert(iterator hint, const value_type& value) { return m_data.insert(hint, value); }
 		iterator insert(const_iterator hint, const value_type& value) { return m_data.insert(hint, value); }
+		pair<iterator,bool> insert( value_type&& value );
 
 		void erase(iterator it) { m_data.erase(it);  }
 		size_type erase(const TKey& key);
@@ -62,6 +63,18 @@ namespace fastl
 		}
 
 		return entryIt->second;
+	}
+
+	//------------------------------------------------------------------------------------------
+	template<typename TKey, typename TValue> pair<typename map<TKey,TValue>::iterator,bool> map<TKey,TValue>::insert( value_type&& inputValue )
+	{ 
+		iterator entryIt = fastl::lower_bound(begin(), end(), inputValue, [=](value_type& a, const value_type& b) {return a.first < b.first; });
+		if (entryIt == end() || entryIt->first != inputValue.first)
+		{ 
+			entryIt = m_data.emplace(entryIt,fastl::move(inputValue));
+			return pair<iterator,bool>(entryIt,true);
+		}
+		return pair<iterator,bool>(entryIt,false);
 	}
 
 	//------------------------------------------------------------------------------------------
