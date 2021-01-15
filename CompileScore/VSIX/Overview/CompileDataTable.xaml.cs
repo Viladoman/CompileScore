@@ -1,8 +1,11 @@
-﻿using Microsoft.VisualStudio.Shell;
+﻿using CompileScore.Common;
+using Microsoft.VisualStudio.Shell;
 using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace CompileScore.Overview
 {
@@ -18,6 +21,8 @@ namespace CompileScore.Overview
         public CompileDataTable()
         {
             InitializeComponent();
+
+            compileDataGrid.MouseRightButtonDown += DataGridRow_ContextMenu;
 
             OnDataChanged();
             CompilerData.Instance.ScoreDataChanged += OnDataChanged;
@@ -57,6 +62,8 @@ namespace CompileScore.Overview
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            if (e.ChangedButton != MouseButton.Left) return;
+
             DataGridRow row = (sender as DataGridRow);
             if (row == null) return;
 
@@ -64,6 +71,40 @@ namespace CompileScore.Overview
             if (value == null) return;
 
             Timeline.CompilerTimeline.Instance.DisplayTimeline(value.MaxUnit,value);
+        }   
+        
+        private void DataGridRow_ContextMenu(object sender, MouseEventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var dataGrid = (DataGrid)sender;
+            HitTestResult hitTestResult = VisualTreeHelper.HitTest(dataGrid, Mouse.GetPosition(dataGrid));
+            DataGridRow row = hitTestResult.VisualHit.GetParentOfType<DataGridRow>();
+
+            dataGrid.SelectedItem = row.Item;
+
+            CompileValue value = (row.Item as CompileValue);
+            if (value == null) return;
+
+            System.Windows.Forms.ContextMenuStrip contextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
+
+            bool isVisualStudio = EditorContext.IsEnvironment(EditorContext.ExecutionEnvironment.VisualStudio);
+
+            contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Locate Max Timeline", (a, b) => Timeline.CompilerTimeline.Instance.DisplayTimeline(value.MaxUnit, value)));
+
+            if (isVisualStudio && Category == CompilerData.CompileCategory.Include)
+            {
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Location (Experimental)", (a, b) => EditorUtils.OpenFile(value.Name)));
+            }
+
+            if (value.Name.Length > 0)
+            {
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Name", (a, b) => Clipboard.SetText(value.Name)));
+            }
+
+            //TODO ~ add more options 
+
+            contextMenuStrip.Show(System.Windows.Forms.Control.MousePosition);
         }
 
     }

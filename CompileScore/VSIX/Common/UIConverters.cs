@@ -1,10 +1,57 @@
 ﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace CompileScore.Common
 {
+    static public class UIHelpers
+    {
+        public static T GetParentOfType<T>(this DependencyObject element) where T : DependencyObject
+        {
+            Type type = typeof(T);
+            if (element == null) return null;
+            DependencyObject parent = VisualTreeHelper.GetParent(element);
+            if (parent == null && ((FrameworkElement)element).Parent is DependencyObject) parent = ((FrameworkElement)element).Parent;
+            if (parent == null) return null;
+            else if (parent.GetType() == type || parent.GetType().IsSubclassOf(type)) return parent as T;
+            return GetParentOfType<T>(parent);
+        }   
+
+        public static System.Windows.Forms.ToolStripMenuItem CreateContextItem(string label, EventHandler onClick)
+        {
+            var element = new System.Windows.Forms.ToolStripMenuItem(label);
+            element.Click += onClick;
+            return element;
+        }
+
+        public static void ShowDataGridItem(DataGrid dataGrid, object entry)
+        {
+            var collection = dataGrid.ItemsSource;
+            Type collectionType = collection.GetType();
+            Type itemType = collectionType.GetGenericArguments().Single();
+
+            if (itemType != entry.GetType()) return;
+
+            //search for item 
+            for (int i = 0; i < dataGrid.Items.Count; ++i)
+            {
+                DataGridRow row = (DataGridRow)dataGrid.ItemContainerGenerator.ContainerFromIndex(i);
+                if (row.Item == entry)
+                {
+                    dataGrid.SelectedItem = entry;
+                    dataGrid.ScrollIntoView(entry);
+                    row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+                    break;
+                }
+            }
+        }
+    }
+
     public static class Order
     {
         public static CompilerData.CompileCategory[] CategoryDisplay = new CompilerData.CompileCategory[] {

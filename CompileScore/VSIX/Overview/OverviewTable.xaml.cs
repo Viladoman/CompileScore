@@ -1,10 +1,12 @@
-﻿using Microsoft.VisualStudio.Shell;
+﻿using CompileScore.Common;
+using Microsoft.VisualStudio.Shell;
 using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace CompileScore.Overview
 {
@@ -20,6 +22,8 @@ namespace CompileScore.Overview
         public OverviewTable()
         {
             InitializeComponent();
+
+            compileDataGrid.MouseRightButtonDown += DataGridRow_ContextMenu;
 
             originalColumns = compileDataGrid.Columns.Count;
 
@@ -83,9 +87,12 @@ namespace CompileScore.Overview
             UpdateFilterFunction();
             this.dataView.Refresh();
         }
+
         private void DataGridRow_DoubleClick(object sender, MouseButtonEventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (e.ChangedButton != MouseButton.Left) return;
 
             DataGridRow row = (sender as DataGridRow);
             if (row == null) return;
@@ -94,6 +101,35 @@ namespace CompileScore.Overview
             if (value == null) return;
 
             Timeline.CompilerTimeline.Instance.DisplayTimeline(value);
+        }
+
+        private void DataGridRow_ContextMenu(object sender, MouseEventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var dataGrid = (DataGrid)sender;
+            HitTestResult hitTestResult = VisualTreeHelper.HitTest(dataGrid, Mouse.GetPosition(dataGrid));
+            DataGridRow row = hitTestResult.VisualHit.GetParentOfType<DataGridRow>();
+
+            dataGrid.SelectedItem = row.Item;
+
+            UnitValue value = (row.Item as UnitValue);
+            if (value == null) return;
+
+            System.Windows.Forms.ContextMenuStrip contextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
+
+            bool isVisualStudio = EditorContext.IsEnvironment(EditorContext.ExecutionEnvironment.VisualStudio);
+
+            contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Timeline", (a, b) => Timeline.CompilerTimeline.Instance.DisplayTimeline(value)));
+
+            contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Location (Experimental)", (a, b) => EditorUtils.OpenFile(value.Name)));
+
+            if (value.Name.Length > 0)
+            {
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Name", (a, b) => Clipboard.SetText(value.Name)));
+            }
+
+            contextMenuStrip.Show(System.Windows.Forms.Control.MousePosition);
         }
     }
 }

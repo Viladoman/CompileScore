@@ -371,26 +371,19 @@ namespace CompileScore.Timeline
         }
 
         private void OnScrollViewerDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (Root != null)
+        {             
+            if (Root != null && e.ChangedButton == MouseButton.Left)
             {
                 Point p = e.GetPosition(canvas);
                 FocusNode(GetNodeAtPosition(Root, PixelToTime(p.X), PixelToDepth(p.Y)));
             }
         }
-        private System.Windows.Forms.ToolStripMenuItem CreateContextMenu(string label, EventHandler onClick)
-        {
-            var element = new System.Windows.Forms.ToolStripMenuItem(label);
-            element.Click += onClick;
-            return element;
-        }
+
         private void CreateContextualMenu(TimelineNode node)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             System.Windows.Forms.ContextMenuStrip contextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
-
-            //TODO ~ ramonv ~ open file 
-
+            
             bool isVisualStudio = EditorContext.IsEnvironment(EditorContext.ExecutionEnvironment.VisualStudio);
 
             if (node.Value is CompileValue)
@@ -399,14 +392,12 @@ namespace CompileScore.Timeline
 
                 if (isVisualStudio && node.Category == CompilerData.CompileCategory.Include)
                 {
-                    contextMenuStrip.Items.Add(CreateContextMenu("Open Location (Experimental)", (sender, e) => EditorUtils.OpenFile(value.Name)));
+                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Location (Experimental)", (sender, e) => EditorUtils.OpenFile(value.Name)));
                 }
-
-                //TODO ~ ramonv ~ Expand this with more options
 
                 if (value.Name.Length > 0)
                 {
-                    contextMenuStrip.Items.Add(CreateContextMenu("Copy Name", (sender, e) => Clipboard.SetText(value.Name)));
+                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Name", (sender, e) => Clipboard.SetText(value.Name)));
                 }
                 
             }
@@ -414,11 +405,9 @@ namespace CompileScore.Timeline
             {
                 var value = node.Value as UnitValue;
 
-                //TODO ~ ramonv ~ Expand this with more options
-
                 if (value.Name.Length > 0)
                 {
-                    contextMenuStrip.Items.Add(CreateContextMenu("Copy Name", (sender, e) => Clipboard.SetText(value.Name)));
+                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Name", (sender, e) => Clipboard.SetText(value.Name)));
                 }
             }
 
