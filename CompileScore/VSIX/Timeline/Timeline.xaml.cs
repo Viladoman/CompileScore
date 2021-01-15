@@ -378,14 +378,12 @@ namespace CompileScore.Timeline
                 FocusNode(GetNodeAtPosition(Root, PixelToTime(p.X), PixelToDepth(p.Y)));
             }
         }
-
         private System.Windows.Forms.ToolStripMenuItem CreateContextMenu(string label, EventHandler onClick)
         {
             var element = new System.Windows.Forms.ToolStripMenuItem(label);
             element.Click += onClick;
             return element;
         }
-
         private void CreateContextualMenu(TimelineNode node)
         {
             ThreadHelper.ThrowIfNotOnUIThread();

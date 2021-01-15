@@ -19,6 +19,7 @@ namespace CompileScore
     static public class EditorUtils
     {
         static public string NormalizePath(string input) { return input; }
+        static public void OpenFile(string filename) { }
     }
 
     public class SolutionSettings
@@ -64,6 +65,7 @@ namespace CompileScore
         }
 
         public const ExecutionEnvironment Environment = ExecutionEnvironment.Standalone;
+        static public bool IsEnvironment(ExecutionEnvironment input) { return Environment == input; }
 
         private static readonly Lazy<EditorContext> lazy = new Lazy<EditorContext>(() => new EditorContext());
         public static EditorContext Instance { get { return lazy.Value; } }
