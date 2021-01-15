@@ -164,6 +164,7 @@ namespace CompileScore.Timeline
             scrollViewer.MouseMove += OnScrollViewerMouseMove;
             scrollViewer.MouseLeave += OnScrollViewerMouseLeave;
             scrollViewer.MouseDoubleClick += OnScrollViewerDoubleClick;
+            scrollViewer.MouseRightButtonDown += OnScrollViewerContextMenu;
             scrollViewer.SizeChanged += OnScrollViewerSizeChanged;
             sliderZoom.ValueChanged += OnSliderZoomChanged;
 
@@ -375,6 +376,64 @@ namespace CompileScore.Timeline
             {
                 Point p = e.GetPosition(canvas);
                 FocusNode(GetNodeAtPosition(Root, PixelToTime(p.X), PixelToDepth(p.Y)));
+            }
+        }
+
+        private System.Windows.Forms.ToolStripMenuItem CreateContextMenu(string label, EventHandler onClick)
+        {
+            var element = new System.Windows.Forms.ToolStripMenuItem(label);
+            element.Click += onClick;
+            return element;
+        }
+
+        private void CreateContextualMenu(TimelineNode node)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            System.Windows.Forms.ContextMenuStrip contextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
+
+            //TODO ~ ramonv ~ open file 
+
+            bool isVisualStudio = EditorContext.IsEnvironment(EditorContext.ExecutionEnvironment.VisualStudio);
+
+            if (node.Value is CompileValue)
+            {
+                var value = node.Value as CompileValue;
+
+                if (isVisualStudio && node.Category == CompilerData.CompileCategory.Include)
+                {
+                    contextMenuStrip.Items.Add(CreateContextMenu("Open Location (Experimental)", (sender, e) => EditorUtils.OpenFile(value.Name)));
+                }
+
+                //TODO ~ ramonv ~ Expand this with more options
+
+                if (value.Name.Length > 0)
+                {
+                    contextMenuStrip.Items.Add(CreateContextMenu("Copy Name", (sender, e) => Clipboard.SetText(value.Name)));
+                }
+                
+            }
+            else if (node.Value is UnitValue)
+            {
+                var value = node.Value as UnitValue;
+
+                //TODO ~ ramonv ~ Expand this with more options
+
+                if (value.Name.Length > 0)
+                {
+                    contextMenuStrip.Items.Add(CreateContextMenu("Copy Name", (sender, e) => Clipboard.SetText(value.Name)));
+                }
+            }
+
+            contextMenuStrip.Show(System.Windows.Forms.Control.MousePosition);
+        }
+
+        private void OnScrollViewerContextMenu(object sender, MouseButtonEventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (Hover != null)
+            {
+                CreateContextualMenu(Hover);
             }
         }
 

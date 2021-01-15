@@ -108,6 +108,7 @@ namespace CompileScore
         }
 
         public const ExecutionEnvironment Environment = ExecutionEnvironment.VisualStudio;
+        static public bool IsEnvironment(ExecutionEnvironment input) { return Environment == input; }
 
         public string RootPath { private set; get; }
 

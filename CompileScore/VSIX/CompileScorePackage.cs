@@ -60,7 +60,7 @@ namespace CompileScore
             DocumentLifetimeManager.Initialize(this);
             SettingsManager.Instance.Initialize();
             CompilerData.Instance.Initialize(this, this);
-            EditorUtils.Initialize(this);
+            EditorUtils.Initialize(this,this);
             Profiler.Instance.Initialize(this);
             Timeline.CompilerTimeline.Instance.Initialize(this);
 

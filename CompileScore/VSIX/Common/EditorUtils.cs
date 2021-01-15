@@ -1,6 +1,11 @@
 ﻿using CompileScore.Overview;
+using EnvDTE;
+using EnvDTE80;
+using Microsoft;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace CompileScore
@@ -8,10 +13,12 @@ namespace CompileScore
     static public class EditorUtils
     {
         static private AsyncPackage Package { get; set; }
+        static private IServiceProvider ServiceProvider { get; set; }
 
-        static public void Initialize(AsyncPackage package)
+        static public void Initialize(AsyncPackage package, IServiceProvider serviceProvider)
         {
             Package = package;
+            ServiceProvider = serviceProvider;
         }
 
         static public string NormalizePath(string input)
@@ -35,6 +42,84 @@ namespace CompileScore
             window.ProxyShow();
 
             return window;
+        }
+
+        static private IEnumerable<ProjectItem> EnumerateProjectItems(ProjectItems items)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (items != null)
+            {
+                for (int i = 1; i <= items.Count; ++i)
+                {
+                    var itm = items.Item(i);
+
+                    foreach (var res in EnumerateProjectItems(itm.ProjectItems))
+                    {
+                        yield return res;
+                    }
+
+                    for (short j = 0; itm != null && j < itm.FileCount; ++j)
+                    {
+                        yield return itm;
+                    }
+                }
+            }
+        }
+
+        static ProjectItem FindFilenameInProject(string filename)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            //TODO ~ ramonv ~ improve this for Open Folder and External Tool
+            //TODO ~ ramonv ~ this won't work on Open Folder projects
+            if (EditorContext.Instance.Mode != EditorContext.EditorMode.VisualStudio) return null;
+
+            DTE2 dte = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
+            Assumes.Present(dte);
+            Projects projects = dte.Solution.Projects;
+
+            var projectEnumerator = projects.GetEnumerator();
+            while (projectEnumerator.MoveNext())
+            {
+                var project = projectEnumerator.Current as Project;
+                if (project == null)
+                {
+                    continue;
+                }
+
+                foreach (var item in EnumerateProjectItems(project.ProjectItems))
+                {
+                    if (item.Name.ToLower() == filename)
+                    {
+                        return item;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        static public void OpenFile(string filename)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            //TODO ~ ramonv ~ try first as a full path ( export full paths if possible from the score data on new version ) 
+
+            var item = FindFilenameInProject(filename);
+            if (item != null)
+            {
+                var win = item.Open();
+                if (win != null)
+                {
+                    win.Activate();
+                }
+            }
+            else
+            {
+
+                MessageWindow.Display(new MessageContent("Unable to find the file: "+filename));
+            }
         }
     }
 }
