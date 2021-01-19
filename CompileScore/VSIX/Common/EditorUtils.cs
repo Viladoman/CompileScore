@@ -117,9 +117,48 @@ namespace CompileScore
             }
             else
             {
-
                 MessageWindow.Display(new MessageContent("Unable to find the file: "+filename));
             }
+        }
+
+        static public Document GetActiveDocument()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var applicationObject = EditorUtils.ServiceProvider.GetService(typeof(DTE)) as EnvDTE80.DTE2;
+            Assumes.Present(applicationObject);
+            return applicationObject.ActiveDocument;
+        }
+
+        static public void ShowActiveTimeline()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            Document doc = GetActiveDocument();
+            if (doc == null)
+            {
+                MessageWindow.Display(new MessageContent("Unable to get the active document."));
+                return;
+            }
+
+            string filename = Path.GetFileName(doc.FullName).ToLower();
+
+            var compilerData = CompilerData.Instance;
+
+            var unit = compilerData.GetUnitByName(filename);
+            if (unit != null) 
+            {   
+                Timeline.CompilerTimeline.Instance.DisplayTimeline(unit);
+                return;
+            }
+
+            var value = compilerData.GetValue(CompilerData.CompileCategory.Include, filename);
+            if (value != null)
+            {
+                Timeline.CompilerTimeline.Instance.DisplayTimeline(value.MaxUnit, value);
+                return;
+            }
+
+            MessageWindow.Display(new MessageContent("Unable to find the compile score timeline for "+filename));
         }
     }
 }

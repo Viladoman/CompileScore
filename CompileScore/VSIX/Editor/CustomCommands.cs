@@ -26,6 +26,8 @@ namespace CompileScore
         public const int CommandId_Documentation = 262;
         public const int CommandId_About         = 264;
 
+        public const int CommandId_ShowTimeline  = 265;
+
         public static readonly Guid CommandSet_Custom = new Guid("f76ad68f-41c2-4f8d-945e-427b0d092da1");
 
         public static async Task InitializeAsync(AsyncPackage package)
@@ -39,6 +41,12 @@ namespace CompileScore
 
             commandService.AddCommand(new MenuCommand(Execute_OverviewWindow,   new CommandID(CommandSet_OverviewWindow, CommandId_OverviewWindow)));
             commandService.AddCommand(new MenuCommand(Execute_TimelineWindow,   new CommandID(CommandSet_TimelineWindow, CommandId_TimelineWindow)));
+
+            {
+                var menuItem = new OleMenuCommand(Execute_ShowTimeline, new CommandID(CommandSet_Custom, CommandId_ShowTimeline));
+                menuItem.BeforeQueryStatus += Query_CanShowTimeline;
+                commandService.AddCommand(menuItem);
+            }
 
             commandService.AddCommand(new MenuCommand(Execute_Settings,      new CommandID(CommandSet_Custom, CommandId_Settings)));
             commandService.AddCommand(new MenuCommand(Execute_Documentation, new CommandID(CommandSet_Custom, CommandId_Documentation)));
@@ -66,6 +74,15 @@ namespace CompileScore
                 var menuItem = new OleMenuCommand(Execute_Clang_Generate, new CommandID(CommandSet_Custom, CommandId_Generate));
                 menuItem.BeforeQueryStatus += Query_Clang_Generate_CanBuild;
                 commandService.AddCommand(menuItem);
+            }
+        }
+
+        private static void Query_CanShowTimeline(object sender, EventArgs args)
+        {
+            var menuCommand = sender as OleMenuCommand;
+            if (menuCommand != null)
+            {
+                menuCommand.Visible = menuCommand.Enabled = CompilerData.Instance.GetUnits().Count > 0;
             }
         }
 
@@ -108,6 +125,12 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             Timeline.CompilerTimeline.Instance.FocusTimelineWindow();
+        }
+
+        private static void Execute_ShowTimeline(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            EditorUtils.ShowActiveTimeline();
         }
 
         private static void Execute_Build(object sender, EventArgs e)

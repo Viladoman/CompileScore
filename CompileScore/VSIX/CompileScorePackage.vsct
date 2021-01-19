@@ -70,7 +70,15 @@
           <ButtonText>Rebuild Solution and Profile</ButtonText>
         </Strings>
       </Button>
-      
+
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdidShowTimeline" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="EditorContextMenuGroup" />
+        <Icon guid="guidImages" id="icon" />
+        <Strings>
+          <ButtonText>Show Timeline</ButtonText>
+        </Strings>
+      </Button>
+
       <!--
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdClean" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
@@ -139,6 +147,9 @@
       <Bitmap guid="guidImages1" href="Timeline\Resources\TimelineWindowCommand.png" usedList="icon" />
     </Bitmaps>
     <Groups>
+      <Group guid="guidCompileScorePackageCmdSet1" id="EditorContextMenuGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN" />
+      </Group>
       <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreGroup" priority="0x0600">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_TOOL_MAINMENU" />
       </Group>
@@ -199,6 +210,7 @@
       <IDSymbol value="4132" name="CompileScoreMenuGroupOptions" />
       <IDSymbol value="4133" name="CompileScoreMenuGroupHelp" />
       <IDSymbol value="4134" name="CompileScoreBuild" />
+      <IDSymbol value="4135" name="EditorContextMenuGroup" />
       <IDSymbol value="256" name="cmdidBuild" />
       <IDSymbol value="257" name="cmdidRebuild" />
       <IDSymbol value="258" name="cmdIdClean" />
@@ -208,6 +220,7 @@
       <IDSymbol value="262" name="cmdidDocumentation" />
       <IDSymbol value="263" name="cmdidReport" />
       <IDSymbol value="264" name="cmdidAbout" />
+      <IDSymbol value="265" name="cmdidShowTimeline" />
     </GuidSymbol>
   </Symbols>
 </CommandTable>
