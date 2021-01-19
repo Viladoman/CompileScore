@@ -1,4 +1,5 @@
 {
+  "ScoreSource": 0,
   "ScoreLocation": "$(SolutionDir)CompileData\\$(Configuration)\\compileData.scor",
   "ScoreGenerator": {
     "Compiler": 1,
