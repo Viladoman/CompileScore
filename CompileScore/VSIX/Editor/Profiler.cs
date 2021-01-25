@@ -61,8 +61,6 @@ namespace CompileScore
         private ExtractorDetail TimelineDetail { set; get; } = ExtractorDetail.Basic;
         private uint TimelinePacking { set; get; } = 100;
 
-        static bool IsElevated => new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
-
         public void Initialize(IServiceProvider provider)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -198,12 +196,6 @@ namespace CompileScore
         private bool ValidateBuild()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (CompilerSource == Compiler.MSVC && !IsElevated)
-            {
-                DisplayError("Visual Studio needs to be running in administrator mode. Microsoft Build Insights requirement.");
-                return false;
-            }          
 
             //TODO ~ ramonv ~ placeholder while we find a soltuion for 'open folder' build events 
             if (EditorContext.Instance.Mode == EditorContext.EditorMode.Folder)
