@@ -5,8 +5,8 @@
     "Compiler": 0,
     "InputPath": "$(SolutionDir)CompileData\\$(Configuration)",
     "OutputPath": "$(SolutionDir)CompileData\\$(Configuration)\\compileData.scor",
-    "OverviewDetail": 2,
-    "TimelineDetail": 2,
+    "OverviewDetail": 3,
+    "TimelineDetail": 3,
     "TimelinePacking": 100
   }
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="CompileScore.19699ea5-2ee6-44b6-9964-a19882b92403" Version="1.5.4" Language="en-US" Publisher="Ramon Viladomat" />
+        <Identity Id="CompileScore.19699ea5-2ee6-44b6-9964-a19882b92403" Version="1.5.5" Language="en-US" Publisher="Ramon Viladomat" />
         <DisplayName>Compile Score</DisplayName>
         <Description xml:space="preserve">C/C++ compile times data viewer and text highlight for Clang and MSVC.</Description>
         <MoreInfo>https://github.com/Viladoman/CompileScore</MoreInfo>

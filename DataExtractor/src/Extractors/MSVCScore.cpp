@@ -583,9 +583,9 @@ namespace MSVC
             options.MsvcEventFlags |= MSBI::TRACING_SESSION_MSVC_EVENT_FLAGS_BACKEND_FUNCTIONS;
         case ExportParams::Detail::FrontEnd:
             options.MsvcEventFlags |= MSBI::TRACING_SESSION_MSVC_EVENT_FLAGS_FRONTEND_TEMPLATE_INSTANTIATIONS;
+        case ExportParams::Detail::Basic:
             options.MsvcEventFlags |= MSBI::TRACING_SESSION_MSVC_EVENT_FLAGS_FRONTEND_FILES;
         case ExportParams::Detail::None:
-        case ExportParams::Detail::Basic:
             options.MsvcEventFlags |= MSBI::TRACING_SESSION_MSVC_EVENT_FLAGS_BASIC;
         }
 
