@@ -1,5 +1,9 @@
 #include "MSVCScore.h"
 
+#define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <DbgHelp.h>
 #include <chrono>
 #include <CppBuildInsights.hpp>
 
@@ -152,6 +156,8 @@ namespace MSVC
         void MergePendingEvents(TUEntry& entry);
 
         TUProcess& GetProcess(TProcessId processId);
+
+        fastl::string UndecorateFunctionName(const char* functionName) const;
 
     private:
         TUProcessContainer m_processes;
@@ -350,13 +356,9 @@ namespace MSVC
     // -----------------------------------------------------------------------------------------------------------
     void Gatherer::OnFunctionEnded(const MSBI::Activities::Function& activity)
     {
-        fastl::string name = activity.Name();
-
-        //TODO ~ ramonv ~ undecorateName - windows function: UnDecorateSymbolName()
-
+        fastl::string name = UndecorateFunctionName(activity.Name());
         StringUtils::ToLower(name);
         AddEvent(GetProcess(activity.ProcessId()).GetActiveTU(),CompileCategory::CodeGenFunction,activity,name);
-
     }
 
     // -----------------------------------------------------------------------------------------------------------
@@ -462,6 +464,20 @@ namespace MSVC
 
         return *found; 
     }
+
+    // -----------------------------------------------------------------------------------------------------------
+    fastl::string Gatherer::UndecorateFunctionName(const char* functionName) const
+    {
+        constexpr unsigned long undecoratedNameMaxLength = 512;
+        char undecoratedFunctionName[undecoratedNameMaxLength];
+
+        const unsigned long undecorateFlags = UNDNAME_COMPLETE | UNDNAME_32_BIT_DECODE | UNDNAME_NO_ACCESS_SPECIFIERS;
+
+        unsigned long result = UnDecorateSymbolName(functionName, undecoratedFunctionName, undecoratedNameMaxLength, undecorateFlags);
+
+        return result != 0 ? undecoratedFunctionName : functionName;
+    }
+
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

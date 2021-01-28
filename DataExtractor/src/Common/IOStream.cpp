@@ -359,8 +359,8 @@ namespace IO
                 const CompileData& data = entry;
                 BinarizeString(stream,entry.name);
                 BinarizeU64(stream,data.accumulated);
-                BinarizeU32(stream,data.min);
-                BinarizeU32(stream,data.max);
+                BinarizeU32(stream,data.minimum);
+                BinarizeU32(stream,data.maximum);
                 BinarizeU32(stream,data.count);
                 BinarizeU32(stream,data.maxId);
             }

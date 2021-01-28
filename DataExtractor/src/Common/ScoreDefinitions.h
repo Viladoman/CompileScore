@@ -64,8 +64,8 @@ struct CompileData
 { 
     CompileData()
         : accumulated(0u)
-        , min(0xffffffff)
-        , max(0u)
+        , minimum(0xffffffff)
+        , maximum(0u)
         , maxId(InvalidCompileId)
         , count(0u)
     {}
@@ -73,16 +73,16 @@ struct CompileData
     CompileData(const fastl::string& _name)
         : name(_name)
         , accumulated(0u)
-        , min(0xffffffff)
-        , max(0u)
+        , minimum(0xffffffff)
+        , maximum(0u)
         , maxId(InvalidCompileId)
         , count(0u)
     {}
 
     fastl::string name; 
     U64           accumulated; 
-    U32           min; 
-    U32           max; 
+    U32           minimum; 
+    U32           maximum; 
     U32           maxId; //filled by the ScoreProcessor
     U32           count;
 };

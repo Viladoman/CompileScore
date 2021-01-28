@@ -59,11 +59,11 @@ namespace CompileScore
 			{ 
 				CompileData& compileData = CreateGlobalEntry(scoreData,element);
 				compileData.accumulated += element.duration;
-				compileData.min = Utils::Min(element.duration,compileData.min);
+				compileData.minimum = Utils::Min(element.duration,compileData.minimum);
 
-				if (element.duration >= compileData.max)
+				if (element.duration >= compileData.maximum)
 				{ 
-					compileData.max = element.duration;
+					compileData.maximum = element.duration;
 					compileData.maxId =unit.unitId;
 				}
 
