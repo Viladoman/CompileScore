@@ -95,7 +95,7 @@ namespace CompileScore
             if (!IsEnabled) return;
 
             var currentSnapshot = _buffer.CurrentSnapshot;
-            MatchCollection matches = Regex.Matches(currentSnapshot.GetText(), @"#\s*include\s*[<""](.+)[>""]");
+            MatchCollection matches = Regex.Matches(currentSnapshot.GetText(), EditorUtils.IncludeRegex);
             foreach (Match match in matches)
             {
                 if (match.Success)

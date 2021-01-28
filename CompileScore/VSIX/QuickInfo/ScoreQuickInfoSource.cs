@@ -41,7 +41,7 @@ namespace CompileScore
                     var line = triggerPoint.Value.GetContainingLine();
                     string lineStr = line.GetText();
 
-                    Match match = Regex.Match(lineStr, @"#\s*include\s*[<""](.+)[>""]");
+                    Match match = Regex.Match(lineStr, EditorUtils.IncludeRegex);
                     if (match.Success)
                     {
                         string file = match.Groups[1].Value;

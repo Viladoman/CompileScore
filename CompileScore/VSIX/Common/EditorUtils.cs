@@ -12,6 +12,8 @@ namespace CompileScore
 {
     static public class EditorUtils
     {
+        public const string IncludeRegex = @"#\s*include\s*[<""]([^>""]+)[>""]";
+
         static private AsyncPackage Package { get; set; }
         static private IServiceProvider ServiceProvider { get; set; }
 
