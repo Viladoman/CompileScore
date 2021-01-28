@@ -101,8 +101,12 @@ namespace CompileScore
                 if (match.Success)
                 {
                     string file = match.Groups[1].Value;
-                    string fileName = Path.GetFileName(file).ToLower();
-                    CompileValue value = CompilerData.Instance.GetValue(CompilerData.CompileCategory.Include,fileName);
+                    string fileName = EditorUtils.GetFileNameSafe(file);
+
+                    if (fileName == null) continue;
+
+                    string lowerFilename = fileName.ToLower();
+                    CompileValue value = CompilerData.Instance.GetValue(CompilerData.CompileCategory.Include, lowerFilename);
 
                     if (value != null && value.Severity > 0)
                     {

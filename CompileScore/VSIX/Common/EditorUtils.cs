@@ -28,6 +28,18 @@ namespace CompileScore
             return Path.IsPathRooted(input) ? Path.GetFullPath(input) : input;
         }
 
+        static public string GetFileNameSafe(string input)
+        {
+            try
+            {
+                return Path.GetFileName(input);
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+        }
+
         static public OverviewWindow FocusOverviewWindow()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
