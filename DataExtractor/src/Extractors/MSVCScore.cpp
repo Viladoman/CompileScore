@@ -42,8 +42,14 @@ namespace MSVC
             static char* str = new char[BUFF_SIZE];
 
             const wchar_t* fileNameW = compilerPass.InputSourcePath() == nullptr? compilerPass.OutputObjectPath() : compilerPass.InputSourcePath();
-            size_t inputLength = wcslen(fileNameW);
 
+            if (fileNameW == nullptr)
+            { 
+                //Edge case were there is not path to be recovered
+                return ""; //return empty but valid path
+            }
+
+            size_t inputLength = wcslen(fileNameW);
             size_t charsConverted = 0;
             wcstombs_s(&charsConverted, str, BUFF_SIZE, fileNameW, inputLength);
             return str;
@@ -120,7 +126,7 @@ namespace MSVC
 
             TUEntry* GetActiveTU();         
             void ActivateTU(const fastl::string& path);
-            void ClearActiveTU();
+            void ClearTU(TUEntry& entry);
             void DeactivateTU();
 
             TTUCollection data; 
@@ -152,7 +158,8 @@ namespace MSVC
         U32 ComputeEventStartTime(TUEntry* activeTU, const MSBI::Activities::Activity& activity) const;
         MSVCCompileEvent* AddEvent(TUEntry* activeTU, const CompileCategory category, const MSBI::Activities::Activity& activity, const fastl::string& name = "", const TSymbolId nameSymbol = 0u);
         
-        void FinalizeActiveTU(TUProcess& process);
+        bool FixNameTU(TUEntry& entry);
+        void FinalizeTU(TUEntry& entry);
         void MergePendingEvents(TUEntry& entry);
 
         TUProcess& GetProcess(TProcessId processId);
@@ -216,20 +223,15 @@ namespace MSVC
     }
 
     // -----------------------------------------------------------------------------------------------------------
-    void Gatherer::TUProcess::ClearActiveTU()
+    void Gatherer::TUProcess::ClearTU(TUEntry& entry)
     { 
-        if (TUEntry* activeTU = GetActiveTU())
-        { 
-            //remove entry from dictionary 
-            dict.erase(activeTU->name);
+        //remove entry from dictionary 
+        dict.erase(entry.name);
 
-            //remove suballocation on activetU but keep to not destroy the dictionary indices
-            activeTU->tracks.clear();
-            activeTU->name.clear();
-            activeTU->symbols.clear();
-
-            DeactivateTU();
-        }
+        //remove suballocation on activetU but keep to not destroy the dictionary indices
+        entry.tracks.clear();
+        entry.name.clear();
+        entry.symbols.clear();
     }
 
     // -----------------------------------------------------------------------------------------------------------
@@ -256,10 +258,13 @@ namespace MSVC
     { 
         MSBI::MatchEventInMemberFunction(eventStack.Back(), this, &Gatherer::OnCompilerPassEnded);
 
+        //TOdO ~ check detail data and just ignore already here stuff that we are not interested in ( avoid memory and computation ) 
+
         //Specifics
         MSBI::MatchEventInMemberFunction(eventStack.Back(), this, &Gatherer::OnIncludeEnded);
-        MSBI::MatchEventInMemberFunction(eventStack.Back(), this, &Gatherer::OnFunctionEnded);
         MSBI::MatchEventInMemberFunction(eventStack.Back(), this, &Gatherer::OnTemplateInstantiationEnded);
+        MSBI::MatchEventInMemberFunction(eventStack.Back(), this, &Gatherer::OnFunctionEnded);
+
         MSBI::MatchEventInMemberFunction(eventStack.Back(), this, &Gatherer::OnCodeGenerationEnded);
         MSBI::MatchEventInMemberFunction(eventStack.Back(), this, &Gatherer::OnCodeGenerationThreadEnded);
 
@@ -304,19 +309,25 @@ namespace MSVC
         TUProcess& process = GetProcess(activity.ProcessId());
         TUEntry* activeTU = process.GetActiveTU();
 
-        //Close current section and prepare for future ones
-        if (MSVCCompileEvent* newEvent = AddEvent(activeTU,category,activity)) 
+        if (activeTU)
         { 
-            activeTU->timeSectionAccumulator = (newEvent->event.start + newEvent->event.duration)+1;
-            for (MSVCCompileTrack& track : activeTU->tracks)
+            //Close current section and prepare for future ones
+            if (MSVCCompileEvent* newEvent = AddEvent(activeTU,category,activity)) 
             { 
-                track.sectionStartIndex = track.events.size();
+                activeTU->timeSectionAccumulator = (newEvent->event.start + newEvent->event.duration)+1;
+                for (MSVCCompileTrack& track : activeTU->tracks)
+                { 
+                    track.sectionStartIndex = track.events.size();
+                }
             }
-        }
 
-        if (category == CompileCategory::BackEnd)
-        { 
-            FinalizeActiveTU(process);
+            const bool isNamed = activeTU->name.empty();
+
+            if (category == CompileCategory::BackEnd || FixNameTU(*activeTU))
+            { 
+                FinalizeTU(*activeTU);
+                process.ClearTU(*activeTU);
+            }
         }
 
         //Disable active TU
@@ -416,41 +427,63 @@ namespace MSVC
     }
   
     // -----------------------------------------------------------------------------------------------------------
-    void Gatherer::FinalizeActiveTU(TUProcess& process)
+    bool Gatherer::FixNameTU(TUEntry& entry)
     { 
-        //Combine front end with 
-        if (TUEntry* tu = process.GetActiveTU())
-        { 
-            TUEntry& entry = *tu;
-            entry.tracks[0].events[0].event.duration = entry.timeSectionAccumulator; //Fix the root node
+        //Placeholder to fix the issue when Build Insights does not give any TU name. 
+        //We check for the frontend the first include as the same input file will be parsed 
+        //Checking the first track and the first include to steal the name. 
 
-            //Create standard timeline
-            ScoreTimeline timeline; 
-            timeline.name = entry.name;
-            timeline.tracks.reserve(entry.tracks.size());
+        if (!entry.name.empty()) return false; //name is valid nothing to be done
 
-            for (MSVCCompileTrack& track : entry.tracks)
+        if (entry.tracks.empty()) return true; //we want to process this case as it needs to be removed
+
+        TMSVCCompileEvents& mainTrackEvents = entry.tracks[0].events;
+
+        for (const MSVCCompileEvent& event : mainTrackEvents)
+        {
+            if (event.event.category == CompileCategory::Include)
             {
-                timeline.tracks.emplace_back();
-                TCompileEvents& timelineEvents = timeline.tracks.back();
-
-                timelineEvents.reserve(track.events.size());
-                for(MSVCCompileEvent& element : track.events)
-                { 
-                    //assign name from symbols table if needed
-                    if (element.nameSymbol > 0u)
-                    { 
-                        element.event.name = entry.symbols[element.nameSymbol];
-                    }
-
-                    timelineEvents.push_back(element.event);
-                }
+                entry.name = event.event.name;
+                return true; 
             }
+        }        
 
-            CompileScore::ProcessTimeline(m_scoreData,timeline);
+        //unable to fix the name, discard this entry
+        return true; 
+    }
 
-            process.ClearActiveTU();
+    // -----------------------------------------------------------------------------------------------------------
+    void Gatherer::FinalizeTU(TUEntry& entry)
+    { 
+        if (entry.name.empty() || entry.tracks.empty() || entry.tracks[0].events.empty()) return; // avoid exporting any unnamed TU
+
+        //Combine front end with  
+        entry.tracks[0].events[0].event.duration = entry.timeSectionAccumulator; //Fix the root node
+
+        //Create standard timeline
+        ScoreTimeline timeline; 
+        timeline.name = entry.name;
+        timeline.tracks.reserve(entry.tracks.size());
+
+        for (MSVCCompileTrack& track : entry.tracks)
+        {
+            timeline.tracks.emplace_back();
+            TCompileEvents& timelineEvents = timeline.tracks.back();
+
+            timelineEvents.reserve(track.events.size());
+            for(MSVCCompileEvent& element : track.events)
+            { 
+                //assign name from symbols table if needed
+                if (element.nameSymbol > 0u)
+                { 
+                    element.event.name = entry.symbols[element.nameSymbol];
+                }
+
+                timelineEvents.push_back(element.event);
+            }
         }
+
+        CompileScore::ProcessTimeline(m_scoreData,timeline);
     }
 
     // -----------------------------------------------------------------------------------------------------------
