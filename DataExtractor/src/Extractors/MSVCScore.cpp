@@ -98,7 +98,8 @@ namespace MSVC
     class Gatherer : public MSBI::IAnalyzer
     {
     private: 
-        enum { InvalidIndex = 0xffffffff };
+        enum { InvalidIndex = static_cast<size_t>(-1) };
+
 
         struct TUEntry
         { 
@@ -118,7 +119,7 @@ namespace MSVC
             U32                timeSectionAccumulator;
         };
         using TTUCollection = fastl::vector<TUEntry>;
-        using TTUDictionary = fastl::unordered_map<fastl::string,U32>;
+        using TTUDictionary = fastl::unordered_map<fastl::string,size_t>;
 
         struct TUProcess
         { 
@@ -126,13 +127,15 @@ namespace MSVC
 
             TUEntry* GetActiveTU();         
             void ActivateTU(const fastl::string& path);
+            void ActivateNew();
+            void ActivateFirstUnnamed();
             void ClearTU(TUEntry& entry);
             void DeactivateTU();
 
             TTUCollection data; 
             TTUDictionary dict;
             TProcessId    processId; 
-            U32 activeIndex;
+            size_t        activeIndex;
         };
         using TUProcessContainer = fastl::vector<TUProcess>;
 
@@ -158,7 +161,7 @@ namespace MSVC
         U32 ComputeEventStartTime(TUEntry* activeTU, const MSBI::Activities::Activity& activity) const;
         MSVCCompileEvent* AddEvent(TUEntry* activeTU, const CompileCategory category, const MSBI::Activities::Activity& activity, const fastl::string& name = "", const TSymbolId nameSymbol = 0u);
         
-        bool FixNameTU(TUEntry& entry);
+        void FixNameTU(TUEntry& entry);
         void FinalizeTU(TUEntry& entry);
         void MergePendingEvents(TUEntry& entry);
 
@@ -212,9 +215,8 @@ namespace MSVC
         TTUDictionary::iterator found = dict.find(path);
         if (found == dict.end())
         { 
-            activeIndex = static_cast<U32>(data.size()); 
+            ActivateNew();
             dict[path] = activeIndex;
-            data.emplace_back();
         }
         else 
         { 
@@ -222,6 +224,30 @@ namespace MSVC
         }
     }
 
+    // -----------------------------------------------------------------------------------------------------------
+    void Gatherer::TUProcess::ActivateNew()
+    { 
+        activeIndex = data.size();
+        data.emplace_back();
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    void Gatherer::TUProcess::ActivateFirstUnnamed()
+    { 
+        for (size_t index = 0u, sz = data.size(); index<sz;++index)
+        {
+            const TUEntry& entry = data[index];
+            if (!entry.tracks.empty() && entry.name.empty())
+            { 
+                activeIndex = index;
+                return;
+            }
+        }
+
+        //if previous unnamed found, just crete a new one
+        ActivateNew();
+    }
+    
     // -----------------------------------------------------------------------------------------------------------
     void Gatherer::TUProcess::ClearTU(TUEntry& entry)
     { 
@@ -287,7 +313,23 @@ namespace MSVC
         StringUtils::ToLower(path);
 
         TUProcess& process = GetProcess(activity.ProcessId());
-        process.ActivateTU(path);
+
+        //Activate the TU depending on the data we have ( handling unnamed passes ) 
+        if (!path.empty())
+        { 
+            process.ActivateTU(path);
+        }
+        else if (activity.PassCode() == MSBI::Activities::CompilerPass::PassCode::FRONT_END) 
+        {
+            //create a new unnamed front end
+            process.ActivateNew();
+        }
+        else
+        { 
+            //if we don't know the name the backend will be linked to the first encounted unnamed frontend
+            process.ActivateFirstUnnamed();
+        }
+
         TUEntry* activeTU = process.GetActiveTU();
         MSVCCompileTrack& track = activeTU->GetTrack(activity.ThreadId());
 
@@ -323,8 +365,9 @@ namespace MSVC
 
             const bool isNamed = activeTU->name.empty();
 
-            if (category == CompileCategory::BackEnd || FixNameTU(*activeTU))
+            if (category == CompileCategory::BackEnd)
             { 
+                FixNameTU(*activeTU);
                 FinalizeTU(*activeTU);
                 process.ClearTU(*activeTU);
             }
@@ -427,29 +470,23 @@ namespace MSVC
     }
   
     // -----------------------------------------------------------------------------------------------------------
-    bool Gatherer::FixNameTU(TUEntry& entry)
+    void Gatherer::FixNameTU(TUEntry& entry)
     { 
         //Placeholder to fix the issue when Build Insights does not give any TU name. 
         //We check for the frontend the first include as the same input file will be parsed 
         //Checking the first track and the first include to steal the name. 
-
-        if (!entry.name.empty()) return false; //name is valid nothing to be done
-
-        if (entry.tracks.empty()) return true; //we want to process this case as it needs to be removed
-
-        TMSVCCompileEvents& mainTrackEvents = entry.tracks[0].events;
-
-        for (const MSVCCompileEvent& event : mainTrackEvents)
+        if (entry.name.empty() && !entry.tracks.empty()) 
         {
-            if (event.event.category == CompileCategory::Include)
+            TMSVCCompileEvents& mainTrackEvents = entry.tracks[0].events;
+            for (const MSVCCompileEvent& event : mainTrackEvents)
             {
-                entry.name = event.event.name;
-                return true; 
+                if (event.event.category == CompileCategory::Include)
+                {
+                    entry.name = event.event.name;
+                    return;
+                }
             }
-        }        
-
-        //unable to fix the name, discard this entry
-        return true; 
+        }
     }
 
     // -----------------------------------------------------------------------------------------------------------
