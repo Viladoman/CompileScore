@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.Composition;
-using System.Windows.Media;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
 
@@ -12,7 +11,7 @@ namespace CompileScore
             var color = Common.Colors.GetSeverityBrush(severity);
             color.Opacity = 0.25;
             this.Fill = color;
-            this.DisplayName = "Highlight Word";
+            this.DisplayName = "CompileScore Severity " + severity;
             this.ZOrder = 5;
         }
     }
