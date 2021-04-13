@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace CompileScore
 {
@@ -25,7 +26,7 @@ namespace CompileScore
         public uint Max { get; }
         public uint Min { get; }
         public ulong Accumulated { get; }
-        public uint Mean { get { return (uint)(Accumulated / Count); }  }
+        public uint Average { get { return (uint)(Accumulated / Count); }  }
         public uint Count { get; }
         public uint Severity { set; get; }
         public UnitValue MaxUnit { get; }
@@ -122,6 +123,7 @@ namespace CompileScore
 
         public enum CompileThresholds
         {
+            Severity = CompileCategory.ParseClass,
             Gather = CompileCategory.PendingInstantiations,
             Display = CompileCategory.RunPass,
         }
@@ -435,23 +437,43 @@ namespace CompileScore
             ScoreDataChanged?.Invoke();
         }
 
-        private void PostProcessLoadedData()
+        public string GetSeverityCriteria()
         {
-            //For the time being we are only using Include data for this
-            //Only store dictionary for it for now
-            const int i = (int)CompileCategory.Include;
+            string propertyName = GetGeneralSettings().OptionSeverityCriteria.ToString();
+            return typeof(CompileValue).GetProperty(propertyName) == null? "Max" : propertyName;
+        }
 
-            //for(int i = 0; i < (int)CompileCategory.GahterCount; ++i)
+        private void ProcessSeverityData()
+        {
+            //retrieve the property that we will use for the severity sorting
+            PropertyInfo valueCriteria = typeof(CompileValue).GetProperty(GetSeverityCriteria());
+
+            for (int i = 0; i < (int)CompileThresholds.Severity; ++i)
             {
                 CompileDataset dataset = Datasets[i];
                 List<uint> onlyValues = new List<uint>();
                 foreach (CompileValue entry in dataset.collection)
                 {
-                    onlyValues.Add(entry.Max);
-                    dataset.dictionary.Add(entry.Name, entry);
+                    onlyValues.Add((uint)valueCriteria.GetValue(entry));
                 }
                 ComputeNormalizedThresholds(dataset.normalizedThresholds, onlyValues);
             }
+        }
+
+        private void PostProcessLoadedData()
+        {
+            //Build the mapping between names and entries for fast queries
+            for (int i = 0; i < (int)CompileThresholds.Severity; ++i)
+            {
+                CompileDataset dataset = Datasets[i];
+                foreach (CompileValue entry in dataset.collection)
+                {
+                    dataset.dictionary.Add(entry.Name, entry);
+                }
+            }
+
+            //Compute Severities
+            ProcessSeverityData();
 
             //Process Totals
             Totals = new List<UnitTotal>();
@@ -462,7 +484,6 @@ namespace CompileScore
             
             foreach (UnitValue unit in UnitsCollection)
             {  
-                
                 for(int k = 0; k < (int)CompileThresholds.Display;++k)
                 {
                     Totals[k].Total += unit.ValuesList[k];
@@ -501,17 +522,15 @@ namespace CompileScore
         {
             GeneralSettingsPageGrid settings = GetGeneralSettings();
 
-            //For the time being we are only using Include data for this
-            //Only compute it for include for now 
-            const int i = (int)CompileCategory.Include;
-
-            //for (int i = 0; i < (int)CompileCategory.GatherCount; ++i)
+            PropertyInfo valueCriteria = typeof(CompileValue).GetProperty(GetSeverityCriteria());
+            
+            for (int i = 0; i < (int)CompileThresholds.Severity; ++i)
             {
                 CompileDataset dataset = Datasets[i];
                 List<uint> thresholdList = settings.OptionNormalizedSeverity ? dataset.normalizedThresholds : settings.GetOptionSeverities();
                 foreach (CompileValue entry in dataset.collection)
                 {
-                    entry.Severity = ComputeSeverity(thresholdList, entry.Max);
+                    entry.Severity = ComputeSeverity(thresholdList, (uint)valueCriteria.GetValue(entry));
                 }
             }
         }
@@ -562,6 +581,12 @@ namespace CompileScore
         {
             RecomputeSeverities();
             ScoreDataChanged?.Invoke();
+        }
+
+        public void OnSettingsSeverityCriteriaChanged()
+        {
+            ProcessSeverityData();
+            OnSettingsSeverityChanged();
         }
 
         public void OnHighlightModeChanged()

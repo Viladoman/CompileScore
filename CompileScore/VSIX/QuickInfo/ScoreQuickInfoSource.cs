@@ -65,10 +65,11 @@ namespace CompileScore
 
                             if (value != null && value.Severity > 0)
                             {
+                                var criteria = CompilerData.Instance.GetSeverityCriteria(); 
                                 var scoreElm = new ContainerElement(
                                     ContainerElementStyle.Wrapped,
                                     new ClassifiedTextElement(
-                                            new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "Compile Score:  ")
+                                            new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, $"Compile Score ({criteria}):  ")
                                         ),
                                     new ImageElement(value.Severity > 0 ? _severityOnIcon : _severityOffIcon),
                                     new ImageElement(value.Severity > 1 ? _severityOnIcon : _severityOffIcon),
@@ -88,7 +89,7 @@ namespace CompileScore
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " Min: "),
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.UIConverters.GetTimeStr(value.Min)),
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " Average: "),
-                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.UIConverters.GetTimeStr(value.Mean)),
+                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.UIConverters.GetTimeStr(value.Average)),
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " Count: "),
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, $"{value.Count}")
                                     ));

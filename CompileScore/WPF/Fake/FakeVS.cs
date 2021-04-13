@@ -118,7 +118,11 @@ namespace CompileScore
 
     public class GeneralSettingsPageGrid
     {
+        public enum SeverityCriteria{}
+
         public bool OptionNormalizedSeverity = true;
+
+        public SeverityCriteria OptionSeverityCriteria { set; get; }
 
         private List<uint> fakeSeverities = new List<uint>();
         public List<uint> GetOptionSeverities() { return fakeSeverities; }

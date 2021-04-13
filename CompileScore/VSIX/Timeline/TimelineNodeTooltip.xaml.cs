@@ -37,7 +37,7 @@ namespace CompileScore.Timeline
                     descriptionText.Text = val.Name;
                     detailsText.Text = "Max: "+Common.UIConverters.GetTimeStr(val.Max)
                                      +" Min: "+ Common.UIConverters.GetTimeStr(val.Min)
-                                     +" Avg: "+ Common.UIConverters.GetTimeStr(val.Mean) 
+                                     +" Avg: "+ Common.UIConverters.GetTimeStr(val.Average) 
                                      +" Count: "+ val.Count;
                 }
                 else if (node.Value is UnitValue)

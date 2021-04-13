@@ -14,6 +14,16 @@ namespace CompileScore
             Full,
         }
 
+        public enum SeverityCriteria
+        {
+            //This names need to match the function names of CompileValue
+            Max,
+            Min,
+            Average,
+            Count,
+        }
+
+        private SeverityCriteria optionSeverityCriteria = SeverityCriteria.Max;
         private bool optionNormalizedSeverity = true;
         private HighlightMode optionHighlightMode = HighlightMode.Full;
         private List<uint> optionSeverities = new List<uint> { 250u, 1000u, 25000u, 100000u, 500000u };
@@ -33,7 +43,16 @@ namespace CompileScore
         [DisplayName("Tooltip")]
         [Description("If true, a tooltip will show up when hovering with the mouse")]
         public bool OptionTooltipEnabled { set; get; } = true;
-        
+
+        [Category("Tags")]
+        [DisplayName("Severity Criteria")]
+        [Description("Select the data used to sort and define the severity levels")]
+        public SeverityCriteria OptionSeverityCriteria
+        {
+            get { return optionSeverityCriteria; }
+            set { bool hasChanged = optionSeverityCriteria != value; optionSeverityCriteria = value; if (hasChanged) { CompilerData.Instance.OnSettingsSeverityCriteriaChanged(); } }
+        }
+
         [Category("Tags")]
         [DisplayName("Normalized Severity")]
         [Description("If true, the severity levels will be defined based on the min-max found")]
