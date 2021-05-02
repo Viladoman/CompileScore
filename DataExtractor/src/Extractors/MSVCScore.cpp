@@ -731,6 +731,8 @@ namespace MSVC
         }
 
         LOG_ERROR("Unknown output file extension provided. The MSVC generator only knows how to generate .scor or .etl files.");
+        LOG_ERROR("Cancelling Recording...");
+        CancelRecording(params);
         return FAILURE;
     }
 
