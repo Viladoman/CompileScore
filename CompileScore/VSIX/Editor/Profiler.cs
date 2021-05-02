@@ -398,7 +398,7 @@ namespace CompileScore
             string inputCommand = inputPath.Length > 0 ? " -i " + inputPath : "";
 
             string outputPath = Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.OutputPath);
-            string quotes = outputPath = outputPath.IndexOf(' ') >= 0? "\"" : "";
+            string quotes = outputPath.IndexOf(' ') >= 0? "\"" : "";
             string outputCommand = outputPath.Length > 0 ? " -o " + quotes + outputPath + quotes : "";
             
             string detail = " -d " + (int)OverviewDetail;
@@ -438,7 +438,7 @@ namespace CompileScore
             //Process Data
             string inputPath = FixPath(Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.InputPath));
             string outputPath = Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.OutputPath);
-            string quotes = outputPath = outputPath.IndexOf(' ') >= 0 ? "\"" : "";
+            string quotes = outputPath.IndexOf(' ') >= 0 ? "\"" : "";
             CreateDirectory(Path.GetDirectoryName(outputPath));
 
             string detail = " -d " + (int)OverviewDetail;
