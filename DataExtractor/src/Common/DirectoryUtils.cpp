@@ -5,6 +5,8 @@
 
 #include "IOStream.h"
 
+//#define USE_STL_ISEXTENSION
+
 namespace fs = std::filesystem;
 
 namespace IO
@@ -79,7 +81,26 @@ namespace IO
     // -----------------------------------------------------------------------------------------------------------
     bool IsExtension(const char* path, const char* extension)
     { 
+#ifdef USE_STL_ISEXTENSION
         return fs::path(path).extension() == extension;
+#else
+        const size_t extensionLength = strlen(extension);
+        size_t pathIndex = strlen(path);
+
+        //Find the real pathLength ( trim end spaces )
+        while (pathIndex > 0 && path[pathIndex - 1] == ' ') --pathIndex;
+
+        if (extensionLength > pathIndex) return false;
+        
+        pathIndex -= extensionLength;
+
+        for (size_t i = 0; i < extensionLength; ++i,++pathIndex)
+        {
+            if (extension[i] != path[pathIndex]) return false;
+        }
+
+        return true; 
+#endif
     }
 
     // -----------------------------------------------------------------------------------------------------------
