@@ -90,8 +90,8 @@ namespace CompileScore.Common
 
             if (hour > 0) { return hour + " h " + min + " m"; }
             if (min > 0)  { return min  + " m " + sec + " s"; }
-            if (sec > 0)  { return sec  + "." + ms.ToString().PadLeft(4, '0') + " s"; }
-            if (ms > 0)   { return ms + "." + us.ToString().PadLeft(4, '0')+" ms"; }
+            if (sec > 0)  { return sec  + "." + ms.ToString().PadLeft(3, '0') + " s"; }
+            if (ms > 0)   { return ms + "." + us.ToString().PadLeft(3, '0')+" ms"; }
             if (us > 0)   { return us + " μs"; }
             return allowZero? "-" : "< 1 μs";
         }
