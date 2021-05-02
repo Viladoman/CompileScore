@@ -398,7 +398,8 @@ namespace CompileScore
             string inputCommand = inputPath.Length > 0 ? " -i " + inputPath : "";
 
             string outputPath = Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.OutputPath);
-            string outputCommand = outputPath.Length > 0 ? " -o " + outputPath : "";
+            string quotes = outputPath = outputPath.IndexOf(' ') >= 0? "\"" : "";
+            string outputCommand = outputPath.Length > 0 ? " -o " + quotes + outputPath + quotes : "";
             
             string detail = " -d " + (int)OverviewDetail;
             string timeline = TimelinePacking == 0 ? " -nt" : " -tp " + TimelinePacking + " -td " + (int)TimelineDetail;
@@ -437,12 +438,13 @@ namespace CompileScore
             //Process Data
             string inputPath = FixPath(Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.InputPath));
             string outputPath = Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.OutputPath);
+            string quotes = outputPath = outputPath.IndexOf(' ') >= 0 ? "\"" : "";
             CreateDirectory(Path.GetDirectoryName(outputPath));
 
             string detail = " -d " + (int)OverviewDetail;
             string timeline = TimelinePacking == 0 ? " -nt" : " -tp " + TimelinePacking + " -td " + (int)TimelineDetail;
 
-            string commandLine = "-clang -extract" + timeline + detail + " -i " + inputPath + " -o " + outputPath;
+            string commandLine = "-clang -extract" + timeline + detail + " -i " + inputPath + " -o " + quotes + outputPath + quotes;
 
             OutputLog.Log("Calling ScoreDataExtractor with " + commandLine);
             int exitCode = await ExternalProcess.ExecuteAsync(GetScoreExtractorToolPath(), commandLine);
