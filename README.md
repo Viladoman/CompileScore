@@ -2,7 +2,7 @@
 
 VisualStudio extension and utilities used to display and highlight compilation profiling data. Know the real compilation cost of your code directly inside Visual Studio. Keep the compile times in check. 
 
-[![MarketPlace](https://img.shields.io/badge/Visual_Studio_Marketplace-v1.5.6-green.svg)](https://marketplace.visualstudio.com/items?itemName=RamonViladomat.CompileScore)
+[![MarketPlace](https://img.shields.io/badge/Visual_Studio_Marketplace-v1.5.7-green.svg)](https://marketplace.visualstudio.com/items?itemName=RamonViladomat.CompileScore)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate?hosted_button_id=QWTUS8PNK5X5A)
 
 [Download latest VSIX from the Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=RamonViladomat.CompileScore)
