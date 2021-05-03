@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.VisualStudio.Shell;
@@ -26,9 +27,11 @@ namespace CompileScore
         private SeverityCriteria optionSeverityCriteria = SeverityCriteria.Max;
         private bool optionNormalizedSeverity = true;
         private HighlightMode optionHighlightMode = HighlightMode.Full;
-        private List<uint> optionSeverities = new List<uint> { 250u, 1000u, 25000u, 100000u, 500000u };
+        private List<uint> optionValueSeverities = new List<uint> { 250u, 1000u, 25000u, 100000u };
+        private List<float> optionNormalizedSeverities = new List<float> { 20.0f, 40.0f, 60.0f, 80.0f };
 
-        public List<uint> GetOptionSeverities() { return optionSeverities; }
+        public List<uint> GetOptionValueSeverities() { return optionValueSeverities; }
+        public List<float> GetOptionNormalizedSeverities() { return optionNormalizedSeverities; }
 
         [Category("Display")]
         [DisplayName("Text Highlight")]
@@ -67,8 +70,8 @@ namespace CompileScore
         [Description("For non normalized severity this defines the maximum value in microseconds(μs) to be considered for this category.")]
         public uint OptionSeveritiesThreshold1
         {
-            get { return optionSeverities[0]; }
-            set { bool hasChanged = optionSeverities[0] != value;  optionSeverities[0] = value; if (hasChanged && !optionNormalizedSeverity) { CompilerData.Instance.OnSettingsSeverityChanged();  } }
+            get { return optionValueSeverities[0]; }
+            set { bool hasChanged = optionValueSeverities[0] != value; optionValueSeverities[0] = value; if (hasChanged && !optionNormalizedSeverity) { CompilerData.Instance.OnSettingsSeverityChanged();  } }
         }
 
         [Category("Thresholds Absolute")]
@@ -76,8 +79,8 @@ namespace CompileScore
         [Description("For non normalized severity this defines the maximum value in microseconds(μs) to be considered for this category.")]
         public uint OptionSeveritiesThreshold2
         {
-            get { return optionSeverities[1]; }
-            set { bool hasChanged = optionSeverities[1] != value; optionSeverities[1] = value; if (hasChanged && !optionNormalizedSeverity) { CompilerData.Instance.OnSettingsSeverityChanged(); } }
+            get { return optionValueSeverities[1]; }
+            set { bool hasChanged = optionValueSeverities[1] != value; optionValueSeverities[1] = value; if (hasChanged && !optionNormalizedSeverity) { CompilerData.Instance.OnSettingsSeverityChanged(); } }
         }
 
         [Category("Thresholds Absolute")]
@@ -85,26 +88,53 @@ namespace CompileScore
         [Description("For non normalized severity this defines the maximum value in microseconds(μs) to be considered for this category.")]
         public uint OptionSeveritiesThreshold3
         {
-            get { return optionSeverities[2]; }
-            set { bool hasChanged = optionSeverities[2] != value; optionSeverities[2] = value; if (hasChanged && !optionNormalizedSeverity) { CompilerData.Instance.OnSettingsSeverityChanged(); } }
+            get { return optionValueSeverities[2]; }
+            set { bool hasChanged = optionValueSeverities[2] != value; optionValueSeverities[2] = value; if (hasChanged && !optionNormalizedSeverity) { CompilerData.Instance.OnSettingsSeverityChanged(); } }
         }
 
         [Category("Thresholds Absolute")]
         [DisplayName("Severity 4")]
-        [Description("For non normalized severity this defines the maximum value in microseconds(μs) to be considered for this category.")]
+        [Description("For non normalized severity this defines the maximum value in microseconds(μs) to be considered for this category. Severity 5 will be anything bigger than this number")]
         public uint OptionSeveritiesThreshold4
         {
-            get { return optionSeverities[3]; }
-            set { bool hasChanged = optionSeverities[3] != value; optionSeverities[3] = value; if (hasChanged && !optionNormalizedSeverity) { CompilerData.Instance.OnSettingsSeverityChanged(); } }
+            get { return optionValueSeverities[3]; }
+            set { bool hasChanged = optionValueSeverities[3] != value; optionValueSeverities[3] = value; if (hasChanged && !optionNormalizedSeverity) { CompilerData.Instance.OnSettingsSeverityChanged(); } }
         }
 
-        [Category("Thresholds Absolute")]
-        [DisplayName("Severity 5")]
-        [Description("For non normalized severity this defines the maximum value in microseconds(μs) to be considered for this category.")]
-        public uint OptionSeveritiesThreshold5
+        [Category("Thresholds Normalized")]
+        [DisplayName("Severity 1")]
+        [Description("For normalized severity this defines the maximum percentage [1..100] to be considered for this category.")]
+        public float OptionSeveritiesNormalized1
         {
-            get { return optionSeverities[4]; }
-            set { bool hasChanged = optionSeverities[4] != value; optionSeverities[4] = value; if (hasChanged && !optionNormalizedSeverity) { CompilerData.Instance.OnSettingsSeverityChanged(); } }
+            get { return optionNormalizedSeverities[0]; }
+            set { bool hasChanged = optionNormalizedSeverities[0] != value; optionNormalizedSeverities[0] = Math.Max(Math.Min(value, 100.0f), 0.0f); if (hasChanged && optionNormalizedSeverity) { CompilerData.Instance.OnSettingsSeverityCriteriaChanged(); } }
+        }
+
+        [Category("Thresholds Normalized")]
+        [DisplayName("Severity 2")]
+        [Description("For normalized severity this defines the maximum percentage [1..100] to be considered for this category.")]
+        public float OptionSeveritiesNormalized2
+        {
+            get { return optionNormalizedSeverities[1]; }
+            set { bool hasChanged = optionNormalizedSeverities[1] != value; optionNormalizedSeverities[1] = Math.Max(Math.Min(value, 100.0f), 0.0f); if (hasChanged && optionNormalizedSeverity) { CompilerData.Instance.OnSettingsSeverityCriteriaChanged(); } }
+        }
+
+        [Category("Thresholds Normalized")]
+        [DisplayName("Severity 3")]
+        [Description("For normalized severity this defines the maximum percentage [1..100] to be considered for this category.")]
+        public float OptionSeveritiesNormalized3
+        {
+            get { return optionNormalizedSeverities[2]; }
+            set { bool hasChanged = optionNormalizedSeverities[2] != value; optionNormalizedSeverities[2] = Math.Max(Math.Min(value, 100.0f), 0.0f); if (hasChanged && optionNormalizedSeverity) { CompilerData.Instance.OnSettingsSeverityCriteriaChanged(); } }
+        }
+
+        [Category("Thresholds Normalized")]
+        [DisplayName("Severity 4")]
+        [Description("For normalized severity this defines the maximum percentage [1..100] to be considered for this category. Severity 5 will be anything bigger than this number")]
+        public float OptionSeveritiesNormalized4
+        {
+            get { return optionNormalizedSeverities[3]; }
+            set { bool hasChanged = optionNormalizedSeverities[3] != value; optionNormalizedSeverities[3] = Math.Max(Math.Min(value,100.0f),0.0f); if (hasChanged && optionNormalizedSeverity) { CompilerData.Instance.OnSettingsSeverityCriteriaChanged(); } }
         }
     }
 

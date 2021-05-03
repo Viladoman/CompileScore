@@ -489,6 +489,8 @@ namespace CompileScore
                     Totals[k].Total += unit.ValuesList[k];
                 }
             }
+
+            string test = Common.UIConverters.GetTimeStr(Totals[13].Total);
         }
 
         private void ComputeNormalizedThresholds(List<uint> normalizedThresholds, List<uint> inputList)
@@ -498,13 +500,16 @@ namespace CompileScore
             normalizedThresholds.Clear();
             inputList.Sort();
 
-            float division = (float)inputList.Count / (float)numSeverities;
-            int elementsPerBucket = (int)Math.Round(division);
-
-            int index = elementsPerBucket;
+            //Get the theshold values based on the normalized serveirties percentages
+            List<float> normalizedSeverites = GetGeneralSettings().GetOptionNormalizedSeverities();
 
             for (int i = 0; i < numSeverities; ++i)
             {
+
+                float percent = i < normalizedSeverites.Count ? normalizedSeverites[i] : 100.0f;
+                float ratio = Math.Max(Math.Min(percent, 100.0f), 0.0f) * 0.01f;
+                int index = (int)Math.Round(inputList.Count * ratio);
+
                 if (index < inputList.Count)
                 {
                     normalizedThresholds.Add(inputList[index]);
@@ -513,8 +518,6 @@ namespace CompileScore
                 {
                     normalizedThresholds.Add(uint.MaxValue);
                 }
-
-                index += elementsPerBucket;
             }
         }
 
@@ -527,7 +530,7 @@ namespace CompileScore
             for (int i = 0; i < (int)CompileThresholds.Severity; ++i)
             {
                 CompileDataset dataset = Datasets[i];
-                List<uint> thresholdList = settings.OptionNormalizedSeverity ? dataset.normalizedThresholds : settings.GetOptionSeverities();
+                List<uint> thresholdList = settings.OptionNormalizedSeverity ? dataset.normalizedThresholds : settings.GetOptionValueSeverities();
                 foreach (CompileValue entry in dataset.collection)
                 {
                     entry.Severity = ComputeSeverity(thresholdList, (uint)valueCriteria.GetValue(entry));
@@ -542,12 +545,12 @@ namespace CompileScore
             {
                 if ( value < thresholds[i] )
                 {
-                    ret = i+1;
+                    ret = i;
                     break;
                 }
             }
 
-            return Convert.ToUInt32(ret);
+            return Convert.ToUInt32(ret+1);
         }
 
         private void OnFileWatchedChanged()
