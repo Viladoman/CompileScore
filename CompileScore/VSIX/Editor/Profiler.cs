@@ -1,6 +1,7 @@
 ﻿using EnvDTE;
 using EnvDTE80;
 using Microsoft;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
@@ -15,35 +16,35 @@ namespace CompileScore
 
         public enum Compiler
         {
-            MSVC, 
+            MSVC,
             Clang,
         }
 
         public enum ExtractorDetail
         {
-            None     = 0, 
-            Basic    = 1, 
+            None = 0,
+            Basic = 1,
             Frontend = 2,
-            Full     = 3,
+            Full = 3,
         }
 
         public enum BuildOperation
         {
-            Build, 
-            Rebuild, 
+            Build,
+            Rebuild,
             GenerateClang
         }
 
         private enum StateType
         {
-            Idle, 
+            Idle,
             Triggering,
             Preparing,
-            Building, 
+            Building,
             Canceling,
             Gathering,
             Extracting,
-            
+
             BuildingExternal,
         }
 
@@ -54,6 +55,8 @@ namespace CompileScore
         private IServiceProvider ServiceProvider { set; get; }
         private BuildEvents BuildEvents { set; get; }
 
+        private string SpecificBuildProjectName { set; get; } 
+        private IVsHierarchy SpecificBuildProject { set; get; }
         private BuildOperation Operation { set; get; } = BuildOperation.Build;
         private StateType State { set; get; } = StateType.Idle;
         private Compiler CompilerSource { set; get; } = Compiler.MSVC;
@@ -73,20 +76,22 @@ namespace CompileScore
 
             BuildEvents = applicationObject.Events.BuildEvents;
             BuildEvents.OnBuildBegin += OnBuildBegin;
-            BuildEvents.OnBuildDone  += OnBuildDone;
+            BuildEvents.OnBuildDone += OnBuildDone;
         }
 
-        public void TriggerOperation(BuildOperation operation)
+        public void TriggerOperation(BuildOperation operation, string specificProject = null)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            SpecificBuildProjectName = specificProject;
+            SpecificBuildProject = GetProjectNodeFromName(SpecificBuildProjectName);
             Operation = operation;
             SetGeneratorProperties();
 
-            switch(operation)
+            switch (operation)
             {
-                case BuildOperation.Build:         TriggerBuildSolution(); break;
-                case BuildOperation.Rebuild:       TriggerBuildSolution(); break;
+                case BuildOperation.Build: TriggerBuildSolution(); break;
+                case BuildOperation.Rebuild: TriggerBuildSolution(); break;
                 case BuildOperation.GenerateClang: _ = TriggerClangGeneratorAsync(); break;
             }
         }
@@ -115,12 +120,36 @@ namespace CompileScore
             }
             catch (Exception e)
             {
-                DisplayError("Unable to create directory "+path+". " + e.ToString());
+                DisplayError("Unable to create directory " + path + ". " + e.ToString());
                 return false;
             }
 
             return true;
         }
+
+        private IVsHierarchy GetProjectNodeFromName(string name)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
+            IVsSolution solutionService = (IVsSolution)ServiceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
+
+            if (name == null || applicationObject == null || solutionService == null) return null;
+
+            string uniqueProjName = null;
+            foreach (Project project in applicationObject.Solution.Projects)
+            {
+                if (project.Name == SpecificBuildProjectName)
+                {
+                    uniqueProjName = project.UniqueName;
+                }
+            }
+
+            IVsHierarchy projectHierarchy = null;
+            solutionService.GetProjectOfUniqueName(uniqueProjName, out projectHierarchy);
+            return projectHierarchy;
+        }
+
 
         private void TriggerBuildSolution()
         {
@@ -137,29 +166,23 @@ namespace CompileScore
             try
             {
                 //TODO ~ ramonv ~ find a way to call Build All in 'Open Folder' projects
+                //TODO ~ ramonv ~ 'Open Folder' does not trigger build events! 
+
                 DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
                 Assumes.Present(applicationObject);
-                applicationObject.ExecuteCommand(Operation == BuildOperation.Rebuild? "Build.RebuildSolution" : "Build.BuildSolution");
 
-                //applicationObject.ExecuteCommand("Build.BuildSolution");
-                //applicationObject.ExecuteCommand("Build.RebuildSolution");
-
-                //TODO ~ Ramonv ~ 'Open Folder' does not trigger build events! 
-
-                //DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
-                //Assumes.Present(applicationObject);
-                //applicationObject.Solution.SolutionBuild.Build();
-
-                /*
-                // Rebuild - direct call alternative for .sln projects  
-                IVsSolutionBuildManager2 buildManager = ServiceProvider.GlobalProvider.GetService(typeof(SVsSolutionBuildManager)) as IVsSolutionBuildManager2;
-                if (ErrorHandler.Failed(buildManager.StartSimpleUpdateSolutionConfiguration((uint)(VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_FORCE_UPDATE | VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD),
-                    (uint)VSSOLNBUILDQUERYRESULTS.VSSBQR_OUTOFDATE_QUERY_YES, 0)))
+                if (SpecificBuildProject == null) 
                 {
-                    //handle the error
+                    // entire solution
+                    applicationObject.ExecuteCommand(Operation == BuildOperation.Rebuild? "Build.RebuildSolution" : "Build.BuildSolution");
                 }
-                */
-
+                else
+                {
+                    IVsSolutionBuildManager2 buildManager = ServiceProvider.GetService(typeof(SVsSolutionBuildManager)) as IVsSolutionBuildManager2;
+                    Assumes.Present(buildManager);
+                    uint flags = Operation == BuildOperation.Rebuild ? (uint)(VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_FORCE_UPDATE | VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD) : (uint)(VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD);
+                    buildManager.StartSimpleUpdateProjectConfiguration(SpecificBuildProject, null, null, flags, 0, 0);
+                }
             }
             catch (Exception e)
             {
@@ -196,6 +219,12 @@ namespace CompileScore
         private bool ValidateBuild()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (SpecificBuildProject == null && SpecificBuildProjectName != null)
+            {
+                DisplayError("Unable to find the project node to build for " + SpecificBuildProjectName);
+                return false;
+            }
 
             //TODO ~ ramonv ~ placeholder while we find a soltuion for 'open folder' build events 
             if (EditorContext.Instance.Mode == EditorContext.EditorMode.Folder)

@@ -66,7 +66,7 @@ namespace CompileScore
 
             EditorContext.Instance.Initialize(this);
 
-            await CustomCommands.InitializeAsync(this);
+            await CustomCommands.InitializeAsync(this,this);
         }
 
         #endregion

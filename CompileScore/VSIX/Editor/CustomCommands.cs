@@ -1,7 +1,10 @@
 ﻿using System;
 using System.ComponentModel.Design;
+using EnvDTE;
+using EnvDTE80;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
 
 namespace CompileScore
@@ -17,21 +20,28 @@ namespace CompileScore
         public const int CommandId_TimelineWindow = 257;
         public static readonly Guid CommandSet_TimelineWindow = new Guid("e5262ec1-fb68-442d-92f7-0b4a66774209");
 
-        public const int CommandId_Build         = 256;
-        public const int CommandId_Rebuild       = 257;
-        public const int CommandId_Generate      = 259;
+        public const int CommandId_Build          = 256;
+        public const int CommandId_Rebuild        = 257;
+        public const int CommandId_BuildProject   = 266;
+        public const int CommandId_RebuildProject = 267;
 
-        public const int CommandId_LoadDefault   = 260;
-        public const int CommandId_Settings      = 261;
-        public const int CommandId_Documentation = 262;
-        public const int CommandId_About         = 264;
+        public const int CommandId_Generate       = 259;
 
-        public const int CommandId_ShowTimeline  = 265;
+        public const int CommandId_LoadDefault    = 260;
+        public const int CommandId_Settings       = 261;
+        public const int CommandId_Documentation  = 262;
+        public const int CommandId_About          = 264;
+
+        public const int CommandId_ShowTimeline   = 265;
 
         public static readonly Guid CommandSet_Custom = new Guid("f76ad68f-41c2-4f8d-945e-427b0d092da1");
 
-        public static async Task InitializeAsync(AsyncPackage package)
+        private static IServiceProvider ServiceProvider { set; get; }
+
+        public static async Task InitializeAsync(AsyncPackage package, IServiceProvider serviceProvider)
         {
+            ServiceProvider = serviceProvider;
+
             // Switch to the main thread - the call to AddCommand in Build's constructor requires
             // the UI thread.
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(package.DisposalToken);
@@ -66,6 +76,18 @@ namespace CompileScore
 
             {
                 var menuItem = new OleMenuCommand(Execute_Rebuild, new CommandID(CommandSet_Custom, CommandId_Rebuild));
+                menuItem.BeforeQueryStatus += Query_CanBuild;
+                commandService.AddCommand(menuItem);
+            }
+
+            {
+                var menuItem = new OleMenuCommand(Execute_BuildProject, new CommandID(CommandSet_Custom, CommandId_BuildProject));
+                menuItem.BeforeQueryStatus += Query_CanBuild;
+                commandService.AddCommand(menuItem);
+            }
+
+            {
+                var menuItem = new OleMenuCommand(Execute_RebuildProject, new CommandID(CommandSet_Custom, CommandId_RebuildProject));
                 menuItem.BeforeQueryStatus += Query_CanBuild;
                 commandService.AddCommand(menuItem);
             }
@@ -145,6 +167,45 @@ namespace CompileScore
             Profiler.Instance.TriggerOperation(Profiler.BuildOperation.Rebuild);
         }
 
+        private static string GetSolutionExplorerSelectedName()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
+            Assumes.Present(applicationObject);
+
+            var selectedItems = applicationObject.ToolWindows.SolutionExplorer.SelectedItems as UIHierarchyItem[];
+            if (selectedItems == null || selectedItems.Length == 0)
+            {
+                OutputLog.Error("Unable to retrieve the selected item");
+                return null;
+            }
+
+            return selectedItems[0].Name;
+        }
+
+        private static void Execute_BuildProject(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            string selected = GetSolutionExplorerSelectedName();
+            if (selected != null)
+            {
+                Profiler.Instance.TriggerOperation(Profiler.BuildOperation.Build, selected);
+            }
+        }
+
+        private static void Execute_RebuildProject(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            string selected = GetSolutionExplorerSelectedName();
+            if (selected != null)
+            {
+                Profiler.Instance.TriggerOperation(Profiler.BuildOperation.Rebuild, selected);
+            }
+        }
+
         private static void Execute_Clang_Generate(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -168,6 +229,7 @@ namespace CompileScore
             ThreadHelper.ThrowIfNotOnUIThread();
             Documentation.OpenLink(Documentation.Link.MainPage);
         }
+
         private static void Execute_About(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();

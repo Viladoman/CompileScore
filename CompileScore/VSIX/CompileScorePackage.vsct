@@ -115,6 +115,20 @@
           <ButtonText>Rebuild Solution and Profile</ButtonText>
         </Strings>
       </Button>
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdBuildProject" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreBuildProject" />
+        <Icon guid="guidImages" id="icon" />
+        <Strings>
+          <ButtonText>Build And Profile</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdRebuildProject" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreBuildProject" />
+        <Icon guid="guidImages" id="icon" />
+        <Strings>
+          <ButtonText>Rebuild And Profile</ButtonText>
+        </Strings>
+      </Button>
 
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdidOptions" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupOptions" />
@@ -168,6 +182,9 @@
       <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreBuild" priority="0x0600">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_BUILD" />
       </Group>
+      <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreBuildProject" priority="0x0100">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PROJNODE" />
+      </Group>
     </Groups>
     <Menus>
       <Menu guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenu" type="Menu" priority="0x0600">
@@ -211,6 +228,7 @@
       <IDSymbol value="4133" name="CompileScoreMenuGroupHelp" />
       <IDSymbol value="4134" name="CompileScoreBuild" />
       <IDSymbol value="4135" name="EditorContextMenuGroup" />
+      <IDSymbol value="4136" name="CompileScoreBuildProject" />
       <IDSymbol value="256" name="cmdidBuild" />
       <IDSymbol value="257" name="cmdidRebuild" />
       <IDSymbol value="258" name="cmdIdClean" />
@@ -221,6 +239,8 @@
       <IDSymbol value="263" name="cmdidReport" />
       <IDSymbol value="264" name="cmdidAbout" />
       <IDSymbol value="265" name="cmdidShowTimeline" />
+      <IDSymbol value="266" name="cmdIdBuildProject" />
+      <IDSymbol value="267" name="cmdIdRebuildProject" />
     </GuidSymbol>
   </Symbols>
 </CommandTable>
