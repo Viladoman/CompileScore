@@ -17,15 +17,14 @@ namespace CompileScore.Includers
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             this.InitializeComponent();
+
+            timeline.SetMode(Timeline.Timeline.Mode.Includers);
         }
 
         public void SetIncluders(CompileValue value)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-
-            int index = CompilerData.Instance.GetIndexOf(CompilerData.CompileCategory.Include, value);
-            Timeline.TimelineNode root = index >= 0? CompilerIncluders.Instance.LoadInclude((uint)index) : null;
-            timeline.SetCustomRoot(root);
+            timeline.SetIncluders(value);
         }
     }
 }

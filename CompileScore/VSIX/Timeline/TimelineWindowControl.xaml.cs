@@ -15,6 +15,8 @@ namespace CompileScore.Timeline
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             this.InitializeComponent();
+
+            timeline.SetMode(Timeline.Mode.Timeline);
         }
 
         public void SetTimeline(UnitValue unit, CompileValue value = null)

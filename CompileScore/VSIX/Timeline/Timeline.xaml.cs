@@ -119,6 +119,12 @@ namespace CompileScore.Timeline
     /// </summary>
     public partial class Timeline : UserControl
     {
+        public enum Mode
+        {
+            Timeline, 
+            Includers,
+        };
+
         const double NodeHeight = 20.0;
         const double zoomIncreaseRatio = 1.1;
         const double FakeWidth = 3;
@@ -137,6 +143,8 @@ namespace CompileScore.Timeline
         private ToolTip tooltip = new ToolTip { Content = new TimelineNodeTooltip(), Padding = new Thickness(0) };
         private DispatcherTimer tooltipTimer = new DispatcherTimer() { Interval = new TimeSpan(4000000) };
 
+        private Mode CurrentMode { set; get; } = Mode.Timeline;
+        private CompileValue IncludersValue { set; get; }
         private UnitValue Unit { set; get; }
         private TimelineNode Root { set; get; }
         private TimelineNode Hover { set; get; }
@@ -155,7 +163,6 @@ namespace CompileScore.Timeline
             tooltipTimer.Tick += ShowTooltip;
 
             nodeSearchBox.SetPlaceholderText("Search Nodes");
-            unitSearchBox.SetPlaceholderText("Search Units");
 
             scrollViewer.Loaded += OnScrollViewerLoaded;
             scrollViewer.ScrollChanged += OnScrollViewerScrollChanged;
@@ -171,22 +178,28 @@ namespace CompileScore.Timeline
             unitSearchBox.OnSelection += OnSearchUnitSelected;
             nodeSearchBox.OnSelection += OnSearchNodeSelected;
 
-            RefreshSearchUnitList();
+            RefrehsSearchUnitBox();
         }
 
         public void SetUnit(UnitValue unit)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            SetMode(Mode.Timeline);
             Unit = unit;
+
             SetRoot(CompilerTimeline.Instance.LoadTimeline(Unit));
         }
 
-        public void SetCustomRoot(TimelineNode newRoot)
+        public void SetIncluders(CompileValue value)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            Unit = null;
-            SetRoot(newRoot);
+
+            SetMode(Mode.Includers);
+            IncludersValue = value;
+
+            int index = CompilerData.Instance.GetIndexOf(CompilerData.CompileCategory.Include, value);
+            SetRoot(index >= 0 ? Includers.CompilerIncluders.Instance.LoadInclude((uint)index) : null);
         }
 
         public void FocusNode(CompileValue value)
@@ -213,6 +226,19 @@ namespace CompileScore.Timeline
                 scrollViewer.ScrollToVerticalOffset(verticalOffset);
 
                 RefreshZoomSlider();
+            }
+        }
+
+        public void SetMode(Mode newMode)
+        {
+            if (newMode != CurrentMode)
+            {
+                CurrentMode = newMode;
+
+                if (CurrentMode != Mode.Timeline) { Unit = null; }
+                if (CurrentMode != Mode.Includers) { IncludersValue = null; }
+
+                RefrehsSearchUnitBox();
             }
         }
 
@@ -248,9 +274,13 @@ namespace CompileScore.Timeline
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            RefreshSearchUnitList();
+            RefrehsSearchUnitBox();
 
-            SetUnit(Unit != null? CompilerData.Instance.GetUnitByName(Unit.Name) : null);
+            switch(CurrentMode)
+            {
+                case Mode.Timeline:  SetUnit(Unit != null? CompilerData.Instance.GetUnitByName(Unit.Name) : null); break;
+                case Mode.Includers: SetIncluders(IncludersValue != null? CompilerData.Instance.GetValue(CompilerData.CompileCategory.Include, IncludersValue.Name) : null); break;
+            }
         }
 
         private void SetRoot(TimelineNode root)
@@ -285,11 +315,42 @@ namespace CompileScore.Timeline
             }
         }
 
-        private void RefreshSearchUnitList()
+        private void RefrehsSearchUnitBox()
+        {
+            switch(CurrentMode)
+            {
+                case Mode.Timeline:
+                {
+                    unitSearchBox.SetPlaceholderText("Search Units");
+                    RefreshSearchUnitListTimeline();
+                    break;
+                }
+                case Mode.Includers:
+                {
+                    unitSearchBox.SetPlaceholderText("Search Includes");
+                    RefreshSearchUnitListIncluders();
+                    break;
+                }
+            }
+        }
+
+        private void RefreshSearchUnitListTimeline()
         {
             List<string> list = new List<string>();
             var units = CompilerData.Instance.GetUnits();
             foreach (UnitValue element in units)
+            {
+                list.Add(element.Name);
+            }
+            list.Sort();
+            unitSearchBox.SetData(list);
+        }
+
+        private void RefreshSearchUnitListIncluders()
+        {
+            List<string> list = new List<string>();
+            var values = CompilerData.Instance.GetValues(CompilerData.CompileCategory.Include);
+            foreach (CompileValue element in values)
             {
                 list.Add(element.Name);
             }
@@ -399,12 +460,13 @@ namespace CompileScore.Timeline
 
                 if (node.Category == CompilerData.CompileCategory.Include)
                 {
-                    if (Unit == null)
+                    if (CurrentMode != Mode.Timeline)
                     {
                         //outside timeline
                         contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Locate Max Timeline", (a, b) => CompilerTimeline.Instance.DisplayTimeline(value.MaxUnit, value)));
                     }
-                    else
+                    
+                    if (CurrentMode != Mode.Includers)
                     {
                         //in timeline
                         contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Includers Graph", (a, b) => Includers.CompilerIncluders.Instance.DisplayIncluders(value)));
@@ -678,10 +740,31 @@ namespace CompileScore.Timeline
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (!string.IsNullOrEmpty(name) && (Unit == null || name != Unit.Name))
+            if (string.IsNullOrEmpty(name))
             {
-                SetUnit(CompilerData.Instance.GetUnitByName(name));
+                return;
             }
+
+            switch(CurrentMode)
+            {
+                case Mode.Timeline:
+                {
+                    if (Unit == null || name != Unit.Name)
+                    {
+                        SetUnit(CompilerData.Instance.GetUnitByName(name));
+                    }
+                    break;
+                }
+                case Mode.Includers:
+                {
+                    if (IncludersValue == null || name != IncludersValue.Name)
+                    {
+                        SetIncluders(CompilerData.Instance.GetValue(CompilerData.CompileCategory.Include, name));
+                    }
+                    break;
+                }
+            }
+            
         }
 
         private void OnSearchNodeSelected(object sender, string name)

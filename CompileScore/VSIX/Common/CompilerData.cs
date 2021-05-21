@@ -253,6 +253,12 @@ namespace CompileScore
             return false;
         }
 
+        public List<CompileValue> GetValues(CompileCategory category)
+        {
+            CompileDataset dataset = Datasets[(int)category];
+            return dataset.collection;
+        }
+
         public CompileValue GetValue(CompileCategory category, string fileName)
         {
             CompileDataset dataset = Datasets[(int)category];

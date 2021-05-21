@@ -165,7 +165,7 @@ namespace CompileScore.Includers
             }
 
             //fix up node
-            node.Label = compileValue == null ? "-- Unknown --" : compileValue.Name + "( " + (node.Duration/durationMultiplier) + " )";    
+            node.Label = compileValue == null ? "-- Unknown --" : compileValue.Name + " ( " + (node.Duration/durationMultiplier) + " )";    
 
             return node;
         }
