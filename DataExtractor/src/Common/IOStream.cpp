@@ -552,6 +552,9 @@ namespace IO
     // -----------------------------------------------------------------------------------------------------------
     void ScoreBinarizer::Binarize(const ScoreData& data)
     { 
+        //do this one first as the Scoredata file close might trigger refreshers on listeners ( it needs to be the last file to be created ) 
+        m_impl->Binarize( data.includers );
+
         const char* filename = m_impl->path;
         LOG_PROGRESS("Writing to file %s",filename);
 
@@ -575,8 +578,6 @@ namespace IO
         }    
 
         fclose(stream);
-
-        m_impl->Binarize( data.includers );
 
         LOG_PROGRESS("Done!");
     }
