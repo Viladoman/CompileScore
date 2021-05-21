@@ -85,6 +85,11 @@ namespace CompileScore
             {
                 return new CompileScore.Timeline.TimelineWindow();
             }
+
+            if (toolWindowType == typeof(CompileScore.Includers.IncludersWindow))
+            {
+                return new CompileScore.Includers.IncludersWindow();
+            }
             
             //TODO ~ ramonv ~ fix here window management
 

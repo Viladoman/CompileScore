@@ -56,6 +56,13 @@
           <ButtonText>Compile Score Timeline</ButtonText>
         </Strings>
       </Button>
+	  <Button guid="guidCompileScorePackageCmdSet" id="cmdidIncludersWindowCommand" priority="0x0100" type="Button">
+		<Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
+		<Icon guid="guidImages1" id="icon" />
+		<Strings>
+			<ButtonText>Compile Score Includers</ButtonText>
+		</Strings>
+	  </Button>
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdidBuild" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupBuild" />
         <Icon guid="guidImages" id="icon" />
@@ -188,7 +195,7 @@
     </Groups>
     <Menus>
       <Menu guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenu" type="Menu" priority="0x0600">
-        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreGroup"/>
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreGroup" />
         <Strings>
           <ButtonText>Compile Score</ButtonText>
         </Strings>
@@ -209,6 +216,7 @@
     <GuidSymbol name="guidCompileScorePackageCmdSet" value="{e5262ec1-fb68-442d-92f7-0b4a66774209}">
       <IDSymbol name="OverviewWindowCommandId" value="0x0100" />
       <IDSymbol value="257" name="cmdidTimelineWindowCommand" />
+      <IDSymbol value="258" name="cmdidIncludersWindowCommand" />
     </GuidSymbol>
 
     <GuidSymbol name="guidImages" value="{0496400a-502d-409f-8b65-44fc403b3314}">
@@ -242,5 +250,6 @@
       <IDSymbol value="266" name="cmdIdBuildProject" />
       <IDSymbol value="267" name="cmdIdRebuildProject" />
     </GuidSymbol>
+ 
   </Symbols>
 </CommandTable>

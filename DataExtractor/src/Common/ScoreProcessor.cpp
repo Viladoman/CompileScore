@@ -28,6 +28,13 @@ namespace CompileScore
 			//the element got inserted
 			element.nameId = nextIndex;
 			global.emplace_back(element.name);
+
+			//for now we only have users entry for Includes
+			if( element.category == CompileCategory::Include )
+			{
+				scoreData.includers.emplace_back();
+			}
+
 			return global.back();
 		} 
 		
@@ -48,13 +55,40 @@ namespace CompileScore
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
+	void ProcessParent( ScoreData& scoreData, CompileEvent& child, const CompileEvent* parent, const CompileUnit& unit )
+	{
+		//only includes for now
+		if( parent == nullptr || child.category != CompileCategory::Include )
+		{
+			return;
+		} 
+		
+		if( parent->category == CompileCategory::Include )
+		{
+			scoreData.includers[ child.nameId ].includes.emplace( parent->nameId ); 
+		}
+		else
+		{
+			scoreData.includers[ child.nameId ].units.emplace( unit.unitId );
+		}
+
+		//TODO ~ ramonv ~ process self computation to compile event
+	}
+
+
+	// -----------------------------------------------------------------------------------------------------------
 	void ProcessTimelineTrack(ScoreData& scoreData, CompileUnit& unit, TCompileEvents& events, const CompileCategory gatherLimit)
 	{ 
-		U32 overlapThreshold[ToUnderlying(CompileCategory::DisplayCount)] = {};
-	
+		fastl::vector<CompileEvent*> eventStack;
+
 		//Process Timeline elements
 		for (CompileEvent& element : events)
-		{ 
+		{ 		
+			//update stack 
+			while (!eventStack.empty() && ( element.start >= eventStack.back()->start + eventStack.back()->duration ) ) eventStack.pop_back();
+			CompileEvent* parent = eventStack.empty() ? nullptr : eventStack.back();
+			eventStack.push_back( &element );
+
 			if (element.category < gatherLimit)
 			{ 
 				CompileData& compileData = CreateGlobalEntry(scoreData,element);
@@ -67,15 +101,18 @@ namespace CompileScore
 					compileData.maxId =unit.unitId;
 				}
 
+				ProcessParent( scoreData, element, parent, unit );
+
+				//store parent to this as (parent->nameId / parent->category / count)
+
 				++compileData.count;
 			}
 
 			if (element.category < CompileCategory::DisplayCount)
 			{
-				if (element.start >= overlapThreshold[ToUnderlying(element.category)])
+				if ( parent == nullptr || parent->category != element.category )
 				{
 					unit.values[ToUnderlying(element.category)] += element.duration;
-					overlapThreshold[ToUnderlying(element.category)] = element.start+element.duration;
 				}
 			}
 		}

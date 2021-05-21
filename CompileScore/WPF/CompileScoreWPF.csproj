@@ -63,6 +63,16 @@
     <Compile Include="..\VSIX\Common\Documentation.cs">
       <Link>Shared\Common\Documentation.cs</Link>
     </Compile>
+    <Compile Include="..\VSIX\Includers\CompilerIncluders.cs">
+      <Link>Shared\Includers\CompilerIncluders.cs</Link>
+    </Compile>
+    <Compile Include="..\VSIX\Includers\IncludersWindow.cs">
+      <Link>Shared\Includers\IncludersWindow.cs</Link>
+    </Compile>
+    <Compile Include="..\VSIX\Includers\IncludersWindowControl.xaml.cs">
+      <Link>Shared\Includers\IncludersWindowControl.xaml.cs</Link>
+	  <DependentUpon>IncludersWindowControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="..\VSIX\Settings\AboutWindow.xaml.cs">
       <Link>Shared\Settings\AboutWindow.xaml.cs</Link>
       <DependentUpon>AboutWindow.xaml</DependentUpon>
@@ -79,6 +89,11 @@
       <Link>Shared\Timeline\TimelineSearch.xaml.cs</Link>
       <DependentUpon>TimelineSearch.xaml</DependentUpon>
     </Compile>
+    <Page Include="..\VSIX\Includers\IncludersWindowControl.xaml">
+      <Link>Shared\Includers\IncludersWindowControl.xaml</Link>
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="..\VSIX\Overview\CompileDataTable.xaml">
       <Link>Shared\Overview\CompileDataTable.xaml</Link>
       <Generator>MSBuild:Compile</Generator>

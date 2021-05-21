@@ -4,6 +4,7 @@
 #include "../fastl/vector.h"
 #include "../fastl/string.h"
 #include "../fastl/unordered_map.h"
+#include "../fastl/unordered_set.h"
 
 constexpr U32 InvalidCompileId = 0xffffffff;
 
@@ -111,9 +112,18 @@ struct CompileEvent
     CompileCategory category; 
 };
 
+using TCompileIndexSet = fastl::unordered_set<U32>;
+
+struct CompileIncluder
+{
+    TCompileIndexSet includes;
+    TCompileIndexSet units;
+};
+
 using TCompileDataDictionary   = fastl::unordered_map<fastl::string,U32>;
 using TCompileDatas            = fastl::vector<CompileData>;
 using TCompileUnits            = fastl::vector<CompileUnit>;
+using TCompileIncluders        = fastl::vector<CompileIncluder>;
 using TCompileEvents           = fastl::vector<CompileEvent>;
 using TCompileEventTracks      = fastl::vector<TCompileEvents>;
 
@@ -125,8 +135,12 @@ struct ScoreTimeline
 
 struct ScoreData
 { 
-    TCompileUnits units;
-    TCompileDatas globals[ToUnderlying(CompileCategory::GatherFull)];
+    //exported data
+    TCompileUnits     units;
+    TCompileDatas     globals[ToUnderlying(CompileCategory::GatherFull)];
+    TCompileIncluders includers;
+
+    //helper data
     TCompileDataDictionary globalsDictionary[ToUnderlying(CompileCategory::GatherFull)];
 };
 

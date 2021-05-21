@@ -49,8 +49,10 @@
     <ClInclude Include="src\fastl\algorithm.h" />
     <ClInclude Include="src\fastl\map.h" />
     <ClInclude Include="src\fastl\pair.h" />
+    <ClInclude Include="src\fastl\set.h" />
     <ClInclude Include="src\fastl\string.h" />
     <ClInclude Include="src\fastl\unordered_map.h" />
+    <ClInclude Include="src\fastl\unordered_set.h" />
     <ClInclude Include="src\fastl\vector.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

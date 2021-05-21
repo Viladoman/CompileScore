@@ -92,6 +92,11 @@ namespace CompileScore.Overview
 
             contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Locate Max Timeline", (a, b) => Timeline.CompilerTimeline.Instance.DisplayTimeline(value.MaxUnit, value)));
 
+            if (Category == CompilerData.CompileCategory.Include)
+            {
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Includers Graph", (a,b) => Includers.CompilerIncluders.Instance.DisplayIncluders(value)));
+            }
+
             if (isVisualStudio && Category == CompilerData.CompileCategory.Include)
             {
                 contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Location (Experimental)", (a, b) => EditorUtils.OpenFile(value.Name)));

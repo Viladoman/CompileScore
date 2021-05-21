@@ -329,6 +329,35 @@ namespace IO
         }
 
         // -----------------------------------------------------------------------------------------------------------
+        void BinarizeIndexSet( FILE* stream, const TCompileIndexSet& indexSet )
+        {
+            //TODO ~ ramonv ~ check for U32 overflow
+            BinarizeU32( stream, static_cast< U32 >( indexSet.size() ) );
+            for( const U32 index : indexSet )
+            {
+                BinarizeU32( stream, index );
+            }
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeIncluder( FILE* stream, const CompileIncluder& includer )
+        {
+            BinarizeIndexSet( stream, includer.includes ); 
+            BinarizeIndexSet( stream, includer.units );
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeIncluders(FILE* stream, const TCompileIncluders& includers )
+        {
+			//TODO ~ ramonv ~ check for U32 overflow
+			BinarizeU32( stream, static_cast< U32 >( includers.size() ) );
+			for( const CompileIncluder& includer : includers )
+			{
+                BinarizeIncluder( stream, includer );
+			}
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
         void BinarizeUnit(FILE* stream, const CompileUnit unit)
         { 
             BinarizeString(stream,unit.name); 
@@ -396,6 +425,8 @@ namespace IO
         void CloseTimelineStream();
 
         U32 GetTimelinesPerFile() const { return timelinesPerFile; }
+
+        void Binarize( const TCompileIncluders& includers );
 
     private: 
         bool AppendTimelineExtension(fastl::string& filename);
@@ -473,6 +504,38 @@ namespace IO
         }
     }
 
+    // -----------------------------------------------------------------------------------------------------------
+    void ScoreBinarizer::Impl::Binarize(const TCompileIncluders& includers)
+    {
+        if( includers.empty() )
+        {
+            return;
+        }
+
+        fastl::string filename = path; 
+        filename.append(".incl");
+
+        LOG_INFO( "Writing to file %s", filename.c_str() );
+
+        FILE* stream;
+		const errno_t result = fopen_s( &stream, filename.c_str(), "wb" );
+
+		if( result )
+		{
+			LOG_ERROR( "Unable to create output file %s", filename.c_str() );
+            return; 
+		}
+
+		//Header
+		Utils::BinarizeU32( stream, SCORE_VERSION );
+
+		Utils::BinarizeIncluders( stream, includers );
+
+		fclose( stream );
+
+		LOG_INFO( "Parents exported!" );
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // -----------------------------------------------------------------------------------------------------------
     ScoreBinarizer::ScoreBinarizer(const char* path, unsigned int timelinesPacking)
@@ -512,6 +575,8 @@ namespace IO
         }    
 
         fclose(stream);
+
+        m_impl->Binarize( data.includers );
 
         LOG_PROGRESS("Done!");
     }

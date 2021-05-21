@@ -60,6 +60,8 @@ namespace fastl
 		StringImpl& erase( size_type index){ m_data.erase(m_data.begin()+index); return *this; }
 		StringImpl& erase( size_type index, size_type count){ m_data.erase(m_data.begin()+index,m_data.begin()+index+count); return *this; }
 
+		void append( const char* str );
+
 		StringImpl<TChar> operator+(const char c);
 		StringImpl<TChar> operator+(const char* str);
 		StringImpl<TChar> operator+(const StringImpl<TChar>& str);
@@ -112,6 +114,12 @@ namespace fastl
 	{ 
 		m_data.resize(1); 
 		m_data[0] = '\0'; 
+	}
+
+	//------------------------------------------------------------------------------------------
+	template<typename TChar> void StringImpl<TChar>::append( const char* str )
+	{
+		*this = *this + str;
 	}
 
 	//------------------------------------------------------------------------------------------

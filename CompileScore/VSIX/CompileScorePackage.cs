@@ -31,6 +31,7 @@ namespace CompileScore
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(CompileScore.Overview.OverviewWindow))]
     [ProvideToolWindow(typeof(CompileScore.Timeline.TimelineWindow))]
+    [ProvideToolWindow(typeof(CompileScore.Includers.IncludersWindow))]
     public sealed class CompileScorePackage : AsyncPackage
     {
         /// <summary>
@@ -63,6 +64,7 @@ namespace CompileScore
             EditorUtils.Initialize(this,this);
             Profiler.Instance.Initialize(this);
             Timeline.CompilerTimeline.Instance.Initialize(this);
+            Includers.CompilerIncluders.Instance.Initialize(this);
 
             EditorContext.Instance.Initialize(this);
 

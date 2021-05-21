@@ -182,6 +182,13 @@ namespace CompileScore.Timeline
             SetRoot(CompilerTimeline.Instance.LoadTimeline(Unit));
         }
 
+        public void SetCustomRoot(TimelineNode newRoot)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            Unit = null;
+            SetRoot(newRoot);
+        }
+
         public void FocusNode(CompileValue value)
         {
             FocusPending = FindNodeByValue(value);
@@ -390,9 +397,23 @@ namespace CompileScore.Timeline
             {
                 var value = node.Value as CompileValue;
 
-                if (isVisualStudio && node.Category == CompilerData.CompileCategory.Include)
+                if (node.Category == CompilerData.CompileCategory.Include)
                 {
-                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Location (Experimental)", (sender, e) => EditorUtils.OpenFile(value.Name)));
+                    if (Unit == null)
+                    {
+                        //outside timeline
+                        contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Locate Max Timeline", (a, b) => CompilerTimeline.Instance.DisplayTimeline(value.MaxUnit, value)));
+                    }
+                    else
+                    {
+                        //in timeline
+                        contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Includers Graph", (a, b) => Includers.CompilerIncluders.Instance.DisplayIncluders(value)));
+                    }
+
+                    if (isVisualStudio)
+                    {
+                        contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Location (Experimental)", (sender, e) => EditorUtils.OpenFile(value.Name)));
+                    }
                 }
 
                 if (value.Name.Length > 0)

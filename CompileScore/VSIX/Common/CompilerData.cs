@@ -270,6 +270,16 @@ namespace CompileScore
             return null;
         }
 
+        public int GetIndexOf(CompileCategory category, CompileValue value)
+        {
+            if ((int)category < (int)CompileThresholds.Gather)
+            {
+                CompileDataset dataset = Datasets[(int)category];
+                return dataset.collection.IndexOf(value);
+            }
+            return -1;
+        }
+
         public UnitValue GetUnit(int index)
         {
             return index >= 0 && index < UnitsCollection.Count ? UnitsCollection[index] : null;
@@ -489,8 +499,6 @@ namespace CompileScore
                     Totals[k].Total += unit.ValuesList[k];
                 }
             }
-
-            string test = Common.UIConverters.GetTimeStr(Totals[13].Total);
         }
 
         private void ComputeNormalizedThresholds(List<uint> normalizedThresholds, List<uint> inputList)

@@ -36,6 +36,7 @@ namespace CompileScore
             OutputLog.Initialize(serviceProvider);
             CompilerData.Instance.Initialize(package, serviceProvider);
             Timeline.CompilerTimeline.Instance.Initialize(package);
+            Includers.CompilerIncluders.Instance.Initialize(package);
             DocumentLifetimeManager.Initialize(serviceProvider);
         }
 

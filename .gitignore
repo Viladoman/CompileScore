@@ -25,6 +25,7 @@ CompileScore/WPF/obj/
 *.etl
 *.scor
 *.scor.*
+*.vcxproj.user
 
 DataExtractor/tmp/*
 DataExtractor/bin/*

@@ -71,6 +71,11 @@
     <Compile Include="Highlight\HighlightDefinitions.cs" />
     <Compile Include="Highlight\HighlightTagger.cs" />
     <Compile Include="Highlight\HighlightTaggerProvider.cs" />
+    <Compile Include="Includers\CompilerIncluders.cs" />
+    <Compile Include="Includers\IncludersWindow.cs" />
+    <Compile Include="Includers\IncludersWindowControl.xaml.cs">
+      <DependentUpon>IncludersWindowControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Overview\CompileDataTable.xaml.cs">
       <DependentUpon>CompileDataTable.xaml</DependentUpon>
     </Compile>
@@ -171,6 +176,10 @@
     <Page Include="Editor\MessageControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Includers\IncludersWindowControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Overview\CompileDataTable.xaml">
       <SubType>Designer</SubType>

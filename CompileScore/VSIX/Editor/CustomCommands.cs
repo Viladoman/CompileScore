@@ -15,10 +15,9 @@ namespace CompileScore
     internal sealed class CustomCommands
     {
         public const int CommandId_OverviewWindow = 0x0100;
-        public static readonly Guid CommandSet_OverviewWindow = new Guid("e5262ec1-fb68-442d-92f7-0b4a66774209");
-
         public const int CommandId_TimelineWindow = 257;
-        public static readonly Guid CommandSet_TimelineWindow = new Guid("e5262ec1-fb68-442d-92f7-0b4a66774209");
+        public const int CommandId_IncludersWindow = 258;
+        public static readonly Guid CommandSet_Windows = new Guid("e5262ec1-fb68-442d-92f7-0b4a66774209");
 
         public const int CommandId_Build          = 256;
         public const int CommandId_Rebuild        = 257;
@@ -49,8 +48,9 @@ namespace CompileScore
             OleMenuCommandService commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
             Assumes.Present(commandService);
 
-            commandService.AddCommand(new MenuCommand(Execute_OverviewWindow,   new CommandID(CommandSet_OverviewWindow, CommandId_OverviewWindow)));
-            commandService.AddCommand(new MenuCommand(Execute_TimelineWindow,   new CommandID(CommandSet_TimelineWindow, CommandId_TimelineWindow)));
+            commandService.AddCommand(new MenuCommand(Execute_OverviewWindow,   new CommandID(CommandSet_Windows, CommandId_OverviewWindow)));
+            commandService.AddCommand(new MenuCommand(Execute_TimelineWindow,   new CommandID(CommandSet_Windows, CommandId_TimelineWindow)));
+            commandService.AddCommand(new MenuCommand(Execute_IncludersWindow,  new CommandID(CommandSet_Windows, CommandId_IncludersWindow)));
 
             {
                 var menuItem = new OleMenuCommand(Execute_ShowTimeline, new CommandID(CommandSet_Custom, CommandId_ShowTimeline));
@@ -147,6 +147,12 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             Timeline.CompilerTimeline.Instance.FocusTimelineWindow();
+        }
+
+        private static void Execute_IncludersWindow(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            Includers.CompilerIncluders.Instance.FocusIncludersWindow();
         }
 
         private static void Execute_ShowTimeline(object sender, EventArgs e)
