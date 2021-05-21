@@ -15,7 +15,8 @@ namespace CompileScore.Includers
 
     class CompilerIncluders
     {
-        const uint durationMultiplier = 1000; 
+        const uint durationMultiplier = 1000;
+        const uint basePadding = 20;
 
         private static readonly Lazy<CompilerIncluders> lazy = new Lazy<CompilerIncluders>(() => new CompilerIncluders());
 
@@ -39,7 +40,7 @@ namespace CompileScore.Includers
             }
 
             Timeline.TimelineNode root = BuildGraphRecursive(includers, index);
-            InitializeNodeRecursive(root);
+            InitializeTree(root);
             return root;
         }
 
@@ -177,13 +178,21 @@ namespace CompileScore.Includers
             return new Timeline.TimelineNode(label, 0, durationMultiplier, CompilerData.CompileCategory.ExecuteCompiler, unit);
         }
 
+        private void InitializeTree(Timeline.TimelineNode node)
+        {
+            node.Start = basePadding;
+            InitializeNodeRecursive(node);
+            node.Start = 0;
+            node.Duration += basePadding * 2;
+        }
+
         private void InitializeNodeRecursive(Timeline.TimelineNode node, uint baseDepth = 0)
         {
-            //TODO ~ ramonv ~ reorder children by duration
             node.DepthLevel = node.Parent == null ? baseDepth : node.Parent.DepthLevel + 1;
             node.MaxDepthLevel = node.DepthLevel;
             node.UIColor = Common.Colors.GetCategoryBackground(node.Category);
 
+            //reorder children by duration
             uint offset = node.Start;
             node.Children.Sort((a,b)=> a.Duration == b.Duration? 0 : (a.Duration > b.Duration? -1 : 1));
 
