@@ -76,6 +76,8 @@ namespace CommandLine
         LOG_ALWAYS("-notimeline     (-nt) : No timeline files will be generated"); 
         LOG_ALWAYS("-timelinepack   (-tp) : Sets the number of timelines packed in the same file - example '-tp 200' (100 by default)");
 
+        LOG_ALWAYS("-noincluders    (-ni) : No includers file will be generated");
+
         LOG_ALWAYS("-verbosity      (-v)  : Sets the verbosity level - example: '-v 1'"); 
         LOG_ALWAYS("\t0 - Silent"); 
         LOG_ALWAYS("\t1 - Progress (default)"); 
