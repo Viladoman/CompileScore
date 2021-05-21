@@ -63,6 +63,7 @@ namespace CompileScore
         private ExtractorDetail OverviewDetail { set; get; } = ExtractorDetail.Basic;
         private ExtractorDetail TimelineDetail { set; get; } = ExtractorDetail.Basic;
         private uint TimelinePacking { set; get; } = 100;
+        private bool ExtracIncluders { set; get; } = true;
 
         public void Initialize(IServiceProvider provider)
         {
@@ -108,6 +109,7 @@ namespace CompileScore
             OverviewDetail = generatorSettings.OverviewDetail;
             TimelineDetail = generatorSettings.TimelineDetail;
             TimelinePacking = generatorSettings.TimelinePacking;
+            ExtracIncluders = generatorSettings.ExtractIncluders;
         }
 
         private bool CreateDirectory(string path)
@@ -432,8 +434,9 @@ namespace CompileScore
             
             string detail = " -d " + (int)OverviewDetail;
             string timeline = TimelinePacking == 0 ? " -nt" : " -tp " + TimelinePacking + " -td " + (int)TimelineDetail;
+            string includers = ExtracIncluders ? "" : " -ni ";
 
-            string commandLine = GetPlatformFlag() + " -stop" + timeline + detail + inputCommand + outputCommand;
+            string commandLine = GetPlatformFlag() + " -stop" + includers + timeline + detail + inputCommand + outputCommand;
 
             CreateDirectory(Path.GetDirectoryName(outputPath));
 
@@ -472,8 +475,9 @@ namespace CompileScore
 
             string detail = " -d " + (int)OverviewDetail;
             string timeline = TimelinePacking == 0 ? " -nt" : " -tp " + TimelinePacking + " -td " + (int)TimelineDetail;
+            string includers = ExtracIncluders ? "" : " -ni ";
 
-            string commandLine = "-clang -extract" + timeline + detail + " -i " + inputPath + " -o " + quotes + outputPath + quotes;
+            string commandLine = "-clang -extract" + includers + timeline + detail + " -i " + inputPath + " -o " + quotes + outputPath + quotes;
 
             OutputLog.Log("Calling ScoreDataExtractor with " + commandLine);
             int exitCode = await ExternalProcess.ExecuteAsync(GetScoreExtractorToolPath(), commandLine);

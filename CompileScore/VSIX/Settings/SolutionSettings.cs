@@ -46,6 +46,9 @@ namespace CompileScore
 
         [UIDescription(Label="Timeline Packing", Tooltip = "The number of timelines packed in the same file. if 0 no timeline will be created.")]
         public uint TimelinePacking { set; get; } = 100;
+
+        [UIDescription(Label = "Extract Includers", Tooltip = "If true it will extract the includers data (.incl file). This data contains which elements include other elements.")]
+        public bool ExtractIncluders { set; get; } = true;
     }
 
     public class SolutionSettings

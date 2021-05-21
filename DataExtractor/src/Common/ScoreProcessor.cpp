@@ -55,10 +55,10 @@ namespace CompileScore
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	void ProcessParent( ScoreData& scoreData, CompileEvent& child, const CompileEvent* parent, const CompileUnit& unit )
+	void ProcessParent( ScoreData& scoreData, CompileEvent& child, const CompileEvent* parent, const CompileUnit& unit, const ExportParams::Includers includersMode )
 	{
-		//only includes for now
-		if( parent == nullptr || child.category != CompileCategory::Include )
+		//only includes for now	
+		if( parent == nullptr || child.category != CompileCategory::Include || includersMode != ExportParams::Includers::Enabled )
 		{
 			return;
 		} 
@@ -77,7 +77,7 @@ namespace CompileScore
 
 
 	// -----------------------------------------------------------------------------------------------------------
-	void ProcessTimelineTrack(ScoreData& scoreData, CompileUnit& unit, TCompileEvents& events, const CompileCategory gatherLimit)
+	void ProcessTimelineTrack(ScoreData& scoreData, CompileUnit& unit, TCompileEvents& events, const CompileCategory gatherLimit, const ExportParams::Includers includersMode )
 	{ 
 		fastl::vector<CompileEvent*> eventStack;
 
@@ -101,9 +101,7 @@ namespace CompileScore
 					compileData.maxId =unit.unitId;
 				}
 
-				ProcessParent( scoreData, element, parent, unit );
-
-				//store parent to this as (parent->nameId / parent->category / count)
+				ProcessParent( scoreData, element, parent, unit, includersMode );
 
 				++compileData.count;
 			}
@@ -124,6 +122,7 @@ namespace CompileScore
 		//Get Gather limit
 		ExportParams* exportParams = Context::Get<ExportParams>(); 
 		const CompileCategory gatherLimit = exportParams? GetDetailCategory(exportParams->detail) : CompileCategory::GatherFull;
+		ExportParams::Includers includersMode = exportParams ? exportParams->includers : ExportParams::Includers::Enabled;
 
 		//Create new unit
 		const U32 unitId = static_cast<U32>(scoreData.units.size());
@@ -133,7 +132,7 @@ namespace CompileScore
 		
 		for (TCompileEvents& track : timeline.tracks)
 		{ 
-			ProcessTimelineTrack(scoreData,unit,track,gatherLimit);
+			ProcessTimelineTrack(scoreData,unit,track,gatherLimit,includersMode);
 		}
 
 		IO::ScoreBinarizer* binarizer = Context::Get<IO::ScoreBinarizer>(); 

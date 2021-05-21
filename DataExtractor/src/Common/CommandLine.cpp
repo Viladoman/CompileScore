@@ -8,6 +8,7 @@ ExportParams::ExportParams()
     , source(Source::Invalid)
     , command(Command::Generate)
     , detail(Detail::Full)
+    , includers(Includers::Enabled)
     , timeline(Timeline::Enabled)
     , timelineDetail(Detail::Full)
     , timelinePacking(100)
@@ -151,6 +152,10 @@ namespace CommandLine
                 else if (Utils::StringCompare(argValue,"-extract") == 0)
                 { 
                     params.command = ExportParams::Command::Generate;
+                }
+                else if ((Utils::StringCompare(argValue,"-ni")==0 || Utils::StringCompare(argValue,"-noincluders")==0))
+                {
+                    params.includers = ExportParams::Includers::Disabled;
                 }
                 else if ((Utils::StringCompare(argValue,"-nt")==0 || Utils::StringCompare(argValue,"-notimeline")==0))
                 {

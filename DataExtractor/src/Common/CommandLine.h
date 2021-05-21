@@ -34,6 +34,12 @@ struct ExportParams
         Disabled,
     };
 
+    enum class Includers
+    {
+        Enabled,
+        Disabled
+    };
+
     ExportParams();
 
     const char*  input; 
@@ -41,6 +47,7 @@ struct ExportParams
     Source       source; 
     Command      command;
     Detail       detail;
+    Includers    includers;
     Timeline     timeline;
     Detail       timelineDetail;
     unsigned int timelinePacking;
