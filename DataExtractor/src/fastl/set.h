@@ -53,16 +53,14 @@ namespace fastl
 	template<typename TKey>
 	template<class... Args > pair<typename set<TKey>::iterator, bool> set<TKey>::emplace( Args&&... args )
 	{
-		/*
-		iterator entryIt = fastl::lower_bound( begin(), end(), inputValue, [=]( value_type& a, const value_type& b ) {return a.first < b.first; } );
-		if( entryIt == end() || entryIt->first != inputValue.first )
+		TKey inputValue{ args... };
+		iterator entryIt = fastl::lower_bound( begin(), end(), inputValue, [=]( value_type& a, const value_type& b ) {return a < b; } );
+		if( entryIt == end() || *entryIt != inputValue )
 		{
-			entryIt = m_data.emplace( entryIt, fastl::move( inputValue ) );
+			entryIt = m_data.emplace( entryIt, args... );
 			return pair<iterator, bool>( entryIt, true );
 		}
 		return pair<iterator, bool>( entryIt, false );
-		*/
-		//TODO ~ ramonv ~ to be implemented
 	}
 
 	//------------------------------------------------------------------------------------------
