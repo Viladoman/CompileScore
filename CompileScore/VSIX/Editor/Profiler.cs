@@ -5,6 +5,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Principal;
 
@@ -129,6 +130,51 @@ namespace CompileScore
             return true;
         }
 
+        private IEnumerable<Project> GetSolutionFolderProjects(Project project)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            List<Project> projects = new List<Project>();
+            var y = (project.ProjectItems as ProjectItems).Count;
+            for (var i = 1; i <= y; i++)
+            {
+                var x = project.ProjectItems.Item(i).SubProject;
+                var subProject = x as Project;
+                if (subProject != null)
+                {
+                    projects.Add(subProject);
+                }
+            }
+
+            return projects;
+        }
+
+        private string GetProjectUniqueName(Projects projects, string name)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            foreach (Project project in projects)
+            {
+                if (project.Kind == ProjectKinds.vsProjectKindSolutionFolder)
+                {
+                    var innerProjects = GetSolutionFolderProjects(project);
+                    foreach (var innerProject in innerProjects)
+                    {
+                        if (innerProject.Name == name)
+                        {
+                            return innerProject.UniqueName;
+                        }
+                    }
+                }
+                else if (project.Name == name)
+                {
+                    return project.UniqueName;
+                }
+            }
+
+            return null;
+        }
+
         private IVsHierarchy GetProjectNodeFromName(string name)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -138,14 +184,7 @@ namespace CompileScore
 
             if (name == null || applicationObject == null || solutionService == null) return null;
 
-            string uniqueProjName = null;
-            foreach (Project project in applicationObject.Solution.Projects)
-            {
-                if (project.Name == SpecificBuildProjectName)
-                {
-                    uniqueProjName = project.UniqueName;
-                }
-            }
+            string uniqueProjName = GetProjectUniqueName(applicationObject.Solution.Projects,name);
 
             IVsHierarchy projectHierarchy = null;
             solutionService.GetProjectOfUniqueName(uniqueProjName, out projectHierarchy);
