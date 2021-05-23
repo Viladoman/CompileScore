@@ -29,16 +29,16 @@ Compile times are one of the most important things that affect productivity and 
 
 Double-click any entry in the compile score window to open its timeline. 
 
-Navigation controls:
-- Zoom: Control + Mouse Wheel
-- Scroll: Middle mouse press and drag
-
 ### Includers Graph
 ![Timeline image](https://github.com/Viladoman/CompileScore/wiki/data/Includers.gif?raw=true)
 
 This window shows all the inclusion stacks that lead to the selected include, ending with the compilation units. 
 
 Right-click on any include entry and select **Show Includers Graph** to open its includers graph.  
+
+#### Navigation controls:
+- Zoom: Control + Mouse Wheel
+- Scroll: Middle mouse press and drag
 
 ### Standalone App 
 
