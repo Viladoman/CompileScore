@@ -80,6 +80,7 @@ namespace CompileScore.Overview
             var dataGrid = (DataGrid)sender;
             HitTestResult hitTestResult = VisualTreeHelper.HitTest(dataGrid, Mouse.GetPosition(dataGrid));
             DataGridRow row = hitTestResult.VisualHit.GetParentOfType<DataGridRow>();
+            if (row == null) return;
 
             dataGrid.SelectedItem = row.Item;
 
