@@ -43,7 +43,7 @@ namespace CompileScore
             ThreadHelper.ThrowIfNotOnUIThread();
             if (text != null)
             {
-                pane.OutputString(text + "\n");
+                OutputString(text + "\n");
             }
         }
 
@@ -57,7 +57,17 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             DateTime currentTime = DateTime.Now;
-            pane.OutputString("["+ String.Format("{0:HH:mm:ss}", currentTime) + "] "+ text + "\n");
+            OutputString("["+ String.Format("{0:HH:mm:ss}", currentTime) + "] "+ text + "\n");
+        }
+
+        private static void OutputString(string text)
+        {
+#if VS17
+            ThreadHelper.ThrowIfNotOnUIThread();
+            pane.OutputStringThreadSafe(text);
+#else
+            pane.OutputString(text);
+#endif
         }
 
         private static void CreatePane(IServiceProvider serviceProvider, Guid paneGuid, string title, bool visible, bool clearWithSolution)

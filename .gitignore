@@ -10,22 +10,29 @@
 # Generated when a Git operation is conflicting.
 *.orig
 
-# VS Exports
-CompileScore/VSIX/.vs/
-CompileScore/VSIX/bin/
-CompileScore/VSIX/obj/
-
-# WPF StandAlone 
-CompileScore/WPF/.vs/
-CompileScore/WPF/bin/
-CompileScore/WPF/obj/
-
 #Temporary and binaries
 *.ctl
 *.etl
 *.scor
 *.scor.*
 *.vcxproj.user
+
+# Shared
+CompileScore/.vs/
+
+# VS Exports
+CompileScore/VSIX16/.vs/
+CompileScore/VSIX16/bin/
+CompileScore/VSIX16/obj/
+
+CompileScore/VSIX17/.vs/
+CompileScore/VSIX17/bin/
+CompileScore/VSIX17/obj/
+
+# WPF StandAlone 
+CompileScore/WPF/.vs/
+CompileScore/WPF/bin/
+CompileScore/WPF/obj/
 
 DataExtractor/tmp/*
 DataExtractor/bin/*

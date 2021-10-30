@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>f9e3709d-f243-4c75-85ed-fb94535fa66d</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ColorTheme.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\CompilerData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Documentation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\DocumentLifeTimeManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\EditorContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\EditorUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ExternalProcess.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\FileWatcher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\MacroEvaluator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\OutputLog.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ScoreColors.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\UIConverters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\WindowProxy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompileScorePackage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompileScoreSettings.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Editor\CustomCommands.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Editor\MessageControl.xaml.cs">
+      <DependentUpon>MessageControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Editor\MessageWindow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Editor\Profiler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Glyph\ScoreGlyphFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Glyph\ScoreGlyphFactoryProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Glyph\ScoreGlyphTagger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Glyph\ScoreGlyphTaggerProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Highlight\HighlightDefinitions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Highlight\HighlightTagger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Highlight\HighlightTaggerProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Includers\CompilerIncluders.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Includers\IncludersWindow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Includers\IncludersWindowControl.xaml.cs">
+      <DependentUpon>IncludersWindowControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Overview\CompileDataTable.xaml.cs">
+      <DependentUpon>CompileDataTable.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Overview\OverviewTable.xaml.cs">
+      <DependentUpon>OverviewTable.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Overview\OverviewTotalsTable.xaml.cs">
+      <DependentUpon>OverviewTotalsTable.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Overview\OverviewWindow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Overview\OverviewWindowControl.xaml.cs">
+      <DependentUpon>OverviewWindowControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)QuickInfo\ScoreQuickInfoSource.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)QuickInfo\ScoreQuickInfoSourceProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\AboutWindow.xaml.cs">
+      <DependentUpon>AboutWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\SettingsControl.xaml.cs">
+      <DependentUpon>SettingsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\SettingsWindow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\SolutionSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Timeline\CompilerTimeline.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Timeline\Timeline.xaml.cs">
+      <DependentUpon>Timeline.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Timeline\TimelineNodeTooltip.xaml.cs">
+      <DependentUpon>TimelineNodeTooltip.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Timeline\TimelineSearch.xaml.cs">
+      <DependentUpon>TimelineSearch.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Timeline\TimelineWindow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Timeline\TimelineWindowControl.xaml.cs">
+      <DependentUpon>TimelineWindowControl.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Editor\Resources\icons.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)Editor\MessageControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Includers\IncludersWindowControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Overview\CompileDataTable.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Overview\OverviewTable.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Overview\OverviewTotalsTable.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Overview\OverviewWindowControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Settings\AboutWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Settings\SettingsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Timeline\Timeline.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Timeline\TimelineNodeTooltip.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Timeline\TimelineSearch.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Timeline\TimelineWindowControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)app.config" />
+  </ItemGroup>
+</Project>

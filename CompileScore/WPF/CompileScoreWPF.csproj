@@ -21,7 +21,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;STANDALONE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -60,81 +60,81 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="..\VSIX\Common\Documentation.cs">
+    <Compile Include="..\Shared\Common\Documentation.cs">
       <Link>Shared\Common\Documentation.cs</Link>
     </Compile>
-    <Compile Include="..\VSIX\Includers\CompilerIncluders.cs">
+    <Compile Include="..\Shared\Includers\CompilerIncluders.cs">
       <Link>Shared\Includers\CompilerIncluders.cs</Link>
     </Compile>
-    <Compile Include="..\VSIX\Includers\IncludersWindow.cs">
+    <Compile Include="..\Shared\Includers\IncludersWindow.cs">
       <Link>Shared\Includers\IncludersWindow.cs</Link>
     </Compile>
-    <Compile Include="..\VSIX\Includers\IncludersWindowControl.xaml.cs">
+    <Compile Include="..\Shared\Includers\IncludersWindowControl.xaml.cs">
       <Link>Shared\Includers\IncludersWindowControl.xaml.cs</Link>
-	  <DependentUpon>IncludersWindowControl.xaml</DependentUpon>
+      <DependentUpon>IncludersWindowControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="..\VSIX\Settings\AboutWindow.xaml.cs">
+    <Compile Include="..\Shared\Settings\AboutWindow.xaml.cs">
       <Link>Shared\Settings\AboutWindow.xaml.cs</Link>
       <DependentUpon>AboutWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="..\VSIX\Timeline\Timeline.xaml.cs">
+    <Compile Include="..\Shared\Timeline\Timeline.xaml.cs">
       <Link>Shared\Timeline\Timeline.xaml.cs</Link>
       <DependentUpon>Timeline.xaml</DependentUpon>
     </Compile>
-    <Compile Include="..\VSIX\Timeline\TimelineNodeTooltip.xaml.cs">
+    <Compile Include="..\Shared\Timeline\TimelineNodeTooltip.xaml.cs">
       <Link>Shared\Timeline\TimelineNodeTooltip.xaml.cs</Link>
       <DependentUpon>TimelineNodeTooltip.xaml</DependentUpon>
     </Compile>
-    <Compile Include="..\VSIX\Timeline\TimelineSearch.xaml.cs">
+    <Compile Include="..\Shared\Timeline\TimelineSearch.xaml.cs">
       <Link>Shared\Timeline\TimelineSearch.xaml.cs</Link>
       <DependentUpon>TimelineSearch.xaml</DependentUpon>
     </Compile>
-    <Page Include="..\VSIX\Includers\IncludersWindowControl.xaml">
+    <Page Include="..\Shared\Includers\IncludersWindowControl.xaml">
       <Link>Shared\Includers\IncludersWindowControl.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="..\VSIX\Overview\CompileDataTable.xaml">
+    <Page Include="..\Shared\Overview\CompileDataTable.xaml">
       <Link>Shared\Overview\CompileDataTable.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="..\VSIX\Overview\OverviewTable.xaml">
+    <Page Include="..\Shared\Overview\OverviewTable.xaml">
       <Link>Shared\Overview\OverviewTable.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="..\VSIX\Overview\OverviewTotalsTable.xaml">
+    <Page Include="..\Shared\Overview\OverviewTotalsTable.xaml">
       <Link>Shared\Overview\OverviewTotalsTable.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="..\VSIX\Overview\OverviewWindowControl.xaml">
+    <Page Include="..\Shared\Overview\OverviewWindowControl.xaml">
       <Link>Shared\Overview\OverviewWindowControl.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="..\VSIX\Settings\AboutWindow.xaml">
+    <Page Include="..\Shared\Settings\AboutWindow.xaml">
       <Link>Shared\Settings\AboutWindow.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="..\VSIX\Timeline\Timeline.xaml">
+    <Page Include="..\Shared\Timeline\Timeline.xaml">
       <Link>Shared\Timeline\Timeline.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="..\VSIX\Timeline\TimelineNodeTooltip.xaml">
+    <Page Include="..\Shared\Timeline\TimelineNodeTooltip.xaml">
       <Link>Shared\Timeline\TimelineNodeTooltip.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="..\VSIX\Timeline\TimelineSearch.xaml">
+    <Page Include="..\Shared\Timeline\TimelineSearch.xaml">
       <Link>Shared\Timeline\TimelineSearch.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="..\VSIX\Timeline\TimelineWindowControl.xaml">
+    <Page Include="..\Shared\Timeline\TimelineWindowControl.xaml">
       <Link>Shared\Timeline\TimelineWindowControl.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -143,44 +143,44 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="..\VSIX\Common\CompilerData.cs">
+    <Compile Include="..\Shared\Common\CompilerData.cs">
       <Link>Shared\Common\CompilerData.cs</Link>
     </Compile>
-    <Compile Include="..\VSIX\Common\DocumentLifeTimeManager.cs">
+    <Compile Include="..\Shared\Common\DocumentLifeTimeManager.cs">
       <Link>Shared\Common\DocumentLifeTimeManager.cs</Link>
     </Compile>
-    <Compile Include="..\VSIX\Common\OutputLog.cs">
+    <Compile Include="..\Shared\Common\OutputLog.cs">
       <Link>Shared\Common\OutputLog.cs</Link>
     </Compile>
-    <Compile Include="..\VSIX\Common\ScoreColors.cs">
+    <Compile Include="..\Shared\Common\ScoreColors.cs">
       <Link>Shared\Common\ScoreColors.cs</Link>
     </Compile>
-    <Compile Include="..\VSIX\Common\UIConverters.cs">
+    <Compile Include="..\Shared\Common\UIConverters.cs">
       <Link>Shared\Common\UIConverters.cs</Link>
     </Compile>
-    <Compile Include="..\VSIX\Overview\CompileDataTable.xaml.cs">
+    <Compile Include="..\Shared\Overview\CompileDataTable.xaml.cs">
       <Link>Shared\Overview\CompileDataTable.xaml.cs</Link>
       <DependentUpon>CompileDataTable.xaml</DependentUpon>
     </Compile>
-    <Compile Include="..\VSIX\Overview\OverviewTable.xaml.cs">
+    <Compile Include="..\Shared\Overview\OverviewTable.xaml.cs">
       <Link>Shared\Overview\OverviewTable.xaml.cs</Link>
       <DependentUpon>OverviewTable.xaml</DependentUpon>
     </Compile>
-    <Compile Include="..\VSIX\Overview\OverviewTotalsTable.xaml.cs">
+    <Compile Include="..\Shared\Overview\OverviewTotalsTable.xaml.cs">
       <Link>Shared\Overview\OverviewTotalsTable.xaml.cs</Link>
       <DependentUpon>OverviewTotalsTable.xaml</DependentUpon>
     </Compile>
-    <Compile Include="..\VSIX\Overview\OverviewWindowControl.xaml.cs">
+    <Compile Include="..\Shared\Overview\OverviewWindowControl.xaml.cs">
       <Link>Shared\Overview\OverviewWindowControl.xaml.cs</Link>
       <DependentUpon>OverviewWindowControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="..\VSIX\Timeline\CompilerTimeline.cs">
+    <Compile Include="..\Shared\Timeline\CompilerTimeline.cs">
       <Link>Shared\Timeline\CompilerTimeline.cs</Link>
     </Compile>
-    <Compile Include="..\VSIX\Timeline\TimelineWindow.cs">
+    <Compile Include="..\Shared\Timeline\TimelineWindow.cs">
       <Link>Shared\Timeline\TimelineWindow.cs</Link>
     </Compile>
-    <Compile Include="..\VSIX\Timeline\TimelineWindowControl.xaml.cs">
+    <Compile Include="..\Shared\Timeline\TimelineWindowControl.xaml.cs">
       <Link>Shared\Timeline\TimelineWindowControl.xaml.cs</Link>
       <DependentUpon>TimelineWindowControl.xaml</DependentUpon>
     </Compile>

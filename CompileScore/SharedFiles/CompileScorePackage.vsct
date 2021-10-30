@@ -164,8 +164,8 @@
             bitmap strip containing the bitmaps and then there are the numeric ids of the elements used
             inside a button definition. An important aspect of this declaration is that the element id
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
-      <Bitmap guid="guidImages" href="Overview\Resources\OverviewWindowCommand.png" usedList="icon" />
-      <Bitmap guid="guidImages1" href="Timeline\Resources\TimelineWindowCommand.png" usedList="icon" />
+      <Bitmap guid="guidImages" href="OverviewWindowCommand.png" usedList="icon" />
+      <Bitmap guid="guidImages1" href="TimelineWindowCommand.png" usedList="icon" />
     </Bitmaps>
     <Groups>
       <Group guid="guidCompileScorePackageCmdSet1" id="EditorContextMenuGroup" priority="0x0600">

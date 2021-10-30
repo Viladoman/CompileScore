@@ -7,23 +7,6 @@ using Task = System.Threading.Tasks.Task;
 
 namespace CompileScore
 {
-    /// <summary>
-    /// This is the class that implements the package exposed by this assembly.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// The minimum requirement for a class to be considered a valid package for Visual Studio
-    /// is to implement the IVsPackage interface and register itself with the shell.
-    /// This package uses the helper classes defined inside the Managed Package Framework (MPF)
-    /// to do it: it derives from the Package class that provides the implementation of the
-    /// IVsPackage interface and uses the registration attributes defined in the framework to
-    /// register itself and its components with the shell. These attributes tell the pkgdef creation
-    /// utility what data to put into .pkgdef file.
-    /// </para>
-    /// <para>
-    /// To get loaded into VS, the package must be referred by &lt;Asset Type="Microsoft.VisualStudio.VsPackage" ...&gt; in .vsixmanifest file.
-    /// </para>
-    /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [ProvideAutoLoad(UIContextGuids80.NoSolution, PackageAutoLoadFlags.BackgroundLoad)]
     [Guid(CompileScorePackage.PackageGuidString)]
@@ -39,7 +22,7 @@ namespace CompileScore
         /// </summary>
         public const string PackageGuidString = "b55e42c2-29b6-44c4-9ebc-da319e3301d2";
 
-        #region Package Members
+#region Package Members
 
         public GeneralSettingsPageGrid GetGeneralSettings() { return (GeneralSettingsPageGrid)GetDialogPage(typeof(GeneralSettingsPageGrid)); }
 
@@ -71,6 +54,6 @@ namespace CompileScore
             await CustomCommands.InitializeAsync(this,this);
         }
 
-        #endregion
+#endregion
     }
 }

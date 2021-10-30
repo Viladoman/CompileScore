@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+    <Metadata>
+        <Identity Id="CompileScore.6e13b50f-06b4-40b3-8168-97c8ac3974d0" Version="1.6.0" Language="en-US" Publisher="Ramon Viladomat" />
+        <DisplayName>Compile Score</DisplayName>
+        <Description xml:space="preserve">C/C++ compile times data viewer and text highlight for Clang and MSVC.</Description>
+        <MoreInfo>https://github.com/Viladoman/CompileScore</MoreInfo>
+        <Icon>Resources\Icon.png</Icon>
+        <PreviewImage>Resources\IconDetail.png</PreviewImage>
+        <Tags >build c++ clang msvc cleaning cleanup code compilation compiletime digging profiling include</Tags>
+    </Metadata>
+    <Installation>
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0, 18.0)">
+            <ProductArchitecture>amd64</ProductArchitecture>
+        </InstallationTarget>
+    </Installation>
+    <Dependencies>
+        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
+    </Dependencies>
+    <Prerequisites>
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,18.0)" DisplayName="Visual Studio core editor" />
+    </Prerequisites>
+    <Assets>
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+    </Assets>
+</PackageManifest>
