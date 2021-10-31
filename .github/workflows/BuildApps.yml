@@ -19,7 +19,6 @@ jobs:
     strategy:
       matrix:
         buildconfig: [Debug, Release]
-        vsVersion: [16, 17]
     
     steps:
     - name: Checkout
@@ -48,12 +47,18 @@ jobs:
       working-directory: ${{env.appsDir}}
       run: msbuild /m /p:Configuration=${{matrix.buildconfig}} ${{ env.appsSolutionName }}
       
-    - name: Upload VSIX Artifacts
+    - name: Upload VSIX 2019 Extension Artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: CompileScore-VSIX${{matrix.vsVersion}}-${{matrix.buildconfig}}
-        path: ${{env.appsDir}}/VSIX${{matrix.vsVersion}}/bin/${{matrix.buildconfig}}/CompileScore.vsix
-        
+        name: CompileScore-VSIX16-${{matrix.buildconfig}}
+        path: ${{env.appsDir}}/VSIX16/bin/${{matrix.buildconfig}}/CompileScore.vsix
+    
+    - name: Upload VSIX 2022 Extension Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: CompileScore-VSIX17-${{matrix.buildconfig}}
+        path: ${{env.appsDir}}/VSIX17/bin/${{matrix.buildconfig}}/CompileScore.vsix
+    
     - name: Upload App Artifacts
       uses: actions/upload-artifact@v2
       with:
