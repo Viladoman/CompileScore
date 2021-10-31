@@ -56,24 +56,24 @@ jobs:
       working-directory: ${{env.appsDir}}
       run: msbuild /m /p:Configuration=Release ${{ env.appsSolutionName }}
       
-    - name: Upload VSIX 16 Asset
+    - name: Upload VSIX 2019 Asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ github.event.release.upload_url }}
         asset_path: ${{env.appsDir}}/VSIX16/bin/Release/CompileScore.vsix
-        asset_name: CompileScore.vsix
+        asset_name: CompileScore_VS2019.vsix
         asset_content_type: application/zip
     
-    - name: Upload VSIX 17 Asset
+    - name: Upload VSIX 2022 Asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ github.event.release.upload_url }}
         asset_path: ${{env.appsDir}}/VSIX17/bin/Release/CompileScore.vsix
-        asset_name: CompileScore.vsix
+        asset_name: CompileScore_VS2022.vsix
         asset_content_type: application/zip
          
     - name: Generate App Asset
