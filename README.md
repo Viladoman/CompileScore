@@ -44,7 +44,7 @@ Right-click on any include entry and select **Show Includers Graph** to open its
 
 This repository also contains a standalone app with the same visualization and code as the VS extension. It can prove useful to compare results or open reports without having to open Visual Studio. 
 
-The app needs to be build. The solution can be found at [CompileScore/WPF/CompileScoreWPF.sln](https://github.com/Viladoman/CompileScore/tree/master/CompileScore/WPF).
+The app needs to be build. The project is inside the same solution as the VS extensions and it can be found at [CompileScore/CompileScore.sln](https://github.com/Viladoman/CompileScore/tree/master/CompileScore).
 
 ## How it works
 
