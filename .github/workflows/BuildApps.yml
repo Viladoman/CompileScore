@@ -1,4 +1,4 @@
-name: Build Visual Studio Extension
+name: Build Apps
 
 on:
   push:
@@ -13,12 +13,13 @@ jobs:
     env:
       extractorDir: ./DataExtractor
       extractorSolutionName: ScoreDataExtractor.sln
-      vsixDir: ./CompileScore/VSIX
-      vsixSolutionName: CompileScore.sln
+      appsDir: ./CompileScore
+      appsSolutionName: CompileScore.sln
     
     strategy:
       matrix:
         buildconfig: [Debug, Release]
+        vsVersion: [16, 17]
     
     steps:
     - name: Checkout
@@ -39,16 +40,22 @@ jobs:
       working-directory: ${{env.extractorDir}}
       run: msbuild /m /p:Configuration=Release /p:Platform=x64 ${{ env.extractorSolutionName }}
         
-    - name: NuGet restore ${{ env.vsixSolutionName }}
-      working-directory: ${{env.vsixDir}}
-      run: nuget restore ${{ env.vsixSolutionName }}
+    - name: NuGet restore ${{ env.appsSolutionName }}
+      working-directory: ${{env.appsDir}}
+      run: nuget restore ${{ env.appsSolutionName }}
      
     - name: Build Compile Score VSIX
-      working-directory: ${{env.vsixDir}}
-      run: msbuild /m /p:Configuration=${{matrix.buildconfig}} ${{ env.vsixSolutionName }}
+      working-directory: ${{env.appsDir}}
+      run: msbuild /m /p:Configuration=${{matrix.buildconfig}} ${{ env.appsSolutionName }}
       
-    - name: Upload VSIX artifact
-      uses: actions/upload-artifact@v1
+    - name: Upload VSIX Artifacts
+      uses: actions/upload-artifact@v2
       with:
-        name: CompileScore-VSIX-${{matrix.buildconfig}}
-        path: ${{env.vsixDir}}/bin/${{matrix.buildconfig}}/CompileScore.vsix
+        name: CompileScore-VSIX${{matrix.vsVersion}}-${{matrix.buildconfig}}
+        path: ${{env.appsDir}}/VSIX${{matrix.vsVersion}}/bin/${{matrix.buildconfig}}/CompileScore.vsix
+        
+    - name: Upload App Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: CompileScore-App-${{matrix.buildconfig}}
+        path: ${{env.appsDir}}/WPF/bin/${{matrix.buildconfig}}/*
