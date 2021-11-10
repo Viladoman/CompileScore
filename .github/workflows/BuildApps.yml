@@ -50,13 +50,13 @@ jobs:
     - name: Upload VSIX 2019 Extension Artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: CompileScore-VSIX16-${{matrix.buildconfig}}
+        name: CompileScore-VSIX2019-${{matrix.buildconfig}}
         path: ${{env.appsDir}}/VSIX16/bin/${{matrix.buildconfig}}/CompileScore.vsix
     
     - name: Upload VSIX 2022 Extension Artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: CompileScore-VSIX17-${{matrix.buildconfig}}
+        name: CompileScore-VSIX2022-${{matrix.buildconfig}}
         path: ${{env.appsDir}}/VSIX17/bin/${{matrix.buildconfig}}/CompileScore.vsix
     
     - name: Upload App Artifacts
