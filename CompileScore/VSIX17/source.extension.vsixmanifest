@@ -5,7 +5,7 @@
         <DisplayName>Compile Score</DisplayName>
         <Description xml:space="preserve">C/C++ compile times data viewer and text highlight for Clang and MSVC.</Description>
         <MoreInfo>https://github.com/Viladoman/CompileScore</MoreInfo>
-        <Icon>Resources\Icon.png</Icon>
+        <Icon>Resources\IconDetail.png</Icon>
         <PreviewImage>Resources\IconDetail.png</PreviewImage>
         <Tags >build c++ clang msvc cleaning cleanup code compilation compiletime digging profiling include</Tags>
     </Metadata>

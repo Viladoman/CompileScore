@@ -83,11 +83,6 @@
       <Link>External\ScoreExtractor\ScoreDataExtractor.exe</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\SharedFiles\Icon.png">
-      <Link>Resources\Icon.png</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
     <Content Include="..\SharedFiles\IconDetail.png">
       <Link>Resources\IconDetail.png</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

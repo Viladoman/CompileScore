@@ -62,8 +62,8 @@ namespace CompileScore
 
         private static void OutputString(string text)
         {
-#if VS17
             ThreadHelper.ThrowIfNotOnUIThread();
+#if VS17
             pane.OutputStringThreadSafe(text);
 #else
             pane.OutputString(text);
