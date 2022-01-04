@@ -71,7 +71,7 @@ The [Release workflow action](https://github.com/Viladoman/CompileScore/blob/mas
 Several [Test Projects](https://github.com/Viladoman/CompileScore/tree/master/TestProjects) have been included in the repository. 
 
 ## References
-- [Visual Studio 2019](https://visualstudio.microsoft.com/vs/)
+- [Visual Studio](https://visualstudio.microsoft.com/vs/)
 - [Clang 9+](https://releases.llvm.org/download.html) ( support for -ftime-trace ) 
 - [Microsoft C++ Build Insights SDK](https://docs.microsoft.com/cpp/build-insights/get-started-with-cpp-build-insights)
 
