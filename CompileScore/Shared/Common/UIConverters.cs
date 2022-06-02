@@ -87,7 +87,10 @@ namespace CompileScore.Common
             sec = sec - (min * 60);
             ulong hour = min / 60;
             min = min - (hour * 60);
+            ulong day = hour / 24;
+            hour = hour - (day * 24);
 
+            if (day > 0)  { return day + " d " + hour + " h "; }
             if (hour > 0) { return hour + " h " + min + " m"; }
             if (min > 0)  { return min  + " m " + sec + " s"; }
             if (sec > 0)  { return sec  + "." + ms.ToString().PadLeft(3, '0') + " s"; }

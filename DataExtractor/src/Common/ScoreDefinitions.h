@@ -49,6 +49,17 @@ enum class CompileCategory : CompileCategoryType
 
 constexpr CompileCategoryType ToUnderlying(CompileCategory input){ return static_cast<CompileCategoryType>(input);}
 
+struct CompileUnitContext
+{
+    CompileUnitContext()
+        : startTime(0u)
+        , threadId(0u)
+    {}
+
+    U64 startTime;
+    U32 threadId;
+};
+
 struct CompileUnit
 { 
     CompileUnit(const U32 _unitId = 0u)
@@ -56,9 +67,10 @@ struct CompileUnit
         , values()
     {}
 
-    fastl::string name;
-    U32 unitId; //filled by the ScoreProcessor
-    U32 values[ToUnderlying(CompileCategory::DisplayCount)];
+    fastl::string      name;
+    CompileUnitContext context;
+    U32                unitId; //filled by the ScoreProcessor
+    U32                values[ToUnderlying(CompileCategory::DisplayCount)];
 };
 
 struct CompileData

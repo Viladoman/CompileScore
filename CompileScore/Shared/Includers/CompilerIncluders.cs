@@ -59,13 +59,9 @@ namespace CompileScore.Includers
                 {
                     uint thisVersion = reader.ReadUInt32();
 
-                    if (thisVersion == CompilerData.VERSION)
+                    if (CompilerData.CheckVersion(thisVersion))
                     {
                         ret = ReadIncluderValues(reader);
-                    }
-                    else
-                    {
-                        OutputLog.Error("Version mismatch! Expected " + CompilerData.VERSION + " - Found " + thisVersion + " - Please export again with matching Data Exporter");
                     }
                 }
 

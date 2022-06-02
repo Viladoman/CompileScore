@@ -76,7 +76,7 @@
         </Grid.RowDefinitions>
         
         <TabControl Grid.Row="0" x:Name="tabControl" TabStripPlacement="Left">
-            <TabItem Header="Totals">
+            <TabItem Header="Overview">
                 <local:OverviewTotalsTable/>
             </TabItem>
             <TabItem Header="Units">

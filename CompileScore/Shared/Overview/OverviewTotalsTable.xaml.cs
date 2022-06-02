@@ -24,6 +24,10 @@ namespace CompileScore.Overview
 
         public void OnDataChanged()
         {
+            CompileSession session = CompilerData.Instance.GetSession();
+            buildTimeText.Text = Common.UIConverters.GetTimeStr(session.FullDuration,true);
+            threadsText.Text = session.NumThreads > 0 ? "Threads: " + session.NumThreads : "";
+
             ObservableCollection<UnitTotal> totals = new ObservableCollection<UnitTotal>();
             foreach (CompilerData.CompileCategory category in Common.Order.CategoryDisplay)
             {
@@ -35,7 +39,11 @@ namespace CompileScore.Overview
             }
             listview.ItemsSource = totals;
 
-            descriptionText.Visibility = totals.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            Visibility vis = totals.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            sessionGrid.Visibility = vis;
+            headerA.Visibility = vis;
+            headerB.Visibility = vis;
+
             RefreshWidths();
         }
         

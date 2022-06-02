@@ -65,6 +65,9 @@ namespace CompileScore
 
         public string Name { get; }
 
+        public uint Thread { set; get; } = 0;
+        public ulong Start { set; get; } = 0;
+
         public uint Index { get; }
 
         public List<uint> ValuesList { get { return values.ToList(); } }
@@ -77,13 +80,20 @@ namespace CompileScore
             }
         }
     }
+    public class CompileSession
+    {
+        public uint  Version { set; get; } = 0;
+        public ulong FullDuration { set; get; } = 0;
+        public uint  NumThreads { set; get; } = 0;
+    }
 
     public sealed class CompilerData
     {
         private static readonly Lazy<CompilerData> lazy = new Lazy<CompilerData>(() => new CompilerData());
         public static CompilerData Instance { get { return lazy.Value; } }
 
-        public const uint VERSION = 4;
+        public const uint VERSION_MIN = 4;
+        public const uint VERSION     = 5;
 
         //Keep this in sync with the data exporter
         public enum CompileCategory
@@ -142,6 +152,8 @@ namespace CompileScore
         private List<UnitValue> UnitsCollection { set; get; } = new List<UnitValue>();
         private List<UnitTotal> Totals { set; get; } = new List<UnitTotal>();
 
+        private CompileSession Session { set; get; } = new CompileSession();
+
         public DataSource Source { private set; get; } = DataSource.Default;
 
         public class CompileDataset
@@ -199,6 +211,11 @@ namespace CompileScore
 
             MacroEvaluator evaluator = new MacroEvaluator();
             return EditorUtils.NormalizePath(evaluator.Evaluate(rawPath));
+        }
+
+        public CompileSession GetSession()
+        {
+            return Session;
         }
 
         public List<UnitTotal> GetTotals()
@@ -350,6 +367,12 @@ namespace CompileScore
             var name = reader.ReadString();
             var compileData = new UnitValue(name, index);
 
+            if ( Session.Version >= 5 )
+            {
+                compileData.Start = reader.ReadUInt64();
+                compileData.Thread = reader.ReadUInt32();
+            }
+
             for(CompileCategory category = 0; (int)category < (int)CompileThresholds.Display; ++category)
             {
                 compileData.SetValue(category, reader.ReadUInt32());
@@ -387,10 +410,30 @@ namespace CompileScore
             LoadSeverities(ScoreLocation);
         }
 
+        static public bool CheckVersion(uint version)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (version < VERSION_MIN)
+            {
+                OutputLog.Error("Trying to load an unsupported file Version! Expected a minumum version of " + VERSION_MIN + " - Found " + version + " - Please export again with matching Data Exporter");
+                return false;
+            }
+            
+            if (version > VERSION)
+            {
+                OutputLog.Error("Trying to load an unsupported file Version! Expected a maximum version of " + VERSION + " - Found " + version + " - Please export again with matching Data Exporter");
+                return false;
+            }
+
+            return true;
+        }
+
         private void LoadSeverities(string fullPath)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            Session = new CompileSession();
             UnitsCollection.Clear();
             Totals.Clear();
             ClearDatasets();
@@ -403,8 +446,8 @@ namespace CompileScore
                 using (BinaryReader reader = new BinaryReader(fileStream))
                 {
                     // Read version
-                    uint thisVersion = reader.ReadUInt32();
-                    if (thisVersion == VERSION)
+                    Session.Version = reader.ReadUInt32();
+                    if (CheckVersion(Session.Version))
                     {
                         // Read Header
                         Timeline.CompilerTimeline.Instance.TimelinePacking = reader.ReadUInt32();
@@ -430,10 +473,6 @@ namespace CompileScore
                             }
                             Datasets[i].collection = new List<CompileValue>(thislist);
                         }
-                    }
-                    else
-                    {
-                        OutputLog.Error("Version mismatch! Expected "+ VERSION + " - Found "+ thisVersion + " - Please export again with matching Data Exporter");
                     }
                 }
 
@@ -503,6 +542,12 @@ namespace CompileScore
                 for(int k = 0; k < (int)CompileThresholds.Display;++k)
                 {
                     Totals[k].Total += unit.ValuesList[k];
+                }
+
+                if (Session.Version >= 5)
+                {
+                    Session.FullDuration = Math.Max(Session.FullDuration, unit.Start + unit.ValuesList[(int)CompileCategory.ExecuteCompiler]);
+                    Session.NumThreads   = Math.Max(Session.NumThreads,   unit.Thread + 1 );
                 }
             }
         }

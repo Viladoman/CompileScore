@@ -78,14 +78,14 @@ namespace fastl
 	template<typename TKey> typename set<TKey>::iterator set<TKey>::find( const TKey& key )
 	{
 		iterator found = fastl::lower_bound( begin(), end(), key, [=]( const TKey& value, const TKey& key ) {return value < key; } );
-		return found != end() && found->first == key ? found : end();
+		return found != end() && *found == key ? found : end();
 	}
 
 	//------------------------------------------------------------------------------------------
 	template<typename TKey> typename set<TKey>::const_iterator set<TKey>::find( const TKey& key ) const
 	{
 		const_iterator found = fastl::lower_bound( begin(), end(), key, [=]( const TKey& value, const TKey& key ) {return value < key; } );
-		return found != end() && found->first == key ? found : end();
+		return found != end() && *found == key ? found : end();
 	}
 
 }

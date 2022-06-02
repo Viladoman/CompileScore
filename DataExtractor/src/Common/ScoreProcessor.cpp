@@ -117,7 +117,7 @@ namespace CompileScore
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	void ProcessTimeline(ScoreData& scoreData, ScoreTimeline& timeline)
+	void ProcessTimeline(ScoreData& scoreData, ScoreTimeline& timeline, const CompileUnitContext& context)
 	{
 		//Get Gather limit
 		ExportParams* exportParams = Context::Get<ExportParams>(); 
@@ -129,6 +129,7 @@ namespace CompileScore
 		scoreData.units.emplace_back(unitId);
 		CompileUnit& unit = scoreData.units.back();
 		unit.name = timeline.name;
+		unit.context = context;
 		
 		for (TCompileEvents& track : timeline.tracks)
 		{ 
@@ -154,6 +155,29 @@ namespace CompileScore
 			}
 
 			binarizer->Binarize(timeline);
+		}
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	void FinalizeScoreData(ScoreData& scoreData)
+	{
+		//Normalize unit start times and threads
+		typedef fastl::unordered_map<U32,U32> TThreadDictionary; 
+		TThreadDictionary threadDict;
+		U32 nextIndex = 0;
+		U64 minStartTime = 0xffffffffffffffff;
+
+		for (CompileUnit& unit : scoreData.units)
+		{
+			minStartTime = unit.context.startTime < minStartTime? unit.context.startTime : minStartTime;
+			auto const& result = threadDict.insert(TThreadDictionary::value_type(unit.context.threadId, nextIndex));
+			unit.context.threadId = result.first->second;
+			nextIndex += result.second ? 1 : 0;
+		}
+
+		for (CompileUnit& unit : scoreData.units)
+		{
+			unit.context.startTime -= minStartTime;
 		}
 	}
 }

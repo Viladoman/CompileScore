@@ -138,13 +138,14 @@ namespace Clang
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	bool ProcessEvent(CompileEvent& output, Json::Reader& reader)
+	bool ProcessEvent(CompileEvent& output, CompileUnitContext& context, Json::Reader& reader)
 	{ 
 		constexpr static Json::Token tagName     = Utils::CreateLiteralToken("name");
 		constexpr static Json::Token tagStart    = Utils::CreateLiteralToken("ts");
 		constexpr static Json::Token tagDuration = Utils::CreateLiteralToken("dur");
 		constexpr static Json::Token tagArgs     = Utils::CreateLiteralToken("args");
 		constexpr static Json::Token tagDetail   = Utils::CreateLiteralToken("detail");
+		constexpr static Json::Token tagThread   = Utils::CreateLiteralToken("tid");
 
 		//Open Object token already parsed by the caller
 		Json::Token token; 
@@ -183,6 +184,11 @@ namespace Clang
 					}
 				}
 			}
+			else if (Utils::EqualTokens(token, tagThread))
+			{
+				if (!reader.NextToken(token) || token.type != Json::Token::Type::Number) return false;
+				context.threadId = Utils::TokenToU32(token);
+			}
 			else 
 			{
 				//unknown or uninteresting field - skip it
@@ -218,13 +224,16 @@ namespace Clang
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	void NormalizeStartTimes(ScoreTimeline& timeline)
+	void NormalizeStartTimes(ScoreTimeline& timeline, CompileUnitContext& context)
 	{ 
 		TCompileEvents& events = timeline.tracks[0]; 
 
 		if (!events.empty())
 		{
+			//TODO ~ ramonv ~ missing finalization pass to normalize starttimes
+
 			const U32 offset = events[0].start;
+			context.startTime = offset;
 			for (CompileEvent& entry : events)
 			{ 
 				entry.start -= offset;
@@ -236,6 +245,8 @@ namespace Clang
 	bool ProcessFile(ScoreData& scoreData, const char* path, const char* content)
 	{ 
 		constexpr Json::Token literalTraceEvents = Utils::CreateLiteralToken("traceEvents");
+
+		CompileUnitContext context;
 
 		ScoreTimeline timeline;
 		timeline.tracks.emplace_back(); //we only use one events track in Clang
@@ -261,7 +272,7 @@ namespace Clang
 		while (reader.NextToken(token) && token.type != Json::Token::Type::ArrayClose)
 		{ 
 			CompileEvent compileEvent; 
-			if (token.type != Json::Token::Type::ObjectOpen || !ProcessEvent(compileEvent,reader)) return false;
+			if (token.type != Json::Token::Type::ObjectOpen || !ProcessEvent(compileEvent,context,reader)) return false;
 			
 			if (compileEvent.category != CompileCategory::Invalid)
 			{ 
@@ -270,10 +281,8 @@ namespace Clang
 		}
 
 		//From here we can ignore the rest of the file
-
-		NormalizeStartTimes(timeline);
-
-		CompileScore::ProcessTimeline(scoreData,timeline);
+		NormalizeStartTimes(timeline,context);
+		CompileScore::ProcessTimeline(scoreData,timeline,context);
 		return true;
 	}
 
@@ -406,6 +415,7 @@ namespace Clang
 			ProcessFile(scoreData,pathStart);
 		}
 
+		CompileScore::FinalizeScoreData(scoreData);
 		binarizer.Get().Binarize(scoreData);
 
 		return SUCCESS;
@@ -438,6 +448,7 @@ namespace Clang
 			IO::Log(IO::Verbosity::Progress,"Parsing... %u files\r",++filesFound);
 		}
 
+		CompileScore::FinalizeScoreData(scoreData);
 		binarizer.Get().Binarize(scoreData);
 
 		return SUCCESS;

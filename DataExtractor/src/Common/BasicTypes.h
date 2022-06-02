@@ -1,8 +1,8 @@
 #pragma once
 
-typedef unsigned char U8;
-typedef unsigned int  U32;
-typedef long long     U64;
+typedef unsigned char      U8;
+typedef unsigned int       U32;
+typedef unsigned long long U64;
 
 static_assert(sizeof(U8)  == 1,"wrong native type size");
 static_assert(sizeof(U32) == 4,"wrong native type size");

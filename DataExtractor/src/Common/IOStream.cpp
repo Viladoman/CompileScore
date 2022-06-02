@@ -5,7 +5,7 @@
 
 #include "ScoreDefinitions.h"
 
-constexpr U32 SCORE_VERSION = 4;
+constexpr U32 SCORE_VERSION = 5;
 constexpr U32 TIMELINE_FILE_NUM_DIGITS = 4;
 
 static_assert(TIMELINE_FILE_NUM_DIGITS > 0);
@@ -358,9 +358,17 @@ namespace IO
         }
 
         // -----------------------------------------------------------------------------------------------------------
-        void BinarizeUnit(FILE* stream, const CompileUnit unit)
+        void BInarizeUnitContext(FILE* stream, const CompileUnitContext& context)
+        {
+            BinarizeU64(stream, context.startTime);
+            BinarizeU32(stream, context.threadId);
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeUnit(FILE* stream, const CompileUnit& unit)
         { 
             BinarizeString(stream,unit.name); 
+            BInarizeUnitContext(stream, unit.context);
             for (U32 value : unit.values)
             { 
                 BinarizeU32(stream, value);

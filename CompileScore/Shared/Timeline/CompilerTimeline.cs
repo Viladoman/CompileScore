@@ -79,7 +79,7 @@ namespace CompileScore.Timeline
                 {
                     uint thisVersion = reader.ReadUInt32();
 
-                    if (thisVersion == CompilerData.VERSION)
+                    if (CompilerData.CheckVersion(thisVersion))
                     {
                         for (uint i = 0; i < timelineInFileNum && !ReachedEndOfStream(reader); ++i)
                         {
@@ -90,10 +90,6 @@ namespace CompileScore.Timeline
                         {
                             root = BuildTimelineRoot(reader,unit);
                         }
-                    }
-                    else
-                    {
-                        OutputLog.Error("Version mismatch! Expected " + CompilerData.VERSION + " - Found " + thisVersion + " - Please export again with matching Data Exporter");
                     }
                 }
 

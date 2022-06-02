@@ -55,10 +55,41 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <TextBlock x:Name="descriptionText" Grid.Row="0" Text="The values displayed are equivalent to a single process compilation" HorizontalAlignment="Center" />
-        <ListView Grid.Row="1" x:Name="listview">
+        <Grid Grid.Row="0" Margin="0 5 0 0" x:Name="headerA" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Separator Grid.Column="0" Margin="5 0 0 0"/>
+            <TextBlock Grid.Column="1" Text="Overview" Margin="5 0 0 0"/>
+            <Separator Grid.Column="2" Margin="5 0 0 0"/>
+        </Grid>
+        <Grid Grid.Row="1" Margin="0 5 0 5" x:Name="sessionGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="90"/>
+                <ColumnDefinition Width="150"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="Build Time" Margin="5 0 0 0"/>
+            <TextBlock x:Name="buildTimeText" Grid.Column="1" Text="-" Margin="5 0 0 0"/>
+            <TextBlock x:Name="threadsText" Grid.Column="2" Text="" Margin="5 0 0 0"/>
+        </Grid>
+        <Grid Grid.Row="2" x:Name="headerB" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Separator Grid.Column="0" Margin="5 0 0 0"/>
+            <TextBlock Grid.Column="1" Text="Accumulated Times" Margin="5 0 0 0"/>
+            <Separator Grid.Column="2" Margin="5 0 0 0"/>
+        </Grid>
+        <ListView Grid.Row="3" x:Name="listview" Margin="0 5 0 0">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Width="150" DisplayMemberBinding="{Binding Category, Converter={StaticResource categoryStrConverter}}"/>
