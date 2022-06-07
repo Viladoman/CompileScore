@@ -138,7 +138,7 @@ namespace Clang
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	bool ProcessEvent(CompileEvent& output, CompileUnitContext& context, Json::Reader& reader)
+	bool ProcessEvent(ScoreData& scoreData, CompileEvent& output, CompileUnitContext& context, Json::Reader& reader)
 	{ 
 		constexpr static Json::Token tagName     = Utils::CreateLiteralToken("name");
 		constexpr static Json::Token tagStart    = Utils::CreateLiteralToken("ts");
@@ -155,7 +155,7 @@ namespace Clang
 			{
 				if (!reader.NextToken(token) || token.type != Json::Token::Type::String) return false;
 				output.category = ToCompileCategory(token);
-				if (output.name.empty()) output.name = fastl::string(token.str,token.length);
+				if (output.nameHash == 0ull) output.nameHash = CompileScore::StoreString(scoreData,token.str,token.length);
 			}
 			else if (Utils::EqualTokens(token,tagStart))
 			{
@@ -176,7 +176,7 @@ namespace Clang
 					if (Utils::EqualTokens(token,tagDetail))
 					{ 
 						if (!reader.NextToken(token) || token.type != Json::Token::Type::String) return false;  
-						output.name = fastl::string(token.str,token.length);
+						output.nameHash = CompileScore::StoreString(scoreData,token.str,token.length);
 					}
 					else 
 					{ 
@@ -196,16 +196,7 @@ namespace Clang
 			}
 		}
 
-		//process filenames
-		if (output.category == CompileCategory::Include || output.category == CompileCategory::OptimizeModule)
-		{ 
-			StringUtils::ToPathBaseName(output.name); 
-		}
-	
 		//TODO ~ ramonv ~ demangle optimize function names
-
-		//all names should be lowercase to improve filter performance later
-		StringUtils::ToLower(output.name);
 
 		return true;
 	}
@@ -230,8 +221,6 @@ namespace Clang
 
 		if (!events.empty())
 		{
-			//TODO ~ ramonv ~ missing finalization pass to normalize starttimes
-
 			const U32 offset = events[0].start;
 			context.startTime = offset;
 			for (CompileEvent& entry : events)
@@ -251,10 +240,9 @@ namespace Clang
 		ScoreTimeline timeline;
 		timeline.tracks.emplace_back(); //we only use one events track in Clang
 
-		timeline.name = path;
-		StringUtils::ToPathBaseName(timeline.name); //remove the path
-		StringUtils::RemoveExtension(timeline.name); //remove the .json
-		StringUtils::ToLower(timeline.name);
+		fastl::string inputPath{path};
+		StringUtils::RemoveExtension(inputPath); //remove the .json
+		timeline.nameHash = CompileScore::StoreString(scoreData, inputPath.c_str(), inputPath.length());
 
 		//Parse JSON
 		Json::Reader reader(content);
@@ -272,7 +260,7 @@ namespace Clang
 		while (reader.NextToken(token) && token.type != Json::Token::Type::ArrayClose)
 		{ 
 			CompileEvent compileEvent; 
-			if (token.type != Json::Token::Type::ObjectOpen || !ProcessEvent(compileEvent,context,reader)) return false;
+			if (token.type != Json::Token::Type::ObjectOpen || !ProcessEvent(scoreData,compileEvent,context,reader)) return false;
 			
 			if (compileEvent.category != CompileCategory::Invalid)
 			{ 

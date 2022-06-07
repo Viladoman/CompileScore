@@ -106,7 +106,7 @@ namespace CompileScore
                     if (fileName == null) continue;
 
                     string lowerFilename = fileName.ToLower();
-                    CompileValue value = CompilerData.Instance.GetValue(CompilerData.CompileCategory.Include, lowerFilename);
+                    CompileValue value = CompilerData.Instance.GetValueByName(CompilerData.CompileCategory.Include, lowerFilename);
 
                     if (value != null && value.Severity > 0)
                     {

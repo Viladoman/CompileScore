@@ -98,9 +98,9 @@ namespace CompileScore.Overview
                 contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Includers Graph", (a,b) => Includers.CompilerIncluders.Instance.DisplayIncluders(value)));
             }
 
-            if (isVisualStudio && Category == CompilerData.CompileCategory.Include)
+            if (Category == CompilerData.CompileCategory.Include)
             {
-                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Location (Experimental)", (a, b) => EditorUtils.OpenFile(value.Name)));
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Location", (a, b) => EditorUtils.OpenFile(value)));
             }
 
             if (value.Name.Length > 0)

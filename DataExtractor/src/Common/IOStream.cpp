@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <cstdarg>
 
+#include "StringUtils.h"
+
 #include "ScoreDefinitions.h"
 
 constexpr U32 SCORE_VERSION = 5;
@@ -296,18 +298,47 @@ namespace IO
     { 
         // -----------------------------------------------------------------------------------------------------------
         void BinarizeString(FILE* stream, const fastl::string& str)
-        { 
+        {
             //Perform size encoding in 7bitSize format
-            size_t strSize = str.length(); 
-            do 
-            { 
-                const U8 val = strSize < 0x80? strSize & 0x7F : (strSize & 0x7F) | 0x80;
-                fwrite(&val,sizeof(U8),1,stream);
+            size_t strSize = str.length();
+            do
+            {
+                const U8 val = strSize < 0x80 ? strSize & 0x7F : (strSize & 0x7F) | 0x80;
+                fwrite(&val, sizeof(U8), 1, stream);
                 strSize >>= 7;
-            }
-            while(strSize);
+            } while (strSize);
 
-            fwrite(str.c_str(),str.length(),1,stream);
+            fwrite(str.c_str(), str.length(), 1, stream);
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeStringHash(FILE* stream, const TCompileStrings& strings, U64 strHash)
+        {
+            TCompileStrings::const_iterator found = strings.find(strHash);
+            if (found != strings.end())
+            {
+                BinarizeString(stream, found->second);
+            }
+            else
+            {
+                BinarizeString(stream, fastl::string("?"));
+            }
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeStringPath(FILE* stream, const TCompileStrings& strings, U64 strHash)
+        {
+            TCompileStrings::const_iterator found = strings.find(strHash);
+            if (found != strings.end())
+            {
+                fastl::string pathBase = found->second;
+                StringUtils::ToPathBaseName(pathBase);
+                BinarizeString(stream, pathBase);
+            }
+            else
+            {
+                BinarizeString(stream, fastl::string("?"));
+            }
         }
 
         // -----------------------------------------------------------------------------------------------------------
@@ -331,7 +362,6 @@ namespace IO
         // -----------------------------------------------------------------------------------------------------------
         void BinarizeIndexSet( FILE* stream, const TCompileIndexSet& indexSet )
         {
-            //TODO ~ ramonv ~ check for U32 overflow
             BinarizeU32( stream, static_cast< U32 >( indexSet.size() ) );
             for( const U32 index : indexSet )
             {
@@ -349,7 +379,6 @@ namespace IO
         // -----------------------------------------------------------------------------------------------------------
         void BinarizeIncluders(FILE* stream, const TCompileIncluders& includers )
         {
-			//TODO ~ ramonv ~ check for U32 overflow
 			BinarizeU32( stream, static_cast< U32 >( includers.size() ) );
 			for( const CompileIncluder& includer : includers )
 			{
@@ -365,9 +394,9 @@ namespace IO
         }
 
         // -----------------------------------------------------------------------------------------------------------
-        void BinarizeUnit(FILE* stream, const CompileUnit& unit)
+        void BinarizeUnit(FILE* stream, const TCompileStrings& strings, const CompileUnit& unit)
         { 
-            BinarizeString(stream,unit.name); 
+            BinarizeStringPath(stream, strings, unit.nameHash);
             BInarizeUnitContext(stream, unit.context);
             for (U32 value : unit.values)
             { 
@@ -376,30 +405,69 @@ namespace IO
         }
 
         // -----------------------------------------------------------------------------------------------------------
-        void BinarizeUnits(FILE* stream, const TCompileUnits& units)
+        void BinarizeUnits(FILE* stream, const TCompileStrings& strings, const TCompileUnits& units)
         {
-            //TODO ~ ramonv ~ check for U32 overflow
             BinarizeU32(stream,static_cast<U32>(units.size()));
             for (const CompileUnit& unit : units)
             { 
-                BinarizeUnit(stream,unit);
+                BinarizeUnit(stream,strings,unit);
             }
         }
 
         // -----------------------------------------------------------------------------------------------------------
-        void BinarizeGlobals(FILE* stream, const TCompileDatas& globals)
+        void BinarizeGlobalsStr(FILE* stream, const TCompileStrings& strings, const TCompileDatas& globals)
         {
-            //TODO ~ ramonv ~ check for U32 overflow
-            BinarizeU32(stream,static_cast<unsigned int>(globals.size()));
-            for (const auto& entry : globals)
+            BinarizeU32(stream,static_cast<U32>(globals.size()));
+            for (const CompileData& data : globals)
             { 
-                const CompileData& data = entry;
-                BinarizeString(stream,entry.name);
+                BinarizeStringHash(stream,strings,data.nameHash);
                 BinarizeU64(stream,data.accumulated);
                 BinarizeU32(stream,data.minimum);
                 BinarizeU32(stream,data.maximum);
                 BinarizeU32(stream,data.count);
                 BinarizeU32(stream,data.maxId);
+            }
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeGlobalsPath(FILE* stream, const TCompileStrings& strings, const TCompileDatas& globals)
+        {
+            BinarizeU32(stream, static_cast<U32>(globals.size()));
+            for (const CompileData& data : globals)
+            {
+                BinarizeStringPath(stream, strings, data.nameHash);
+                BinarizeU64(stream, data.accumulated);
+                BinarizeU32(stream, data.minimum);
+                BinarizeU32(stream, data.maximum);
+                BinarizeU32(stream, data.count);
+                BinarizeU32(stream, data.maxId);
+            }
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeFolders(FILE* stream, const TCompileFolders& folders)
+        {
+            BinarizeU32(stream, static_cast<U32>(folders.size()));
+            for (const CompileFolder& folder : folders)
+            {
+                BinarizeString(stream, folder.name);
+                BinarizeU32(stream, static_cast<U32>(folder.children.size()));
+                for (const auto& child : folder.children)
+                {
+                    BinarizeU32(stream, child.second);
+                }
+                
+                BinarizeU32(stream, static_cast<U32>(folder.unitIds.size()));
+                for (const U32 id : folder.unitIds)
+                {
+                    BinarizeU32(stream, id);
+                }
+
+                BinarizeU32(stream, static_cast<U32>(folder.includeIds.size()));
+                for (const U32 id : folder.includeIds)
+                {
+                    BinarizeU32(stream, id);
+                }
             }
         }
 
@@ -411,7 +479,7 @@ namespace IO
             { 
                 BinarizeU32(stream,evt.start);
                 BinarizeU32(stream,evt.duration);
-                BinarizeU32(stream,static_cast<U32>(evt.nameId)); //TODO ~ ramonv ~ careful with overflows
+                BinarizeU32(stream,evt.nameId);
                 BinarizeU8(stream,static_cast<CompileCategoryType>(evt.category));
             }
         }
@@ -579,11 +647,21 @@ namespace IO
         Utils::BinarizeU32(stream,SCORE_VERSION);
         Utils::BinarizeU32(stream,m_impl->GetTimelinesPerFile());
 
-        Utils::BinarizeUnits(stream,data.units);
+        //Content
+        Utils::BinarizeUnits(stream,data.strings,data.units);
         for (int i=0;i<ToUnderlying(CompileCategory::GatherFull);++i)
         { 
-            Utils::BinarizeGlobals(stream,data.globals[i]);
+            if (i == ToUnderlying(CompileCategory::Include) || i == ToUnderlying(CompileCategory::OptimizeModule))
+            { 
+                Utils::BinarizeGlobalsPath(stream,data.strings,data.globals[i]);
+            }
+            else
+            {
+                Utils::BinarizeGlobalsStr(stream,data.strings,data.globals[i]);
+            }
         }    
+
+        Utils::BinarizeFolders(stream, data.folders);
 
         fclose(stream);
 
@@ -601,7 +679,7 @@ namespace IO
                 Utils::BinarizeTimelineEvents(stream,events);
             }
 
-            LOG_INFO("Timeline for %s exported", timeline.name.c_str());
+            LOG_INFO("Timeline exported (Hash: 0x%llx)", timeline.nameHash);
         }
     }
 }

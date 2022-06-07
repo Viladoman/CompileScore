@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,7 +20,24 @@ namespace CompileScore
     static public class EditorUtils
     {
         static public string NormalizePath(string input) { return input; }
-        static public void OpenFile(string filename) { }
+
+        static private void OpenFile(string fullPath)
+        {
+            if (File.Exists(fullPath))
+            {
+                System.Diagnostics.Process.Start(fullPath);
+            }
+        }
+
+        static public void OpenFile(UnitValue unit) 
+        {
+            OpenFile(CompilerData.Instance.GetUnitPath(unit));
+        }
+
+        static public void OpenFile(CompileValue value)
+        {
+            OpenFile(CompilerData.Instance.GetValuePath(CompilerData.CompileCategory.Include, value));
+        }
     }
 
     public class SolutionSettings

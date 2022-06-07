@@ -98,7 +98,7 @@ namespace fastl
 	//------------------------------------------------------------------------------------------
 	template<typename TKey, typename TValue> typename map<TKey, TValue>::const_iterator map<TKey, TValue>::find(const TKey& key) const
 	{ 
-		const_iterator found = fastl::lower_bound(begin(), end(), key, [=](value_type& value, const TKey& key) {return value.first < key; });
+		const_iterator found = fastl::lower_bound(begin(), end(), key, [=](const value_type& value, const TKey& key) {return value.first < key; });
 		return found != end() && found->first == key ? found : end();
 	}
 

@@ -64,10 +64,11 @@ struct CompileUnit
 { 
     CompileUnit(const U32 _unitId = 0u)
         : unitId(_unitId)
+        , nameHash(0u)
         , values()
     {}
 
-    fastl::string      name;
+    U64                nameHash;
     CompileUnitContext context;
     U32                unitId; //filled by the ScoreProcessor
     U32                values[ToUnderlying(CompileCategory::DisplayCount)];
@@ -76,28 +77,29 @@ struct CompileUnit
 struct CompileData
 { 
     CompileData()
-        : accumulated(0u)
+        : nameHash(0ull)
+        , accumulated(0ull)
         , minimum(0xffffffff)
         , maximum(0u)
         , maxId(InvalidCompileId)
         , count(0u)
     {}
 
-    CompileData(const fastl::string& _name)
-        : name(_name)
-        , accumulated(0u)
+    CompileData(const U64 _nameHash)
+        : nameHash(_nameHash)
+        , accumulated(0ull)
         , minimum(0xffffffff)
         , maximum(0u)
         , maxId(InvalidCompileId)
         , count(0u)
     {}
 
-    fastl::string name; 
-    U64           accumulated; 
-    U32           minimum; 
-    U32           maximum; 
-    U32           maxId; //filled by the ScoreProcessor
-    U32           count;
+    U64 nameHash; 
+    U64 accumulated; 
+    U32 minimum; 
+    U32 maximum; 
+    U32 maxId; //filled by the ScoreProcessor
+    U32 count;
 };
 
 struct CompileEvent
@@ -106,25 +108,27 @@ struct CompileEvent
         : category(CompileCategory::Invalid)
         , start(0u)
         , duration(0u)
+        , nameHash(0ull)
         , nameId(InvalidCompileId)
     {}
 
-    CompileEvent(CompileCategory _category, U32 _start, U32 _duration, const fastl::string& _name)
+    CompileEvent(CompileCategory _category, U32 _start, U32 _duration, U64 _nameHash)
         : category(_category)
         , start(_start)
         , duration(_duration)
-        , name(_name)
+        , nameHash(_nameHash)
         , nameId(InvalidCompileId)
     {}
 
-    fastl::string   name; 
+    U64             nameHash;
     U32             nameId; //filled by the ScoreProcessor
     U32             start; 
     U32             duration;
     CompileCategory category; 
 };
 
-using TCompileIndexSet = fastl::unordered_set<U32>;
+using TCompileIndexSet       = fastl::unordered_set<U32>;
+using TCompileDataDictionary = fastl::unordered_map<U64,U32>;
 
 struct CompileIncluder
 {
@@ -132,17 +136,32 @@ struct CompileIncluder
     TCompileIndexSet units;
 };
 
-using TCompileDataDictionary   = fastl::unordered_map<fastl::string,U32>;
+struct CompileFolder
+{
+    CompileFolder(){}
+
+    CompileFolder(const char* nameStr, size_t length)
+        : name(nameStr,length)
+    {}
+
+    fastl::string          name;
+    TCompileDataDictionary children;
+    fastl::vector<U32>     unitIds;
+    fastl::vector<U32>     includeIds;
+};
+
 using TCompileDatas            = fastl::vector<CompileData>;
 using TCompileUnits            = fastl::vector<CompileUnit>;
 using TCompileIncluders        = fastl::vector<CompileIncluder>;
 using TCompileEvents           = fastl::vector<CompileEvent>;
 using TCompileEventTracks      = fastl::vector<TCompileEvents>;
+using TCompileStrings          = fastl::unordered_map<U64,fastl::string>;
+using TCompileFolders          = fastl::vector<CompileFolder>;
 
 struct ScoreTimeline
 { 
     TCompileEventTracks tracks;
-    fastl::string       name;
+    U64                 nameHash;
 };
 
 struct ScoreData
@@ -151,6 +170,8 @@ struct ScoreData
     TCompileUnits     units;
     TCompileDatas     globals[ToUnderlying(CompileCategory::GatherFull)];
     TCompileIncluders includers;
+    TCompileStrings   strings;
+    TCompileFolders   folders;
 
     //helper data
     TCompileDataDictionary globalsDictionary[ToUnderlying(CompileCategory::GatherFull)];

@@ -17,6 +17,8 @@
 #include "../Common/ScoreProcessor.h"
 #include "../Common/StringUtils.h"
 
+#include "../Common/CRC64.h"
+
 namespace MSVC
 { 
     constexpr int         FAILURE = EXIT_FAILURE;
@@ -103,30 +105,31 @@ namespace MSVC
 
         struct TUEntry
         { 
-            using TSymbolsMap = fastl::unordered_map<TSymbolId,fastl::string>;
+            using TSymbolsMap = fastl::unordered_map<TSymbolId,U64>;
 
             TUEntry()
-                : timestampOffset(0u)
+                : nameHash(0ull)
+                , timestampOffset(0u)
                 , timeSectionAccumulator(0u)
             {}
 
             MSVCCompileTrack& GetTrack(const TThreadId threadId);
 
-            fastl::string      name;
+            U64                nameHash;
             TMSVCCompileTracks tracks;
             TSymbolsMap        symbols;
             TTimeStamp         timestampOffset;
             U32                timeSectionAccumulator;
         };
         using TTUCollection = fastl::vector<TUEntry>;
-        using TTUDictionary = fastl::unordered_map<fastl::string,size_t>;
+        using TTUDictionary = fastl::unordered_map<U64,size_t>;
 
         struct TUProcess
         { 
             TUProcess(const TProcessId _processId = 0u);
 
             TUEntry* GetActiveTU();         
-            void ActivateTU(const fastl::string& path);
+            void ActivateTU(U64 pathHash);
             void ActivateNew();
             void ActivateFirstUnnamed();
             void ClearTU(TUEntry& entry);
@@ -183,7 +186,6 @@ namespace MSVC
     // -----------------------------------------------------------------------------------------------------------
     MSVCCompileTrack& Gatherer::TUEntry::GetTrack(const TThreadId threadId)
     { 
-        //TODO ~ ramonv ~ linear lookup if lots of threads it might not scale properly
         for (MSVCCompileTrack& track : tracks)
         {
             if (track.threadId == threadId)
@@ -211,14 +213,14 @@ namespace MSVC
     }
 
     // -----------------------------------------------------------------------------------------------------------
-    void Gatherer::TUProcess::ActivateTU(const fastl::string& path)
+    void Gatherer::TUProcess::ActivateTU(U64 pathHash)
     {
         activeIndex = InvalidIndex;
-        TTUDictionary::iterator found = dict.find(path);
+        TTUDictionary::iterator found = dict.find(pathHash);
         if (found == dict.end())
         { 
             ActivateNew();
-            dict[path] = activeIndex;
+            dict[pathHash] = activeIndex;
         }
         else 
         { 
@@ -239,7 +241,7 @@ namespace MSVC
         for (size_t index = 0u, sz = data.size(); index<sz;++index)
         {
             const TUEntry& entry = data[index];
-            if (!entry.tracks.empty() && entry.name.empty())
+            if (!entry.tracks.empty() && entry.nameHash == 0ull)
             { 
                 activeIndex = index;
                 return;
@@ -254,11 +256,11 @@ namespace MSVC
     void Gatherer::TUProcess::ClearTU(TUEntry& entry)
     { 
         //remove entry from dictionary 
-        dict.erase(entry.name);
+        dict.erase(entry.nameHash);
 
-        //remove suballocation on activetU but keep to not destroy the dictionary indices
+        //remove suballocation on activeTU but keep to not destroy the dictionary indices
+        entry.nameHash = 0ull;
         entry.tracks.clear();
-        entry.name.clear();
         entry.symbols.clear();
     }
 
@@ -286,7 +288,7 @@ namespace MSVC
     { 
         MSBI::MatchEventInMemberFunction(eventStack.Back(), this, &Gatherer::OnCompilerPassEnded);
 
-        //TOdO ~ check detail data and just ignore already here stuff that we are not interested in ( avoid memory and computation ) 
+        //TODO ~ check detail data and just ignore already here stuff that we are not interested in ( avoid memory and computation ) 
 
         //Specifics
         MSBI::MatchEventInMemberFunction(eventStack.Back(), this, &Gatherer::OnIncludeEnded);
@@ -310,16 +312,15 @@ namespace MSVC
     // -----------------------------------------------------------------------------------------------------------
     void Gatherer::OnCompilerPassStart(const MSBI::Activities::CompilerPass& activity)
     { 
-        fastl::string path = Utils::GetPath(activity);
-        StringUtils::ToPathBaseName(path); 
-        StringUtils::ToLower(path);
-
         TUProcess& process = GetProcess(activity.ProcessId());
 
+        const fastl::string path = Utils::GetPath(activity);
+        const U64 pathHash = CompileScore::StoreString(m_scoreData, path.c_str(), path.length());
+
         //Activate the TU depending on the data we have ( handling unnamed passes ) 
-        if (!path.empty())
+        if (pathHash)
         { 
-            process.ActivateTU(path);
+            process.ActivateTU(pathHash);
         }
         else if (activity.PassCode() == MSBI::Activities::CompilerPass::PassCode::FRONT_END) 
         {
@@ -338,8 +339,8 @@ namespace MSVC
         activeTU->timestampOffset = activity.StartTimestamp();
         if (track.events.empty())
         {
-            activeTU->name = path;
-            track.events.emplace_back(MSVCCompileEvent(CompileEvent(CompileCategory::ExecuteCompiler,0u,0u,path)));
+            activeTU->nameHash = pathHash;
+            track.events.emplace_back(MSVCCompileEvent(CompileEvent(CompileCategory::ExecuteCompiler,0u,0u,pathHash)));
         }
     }
 
@@ -366,8 +367,6 @@ namespace MSVC
                 }
             }
 
-            const bool isNamed = activeTU->name.empty();
-
             if (category == CompileCategory::BackEnd)
             { 
                 FixNameTU(*activeTU);
@@ -384,9 +383,6 @@ namespace MSVC
     void Gatherer::OnIncludeEnded(const MSBI::Activities::FrontEndFile& activity)
     {   
         fastl::string path = activity.Path();
-        StringUtils::ToPathBaseName(path); 
-        StringUtils::ToLower(path);
-
         AddEvent(GetProcess(activity.ProcessId()).GetActiveTU(),CompileCategory::Include,activity,path);
     }
 
@@ -414,8 +410,7 @@ namespace MSVC
     void Gatherer::OnFunctionEnded(const MSBI::Activities::Function& activity)
     {
         fastl::string name = UndecorateFunctionName(activity.Name());
-        StringUtils::ToLower(name);
-        AddEvent(GetProcess(activity.ProcessId()).GetActiveTU(),CompileCategory::CodeGenFunction,activity,name);
+        AddEvent(GetProcess(activity.ProcessId()).GetActiveTU(),CompileCategory::CodeGenFunction,activity, name);
     }
 
     // -----------------------------------------------------------------------------------------------------------
@@ -435,7 +430,7 @@ namespace MSVC
     {
         if (TUEntry* entry = GetProcess(symbolName.ProcessId()).GetActiveTU()) 
         {
-            entry->symbols[symbolName.Key()] = symbolName.Name();
+            entry->symbols[symbolName.Key()] = CompileScore::StoreString(m_scoreData,symbolName.Name());
         }
     }
 
@@ -451,7 +446,6 @@ namespace MSVC
     // -----------------------------------------------------------------------------------------------------------
     U32 Gatherer::ConvertDuration(std::chrono::nanoseconds nanos) const
     { 
-        //Maybe upgrade to nanoseconds 
         //TODO ~ ramonv ~ careful with overflows here 
         return static_cast<U32>(nanos.count()/1000);
     }
@@ -468,13 +462,14 @@ namespace MSVC
     { 
         if (activeTU)
         { 
+            const U64 nameHash = CompileScore::StoreString(m_scoreData,name.c_str());
             const U32 startTime = ComputeEventStartTime(activeTU,activity);
 
             MSVCCompileTrack& track = activeTU->GetTrack(activity.ThreadId());
             TMSVCCompileEvents& events = track.events;
             TMSVCCompileEvents::iterator startSearch = events.begin()+track.sectionStartIndex;
             TMSVCCompileEvents::iterator found = fastl::lower_bound(startSearch,events.end(),startTime,[=](const MSVCCompileEvent& input, U32 value){ return value >= input.event.start; });
-            TMSVCCompileEvents::iterator elem = events.emplace(found,MSVCCompileEvent(CompileEvent(category,startTime,ConvertDuration(activity.Duration()),name),nameSymbol));    
+            TMSVCCompileEvents::iterator elem = events.emplace(found,MSVCCompileEvent(CompileEvent(category,startTime,ConvertDuration(activity.Duration()), nameHash),nameSymbol));
             return &(*elem);
         }
 
@@ -487,14 +482,14 @@ namespace MSVC
         //Placeholder to fix the issue when Build Insights does not give any TU name. 
         //We check for the frontend the first include as the same input file will be parsed 
         //Checking the first track and the first include to steal the name. 
-        if (entry.name.empty() && !entry.tracks.empty()) 
+        if (entry.nameHash == 0ull && !entry.tracks.empty()) 
         {
             TMSVCCompileEvents& mainTrackEvents = entry.tracks[0].events;
             for (const MSVCCompileEvent& event : mainTrackEvents)
             {
                 if (event.event.category == CompileCategory::Include)
                 {
-                    entry.name = event.event.name;
+                    entry.nameHash = event.event.nameHash;
                     return;
                 }
             }
@@ -504,14 +499,14 @@ namespace MSVC
     // -----------------------------------------------------------------------------------------------------------
     void Gatherer::FinalizeTU(TUEntry& entry, const CompileUnitContext& context)
     { 
-        if (entry.name.empty() || entry.tracks.empty() || entry.tracks[0].events.empty()) return; // avoid exporting any unnamed TU
+        if (entry.nameHash == 0ull || entry.tracks.empty() || entry.tracks[0].events.empty()) return; // avoid exporting any unnamed TU
 
         //Combine front end with  
         entry.tracks[0].events[0].event.duration = entry.timeSectionAccumulator; //Fix the root node
 
         //Create standard timeline
         ScoreTimeline timeline; 
-        timeline.name = entry.name;
+        timeline.nameHash = entry.nameHash;
         timeline.tracks.reserve(entry.tracks.size());
 
         for (MSVCCompileTrack& track : entry.tracks)
@@ -525,7 +520,7 @@ namespace MSVC
                 //assign name from symbols table if needed
                 if (element.nameSymbol > 0u)
                 { 
-                    element.event.name = entry.symbols[element.nameSymbol];
+                    element.event.nameHash = entry.symbols[element.nameSymbol];
                 }
 
                 timelineEvents.push_back(element.event);

@@ -81,7 +81,7 @@ namespace CompileScore
             }
         }
 
-        static ProjectItem FindFilenameInProject(string filename)
+        static private ProjectItem FindFilenameInProject(string filename)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -114,12 +114,9 @@ namespace CompileScore
             return null;
         }
 
-        static public void OpenFile(string filename)
+        static private void OpenFileSearch(string filename)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-
-            //TODO ~ ramonv ~ try first as a full path ( export full paths if possible from the score data on new version ) 
-
             var item = FindFilenameInProject(filename);
             if (item != null)
             {
@@ -132,6 +129,43 @@ namespace CompileScore
             else
             {
                 MessageWindow.Display(new MessageContent("Unable to find the file: "+filename));
+            }
+        }
+
+        static public void OpenFile(UnitValue unit)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            string fullPath = CompilerData.Instance.GetUnitPath(unit);
+            if (File.Exists(fullPath))
+            {
+                var applicationObject = EditorUtils.ServiceProvider.GetService(typeof(DTE)) as EnvDTE80.DTE2;
+                Assumes.Present(applicationObject);
+                applicationObject.ItemOperations.OpenFile(fullPath);
+            }
+            else
+            {
+                //Fallback to try to find this document in the solution
+                OpenFileSearch(unit.Name);
+            }
+
+        }
+
+        static public void OpenFile(CompileValue value)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            string fullPath = CompilerData.Instance.GetValuePath(CompilerData.CompileCategory.Include, value);
+            if (File.Exists(fullPath))
+            {
+                var applicationObject = EditorUtils.ServiceProvider.GetService(typeof(DTE)) as EnvDTE80.DTE2;
+                Assumes.Present(applicationObject);
+                applicationObject.ItemOperations.OpenFile(fullPath);
+            }
+            else
+            {
+                //Fallback to try to find this document in the solution
+                OpenFileSearch(value.Name);
             }
         }
 
@@ -154,25 +188,34 @@ namespace CompileScore
                 return;
             }
 
-            string filename = Path.GetFileName(doc.FullName).ToLower();
+            string path = doc.FullName.ToLower();
+            string filename = Path.GetFileName(path);
 
             var compilerData = CompilerData.Instance;
 
-            var unit = compilerData.GetUnitByName(filename);
+            var unit = compilerData.GetUnitByPath(path);
+            if (unit == null)
+            { 
+                unit = compilerData.GetUnitByName(filename); //fallback to just match by name 
+            }
             if (unit != null) 
             {   
                 Timeline.CompilerTimeline.Instance.DisplayTimeline(unit);
                 return;
             }
 
-            var value = compilerData.GetValue(CompilerData.CompileCategory.Include, filename);
+            var value = compilerData.GetValueByPath(CompilerData.CompileCategory.Include, path);
+            if (value == null)
+            {
+                value = compilerData.GetValueByName(CompilerData.CompileCategory.Include, filename);
+            }
             if (value != null)
             {
                 Timeline.CompilerTimeline.Instance.DisplayTimeline(value.MaxUnit, value);
                 return;
             }
-
-            MessageWindow.Display(new MessageContent("Unable to find the compile score timeline for "+filename));
+            
+            MessageWindow.Display(new MessageContent("Unable to find the compile score timeline for "+ filename));
         }
     }
 }

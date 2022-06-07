@@ -29,6 +29,9 @@
     <ClCompile Include="src\Common\DirectoryUtils.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="src\Common\CRC64.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -104,6 +107,9 @@
     </ClInclude>
     <ClInclude Include="src\fastl\unordered_set.h">
       <Filter>fastl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Common\CRC64.h">
+      <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

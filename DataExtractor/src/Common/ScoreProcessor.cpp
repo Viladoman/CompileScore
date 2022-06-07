@@ -1,5 +1,7 @@
 #include "../Common/Context.h"
+#include "../Common/CRC64.h"
 #include "../Common/ScoreDefinitions.h"
+#include "../Common/StringUtils.h"
 #include "../fastl/algorithm.h"
 
 #include "IOStream.h"
@@ -15,6 +17,30 @@ namespace CompileScore
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
+	U64 StoreString(ScoreData& scoreData, const char* str, size_t length)
+	{
+		const U64 strHash = Hash::AppendToCRC64(0ull, str, length);
+		if (strHash)
+		{
+			auto const& result = scoreData.strings.insert(TCompileStrings::value_type(strHash, fastl::string(str, length)));
+			if (result.second)
+			{
+				//Convert to lower case to improve search performance later
+				StringUtils::ToLower(result.first->second);
+			}
+		}
+		return strHash;
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	U64 StoreString(ScoreData& scoreData, const char* str)
+	{
+		U32 length = 0u;
+		for (; str[length] != '\0'; ++length) {}
+		return StoreString(scoreData, str, length);
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
 	CompileData& CreateGlobalEntry(ScoreData& scoreData, CompileEvent& element)
 	{ 
 		const CompileCategoryType globalIndex = ToUnderlying(element.category);
@@ -22,12 +48,12 @@ namespace CompileScore
 		TCompileDataDictionary& dictionary = scoreData.globalsDictionary[globalIndex];
 
 		const U32 nextIndex = static_cast<U32>(global.size());
-		auto const& result = dictionary.insert(TCompileDataDictionary::value_type(element.name,nextIndex));
+		auto const& result = dictionary.insert(TCompileDataDictionary::value_type(element.nameHash,nextIndex));
 		if (result.second) 
 		{ 
 			//the element got inserted
 			element.nameId = nextIndex;
-			global.emplace_back(element.name);
+			global.emplace_back(element.nameHash);
 
 			//for now we only have users entry for Includes
 			if( element.category == CompileCategory::Include )
@@ -128,7 +154,7 @@ namespace CompileScore
 		const U32 unitId = static_cast<U32>(scoreData.units.size());
 		scoreData.units.emplace_back(unitId);
 		CompileUnit& unit = scoreData.units.back();
-		unit.name = timeline.name;
+		unit.nameHash = timeline.nameHash;
 		unit.context = context;
 		
 		for (TCompileEvents& track : timeline.tracks)
@@ -159,8 +185,46 @@ namespace CompileScore
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
+	size_t AddFolder(TCompileFolders& folders, const char* path)
+	{
+		//Find and create the current folder node
+		size_t folderIndex = 0;
+		const char* folderStart = path;
+		const char* folderEnd = path;
+		for (; *folderEnd != '\0'; ++folderEnd)
+		{
+			if (*folderEnd == '/' || *folderEnd == '\\')
+			{
+				//folder found, move or create
+				const size_t folderNameLength = folderEnd - folderStart;
+				const U64 strHash = Hash::AppendToCRC64(0ull, folderStart, folderNameLength);
+
+				CompileFolder& currentFolder = folders[folderIndex];
+
+				auto const& result = currentFolder.children.insert(TCompileDataDictionary::value_type(strHash, static_cast<U32>(folders.size())));
+				if (result.second)
+				{
+					//New folder found, add to list of project folders
+					folders.emplace_back(folderStart, folderNameLength);
+				}
+				
+				folderIndex = result.first->second; //move to the child folder
+				folderStart = folderEnd + 1;
+			}
+		}
+
+		return folderIndex;
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
 	void FinalizeScoreData(ScoreData& scoreData)
 	{
+		//Create folders root
+		if (scoreData.folders.empty())
+		{
+			scoreData.folders.emplace_back();
+		}
+
 		//Normalize unit start times and threads
 		typedef fastl::unordered_map<U32,U32> TThreadDictionary; 
 		TThreadDictionary threadDict;
@@ -173,11 +237,33 @@ namespace CompileScore
 			auto const& result = threadDict.insert(TThreadDictionary::value_type(unit.context.threadId, nextIndex));
 			unit.context.threadId = result.first->second;
 			nextIndex += result.second ? 1 : 0;
+
+			//Add path to folders
+			TCompileStrings::const_iterator found = scoreData.strings.find(unit.nameHash);
+			if (found != scoreData.strings.end())
+			{
+				const size_t folderIndex = AddFolder(scoreData.folders,found->second.c_str());
+				scoreData.folders[folderIndex].unitIds.emplace_back(unit.unitId);
+			}
 		}
 
 		for (CompileUnit& unit : scoreData.units)
 		{
 			unit.context.startTime -= minStartTime;
+		}
+
+		//Add folder paths for the includes
+		const TCompileDatas& includeData = scoreData.globals[ToUnderlying(CompileCategory::Include)];
+		const U32 numIncludes = static_cast<U32>(includeData.size());
+		for (U32 i=0;i<numIncludes;++i)
+		{
+			const CompileData& data = includeData[i];
+			TCompileStrings::const_iterator found = scoreData.strings.find(data.nameHash);
+			if (found != scoreData.strings.end())
+			{
+				const size_t folderIndex = AddFolder(scoreData.folders, found->second.c_str());
+				scoreData.folders[folderIndex].includeIds.emplace_back(i);
+			}
 		}
 	}
 }

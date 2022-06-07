@@ -149,6 +149,7 @@ namespace CompileScore.Timeline
         private TimelineNode Root { set; get; }
         private TimelineNode Hover { set; get; }
         private TimelineNode FocusPending { set; get; }
+        private string SourcePath { set; get; }
 
         public Timeline()
         {
@@ -181,22 +182,24 @@ namespace CompileScore.Timeline
             RefrehsSearchUnitBox();
         }
 
-        public void SetUnit(UnitValue unit)
+        public void SetUnit(UnitValue unit, string unitPath = null)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             SetMode(Mode.Timeline);
             Unit = unit;
+            SourcePath = unitPath != null && unit != null? unitPath : CompilerData.Instance.GetUnitPath(unit);
 
             SetRoot(CompilerTimeline.Instance.LoadTimeline(Unit));
         }
 
-        public void SetIncluders(CompileValue value)
+        public void SetIncluders(CompileValue value, string valuePath = null)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             SetMode(Mode.Includers);
             IncludersValue = value;
+            SourcePath = valuePath != null && IncludersValue != null? valuePath : CompilerData.Instance.GetValuePath(CompilerData.CompileCategory.Include, value);
 
             int index = CompilerData.Instance.GetIndexOf(CompilerData.CompileCategory.Include, value);
             SetRoot(index >= 0 ? Includers.CompilerIncluders.Instance.LoadInclude((uint)index) : null);
@@ -278,8 +281,39 @@ namespace CompileScore.Timeline
 
             switch(CurrentMode)
             {
-                case Mode.Timeline:  SetUnit(Unit != null? CompilerData.Instance.GetUnitByName(Unit.Name) : null); break;
-                case Mode.Includers: SetIncluders(IncludersValue != null? CompilerData.Instance.GetValue(CompilerData.CompileCategory.Include, IncludersValue.Name) : null); break;
+                case Mode.Timeline:
+                    {
+                        if (Unit != null)
+                        {
+                            UnitValue unit = CompilerData.Instance.GetUnitByPath(SourcePath);
+                            if ( unit != null )
+                            {
+                                SetUnit(unit,SourcePath);
+                            }
+                            else
+                            {
+                                SetUnit(CompilerData.Instance.GetUnitByName(Unit.Name));
+                            }
+                        }
+                        break;
+                    }
+                case Mode.Includers:
+                    {
+                        if (IncludersValue != null)
+                        {
+                            CompileValue value = CompilerData.Instance.GetValueByPath(CompilerData.CompileCategory.Include,SourcePath);
+                            if (value != null)
+                            {
+                                SetIncluders(value, SourcePath);
+                            }
+                            else
+                            {
+                                SetIncluders(CompilerData.Instance.GetValueByName(CompilerData.CompileCategory.Include, IncludersValue.Name));
+                            }
+                        }
+
+                        break;
+                    }
             }
         }
 
@@ -472,10 +506,7 @@ namespace CompileScore.Timeline
                         contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Includers Graph", (a, b) => Includers.CompilerIncluders.Instance.DisplayIncluders(value)));
                     }
 
-                    if (isVisualStudio)
-                    {
-                        contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Location (Experimental)", (sender, e) => EditorUtils.OpenFile(value.Name)));
-                    }
+                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Location", (sender, e) => EditorUtils.OpenFile(value)));
                 }
 
                 if (value.Name.Length > 0)
@@ -492,6 +523,8 @@ namespace CompileScore.Timeline
                 {
                     contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Name", (sender, e) => Clipboard.SetText(value.Name)));
                 }
+
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Location", (sender, e) => EditorUtils.OpenFile(value)));
             }
 
             contextMenuStrip.Show(System.Windows.Forms.Control.MousePosition);
@@ -759,7 +792,7 @@ namespace CompileScore.Timeline
                 {
                     if (IncludersValue == null || name != IncludersValue.Name)
                     {
-                        SetIncluders(CompilerData.Instance.GetValue(CompilerData.CompileCategory.Include, name));
+                        SetIncluders(CompilerData.Instance.GetValueByName(CompilerData.CompileCategory.Include, name));
                     }
                     break;
                 }
