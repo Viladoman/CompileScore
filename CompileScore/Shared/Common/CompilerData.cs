@@ -325,6 +325,18 @@ namespace CompileScore
             return null;
         }
 
+        public string GetUnitPathSafe(UnitValue unit)
+        {
+            string fullPath = GetUnitPath(unit);
+            return fullPath == null ? "" : fullPath;
+        }
+
+        public string GetValuePathSafe(CompileCategory category, CompileValue value)
+        {
+            string fullPath = GetValuePath(category, value);
+            return fullPath == null ? "" : fullPath;
+        }
+
         private CompileFolder GetFolderFromPathRecursive(CompileFolder node, string[] directories, int index)
         {
             if (directories.Length == (index + 1))

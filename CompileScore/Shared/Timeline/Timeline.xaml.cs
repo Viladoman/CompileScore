@@ -506,7 +506,8 @@ namespace CompileScore.Timeline
                         contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Includers Graph", (a, b) => Includers.CompilerIncluders.Instance.DisplayIncluders(value)));
                     }
 
-                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Location", (sender, e) => EditorUtils.OpenFile(value)));
+                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open File", (sender, e) => EditorUtils.OpenFile(value)));
+                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetText(CompilerData.Instance.GetValuePathSafe(CompilerData.CompileCategory.Include, value))));
                 }
 
                 if (value.Name.Length > 0)
@@ -524,7 +525,9 @@ namespace CompileScore.Timeline
                     contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Name", (sender, e) => Clipboard.SetText(value.Name)));
                 }
 
-                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Location", (sender, e) => EditorUtils.OpenFile(value)));
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open File", (sender, e) => EditorUtils.OpenFile(value)));
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetText(CompilerData.Instance.GetUnitPathSafe(value))));
+
             }
 
             contextMenuStrip.Show(System.Windows.Forms.Control.MousePosition);
