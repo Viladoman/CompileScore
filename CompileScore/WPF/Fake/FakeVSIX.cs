@@ -23,7 +23,7 @@ namespace CompileScore
 
         static private void OpenFile(string fullPath)
         {
-            if (File.Exists(fullPath))
+            if (fullPath != null && File.Exists(fullPath))
             {
                 System.Diagnostics.Process.Start(fullPath);
             }

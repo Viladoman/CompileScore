@@ -52,12 +52,12 @@ constexpr CompileCategoryType ToUnderlying(CompileCategory input){ return static
 struct CompileUnitContext
 {
     CompileUnitContext()
-        : startTime(0u)
-        , threadId(0u)
+        : startTime{ 0u,0u }
+        , threadId{ 0u,0u }
     {}
 
-    U64 startTime;
-    U32 threadId;
+    U64 startTime[2];
+    U32 threadId[2];
 };
 
 struct CompileUnit
@@ -150,6 +150,17 @@ struct CompileFolder
     fastl::vector<U32>     includeIds;
 };
 
+struct CompileSession
+{
+    CompileSession()
+        : fullDuration(0u)
+        , numThreads(0u)
+    {}
+
+    U64 fullDuration;
+    U32 numThreads;
+};
+
 using TCompileDatas            = fastl::vector<CompileData>;
 using TCompileUnits            = fastl::vector<CompileUnit>;
 using TCompileIncluders        = fastl::vector<CompileIncluder>;
@@ -167,6 +178,7 @@ struct ScoreTimeline
 struct ScoreData
 { 
     //exported data
+    CompileSession    session;
     TCompileUnits     units;
     TCompileDatas     globals[ToUnderlying(CompileCategory::GatherFull)];
     TCompileIncluders includers;

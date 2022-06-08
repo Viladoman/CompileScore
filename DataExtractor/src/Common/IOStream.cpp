@@ -387,17 +387,9 @@ namespace IO
         }
 
         // -----------------------------------------------------------------------------------------------------------
-        void BInarizeUnitContext(FILE* stream, const CompileUnitContext& context)
-        {
-            BinarizeU64(stream, context.startTime);
-            BinarizeU32(stream, context.threadId);
-        }
-
-        // -----------------------------------------------------------------------------------------------------------
         void BinarizeUnit(FILE* stream, const TCompileStrings& strings, const CompileUnit& unit)
         { 
             BinarizeStringPath(stream, strings, unit.nameHash);
-            BInarizeUnitContext(stream, unit.context);
             for (U32 value : unit.values)
             { 
                 BinarizeU32(stream, value);
@@ -482,6 +474,13 @@ namespace IO
                 BinarizeU32(stream,evt.nameId);
                 BinarizeU8(stream,static_cast<CompileCategoryType>(evt.category));
             }
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeSession(FILE* stream, const CompileSession& session)
+        {
+            BinarizeU64(stream, session.fullDuration);
+            BinarizeU32(stream, session.numThreads);
         }
     }
 
@@ -646,6 +645,9 @@ namespace IO
         //Header
         Utils::BinarizeU32(stream,SCORE_VERSION);
         Utils::BinarizeU32(stream,m_impl->GetTimelinesPerFile());
+
+        //Session
+        Utils::BinarizeSession(stream,data.session);
 
         //Content
         Utils::BinarizeUnits(stream,data.strings,data.units);

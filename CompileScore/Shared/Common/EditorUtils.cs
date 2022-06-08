@@ -137,7 +137,7 @@ namespace CompileScore
             ThreadHelper.ThrowIfNotOnUIThread();
 
             string fullPath = CompilerData.Instance.GetUnitPath(unit);
-            if (File.Exists(fullPath))
+            if (fullPath != null && File.Exists(fullPath))
             {
                 var applicationObject = EditorUtils.ServiceProvider.GetService(typeof(DTE)) as EnvDTE80.DTE2;
                 Assumes.Present(applicationObject);
@@ -156,7 +156,7 @@ namespace CompileScore
             ThreadHelper.ThrowIfNotOnUIThread();
 
             string fullPath = CompilerData.Instance.GetValuePath(CompilerData.CompileCategory.Include, value);
-            if (File.Exists(fullPath))
+            if (fullPath != null && File.Exists(fullPath))
             {
                 var applicationObject = EditorUtils.ServiceProvider.GetService(typeof(DTE)) as EnvDTE80.DTE2;
                 Assumes.Present(applicationObject);

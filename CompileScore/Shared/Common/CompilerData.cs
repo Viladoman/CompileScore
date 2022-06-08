@@ -64,10 +64,6 @@ namespace CompileScore
         }
 
         public string Name { get; }
-
-        public uint Thread { set; get; } = 0;
-        public ulong Start { set; get; } = 0;
-
         public uint Index { get; }
 
         public List<uint> ValuesList { get { return values.ToList(); } }
@@ -516,16 +512,19 @@ namespace CompileScore
             }
         }
 
+        private void ReadSession(BinaryReader reader)
+        {
+            if (Session.Version >= 5)
+            {
+                Session.FullDuration = reader.ReadUInt64();
+                Session.NumThreads   = reader.ReadUInt32();
+            }
+        }
+
         private void ReadCompileUnit(BinaryReader reader, List<UnitValue> list, uint index)
         {
             var name = reader.ReadString();
             var compileData = new UnitValue(name, index);
-
-            if ( Session.Version >= 5 )
-            {
-                compileData.Start = reader.ReadUInt64();
-                compileData.Thread = reader.ReadUInt32();
-            }
 
             for(CompileCategory category = 0; (int)category < (int)CompileThresholds.Display; ++category)
             {
@@ -647,6 +646,9 @@ namespace CompileScore
                         // Read Header
                         Timeline.CompilerTimeline.Instance.TimelinePacking = reader.ReadUInt32();
 
+                        // Read Session
+                        ReadSession(reader);
+
                         // Read Units 
                         uint unitsLength = reader.ReadUInt32();
                         var unitList = new List<UnitValue>((int)unitsLength);
@@ -753,12 +755,6 @@ namespace CompileScore
                 for(int k = 0; k < (int)CompileThresholds.Display;++k)
                 {
                     Totals[k].Total += unit.ValuesList[k];
-                }
-
-                if (Session.Version >= 5)
-                {
-                    Session.FullDuration = Math.Max(Session.FullDuration, unit.Start + unit.ValuesList[(int)CompileCategory.ExecuteCompiler]);
-                    Session.NumThreads   = Math.Max(Session.NumThreads,   unit.Thread + 1 );
                 }
             }
         }

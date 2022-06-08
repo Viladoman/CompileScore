@@ -219,24 +219,28 @@ namespace CompileScore
 	// -----------------------------------------------------------------------------------------------------------
 	void FinalizeScoreData(ScoreData& scoreData)
 	{
-		//Create folders root
-		if (scoreData.folders.empty())
-		{
-			scoreData.folders.emplace_back();
-		}
+		//setup the scoredata
+		scoreData.folders.clear();
+		scoreData.folders.emplace_back();
+		scoreData.session.fullDuration = 0u; 
+		scoreData.session.numThreads = 0u;
 
 		//Normalize unit start times and threads
 		typedef fastl::unordered_map<U32,U32> TThreadDictionary; 
 		TThreadDictionary threadDict;
-		U32 nextIndex = 0;
+		U32 nextThreadIndex = 0;
 		U64 minStartTime = 0xffffffffffffffff;
 
 		for (CompileUnit& unit : scoreData.units)
 		{
-			minStartTime = unit.context.startTime < minStartTime? unit.context.startTime : minStartTime;
-			auto const& result = threadDict.insert(TThreadDictionary::value_type(unit.context.threadId, nextIndex));
-			unit.context.threadId = result.first->second;
-			nextIndex += result.second ? 1 : 0;
+			for (size_t k = 0; k < 2; ++k)
+			{
+				minStartTime = unit.context.startTime[k] < minStartTime ? unit.context.startTime[k] : minStartTime;
+
+				auto const& result = threadDict.insert(TThreadDictionary::value_type(unit.context.threadId[k], nextThreadIndex));
+				unit.context.threadId[k] = result.first->second;
+				nextThreadIndex += result.second ? 1 : 0;
+			}
 
 			//Add path to folders
 			TCompileStrings::const_iterator found = scoreData.strings.find(unit.nameHash);
@@ -247,9 +251,16 @@ namespace CompileScore
 			}
 		}
 
+		scoreData.session.numThreads = nextThreadIndex;
+
 		for (CompileUnit& unit : scoreData.units)
 		{
-			unit.context.startTime -= minStartTime;
+			unit.context.startTime[0] -= minStartTime;
+			unit.context.startTime[1] -= minStartTime;
+			const U64 frontEndFinish = unit.context.startTime[0] + unit.values[ToUnderlying(CompileCategory::FrontEnd)];
+			const U64 backEndFinish  = unit.context.startTime[1] + unit.values[ToUnderlying(CompileCategory::BackEnd)];
+			scoreData.session.fullDuration = scoreData.session.fullDuration > frontEndFinish ? scoreData.session.fullDuration : frontEndFinish;
+			scoreData.session.fullDuration = scoreData.session.fullDuration > backEndFinish ? scoreData.session.fullDuration : backEndFinish;
 		}
 
 		//Add folder paths for the includes

@@ -118,6 +118,7 @@ namespace MSVC
             U64                nameHash;
             TMSVCCompileTracks tracks;
             TSymbolsMap        symbols;
+            CompileUnitContext context;
             TTimeStamp         timestampOffset;
             U32                timeSectionAccumulator;
         };
@@ -161,13 +162,12 @@ namespace MSVC
         const ScoreData& GetScoreData() const { return m_scoreData; }
 
     private: 
-        CompileUnitContext RecordContext(const MSBI::Activities::Activity& activity) const;
         U32 ConvertDuration(std::chrono::nanoseconds nanos) const;
         U32 ComputeEventStartTime(TUEntry* activeTU, const MSBI::Activities::Activity& activity) const;
         MSVCCompileEvent* AddEvent(TUEntry* activeTU, const CompileCategory category, const MSBI::Activities::Activity& activity, const fastl::string& name = "", const TSymbolId nameSymbol = 0u);
         
         void FixNameTU(TUEntry& entry);
-        void FinalizeTU(TUEntry& entry, const CompileUnitContext& context);
+        void FinalizeTU(TUEntry& entry);
         void MergePendingEvents(TUEntry& entry);
 
         TUProcess& GetProcess(TProcessId processId);
@@ -356,7 +356,6 @@ namespace MSVC
 
         if (activeTU)
         { 
-
             //Close current section and prepare for future ones
             if (MSVCCompileEvent* newEvent = AddEvent(activeTU,category,activity)) 
             { 
@@ -367,11 +366,21 @@ namespace MSVC
                 }
             }
 
+            const TTimeStamp startTime = std::chrono::microseconds{ MSBI::Internal::ConvertTickPrecision(activity.StartTimestamp(), activity.TickFrequency(), std::chrono::microseconds::period::den) }.count();
+
             if (category == CompileCategory::BackEnd)
-            { 
+            {
+                activeTU->context.startTime[1] = startTime;
+                activeTU->context.threadId[1] = activity.ThreadId();
+
                 FixNameTU(*activeTU);
-                FinalizeTU(*activeTU, RecordContext(activity));
+                FinalizeTU(*activeTU);
                 process.ClearTU(*activeTU);
+            }
+            else
+            {
+                activeTU->context.startTime[0] = startTime;
+                activeTU->context.threadId[0] = activity.ThreadId();
             }
         }
 
@@ -435,15 +444,6 @@ namespace MSVC
     }
 
     // -----------------------------------------------------------------------------------------------------------
-    CompileUnitContext Gatherer::RecordContext(const MSBI::Activities::Activity& activity) const
-    {
-        CompileUnitContext context;
-        context.startTime = std::chrono::microseconds{ MSBI::Internal::ConvertTickPrecision(activity.StartTimestamp(), activity.TickFrequency(), std::chrono::microseconds::period::den) }.count();
-        context.threadId = activity.ThreadId();
-        return context;
-    }
-
-    // -----------------------------------------------------------------------------------------------------------
     U32 Gatherer::ConvertDuration(std::chrono::nanoseconds nanos) const
     { 
         //TODO ~ ramonv ~ careful with overflows here 
@@ -497,7 +497,7 @@ namespace MSVC
     }
 
     // -----------------------------------------------------------------------------------------------------------
-    void Gatherer::FinalizeTU(TUEntry& entry, const CompileUnitContext& context)
+    void Gatherer::FinalizeTU(TUEntry& entry)
     { 
         if (entry.nameHash == 0ull || entry.tracks.empty() || entry.tracks[0].events.empty()) return; // avoid exporting any unnamed TU
 
@@ -527,7 +527,7 @@ namespace MSVC
             }
         }
 
-        CompileScore::ProcessTimeline(m_scoreData,timeline,context);
+        CompileScore::ProcessTimeline(m_scoreData,timeline,entry.context);
     }
 
     // -----------------------------------------------------------------------------------------------------------

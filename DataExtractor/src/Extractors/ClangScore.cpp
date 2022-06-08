@@ -187,7 +187,8 @@ namespace Clang
 			else if (Utils::EqualTokens(token, tagThread))
 			{
 				if (!reader.NextToken(token) || token.type != Json::Token::Type::Number) return false;
-				context.threadId = Utils::TokenToU32(token);
+				context.threadId[0] = Utils::TokenToU32(token);
+				context.threadId[1] = context.threadId[0];
 			}
 			else 
 			{
@@ -215,14 +216,13 @@ namespace Clang
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	void NormalizeStartTimes(ScoreTimeline& timeline, CompileUnitContext& context)
+	void NormalizeStartTimes(ScoreTimeline& timeline)
 	{ 
 		TCompileEvents& events = timeline.tracks[0]; 
 
 		if (!events.empty())
 		{
 			const U32 offset = events[0].start;
-			context.startTime = offset;
 			for (CompileEvent& entry : events)
 			{ 
 				entry.start -= offset;
@@ -262,6 +262,15 @@ namespace Clang
 			CompileEvent compileEvent; 
 			if (token.type != Json::Token::Type::ObjectOpen || !ProcessEvent(scoreData,compileEvent,context,reader)) return false;
 			
+			if (compileEvent.category == CompileCategory::FrontEnd)
+			{
+				context.startTime[0] = compileEvent.start;
+			}
+			else if (compileEvent.category == CompileCategory::BackEnd)
+			{
+				context.startTime[1] = compileEvent.start;
+			}
+
 			if (compileEvent.category != CompileCategory::Invalid)
 			{ 
 				AddEventToTimeline(timeline,compileEvent);
@@ -269,7 +278,7 @@ namespace Clang
 		}
 
 		//From here we can ignore the rest of the file
-		NormalizeStartTimes(timeline,context);
+		NormalizeStartTimes(timeline);
 		CompileScore::ProcessTimeline(scoreData,timeline,context);
 		return true;
 	}
