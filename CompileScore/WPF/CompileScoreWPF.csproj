@@ -60,6 +60,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="..\Shared\Common\CompileFolders.cs">
+      <Link>Shared\Common\CompileFolders.cs</Link>
+    </Compile>
     <Compile Include="..\Shared\Common\Documentation.cs">
       <Link>Shared\Common\Documentation.cs</Link>
     </Compile>

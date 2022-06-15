@@ -3,6 +3,7 @@
 #include "../Common/ScoreDefinitions.h"
 #include "../Common/StringUtils.h"
 #include "../fastl/algorithm.h"
+#include "../fastl/memory.h"
 
 #include "IOStream.h"
 #include "CommandLine.h"
@@ -224,6 +225,7 @@ namespace CompileScore
 		scoreData.folders.emplace_back();
 		scoreData.session.fullDuration = 0u; 
 		scoreData.session.numThreads = 0u;
+		fastl::memset(scoreData.session.totals, 0, sizeof(U64) * ToUnderlying(CompileCategory::DisplayCount));
 
 		//Normalize unit start times and threads
 		typedef fastl::unordered_map<U32,U32> TThreadDictionary; 
@@ -233,6 +235,7 @@ namespace CompileScore
 
 		for (CompileUnit& unit : scoreData.units)
 		{
+			//Add Threads and prepare for total time computations
 			for (size_t k = 0; k < 2; ++k)
 			{
 				minStartTime = unit.context.startTime[k] < minStartTime ? unit.context.startTime[k] : minStartTime;
@@ -240,6 +243,12 @@ namespace CompileScore
 				auto const& result = threadDict.insert(TThreadDictionary::value_type(unit.context.threadId[k], nextThreadIndex));
 				unit.context.threadId[k] = result.first->second;
 				nextThreadIndex += result.second ? 1 : 0;
+			}
+
+			//Add Totals
+			for (size_t i = 0; i < ToUnderlying(CompileCategory::DisplayCount); ++i)
+			{
+				scoreData.session.totals[i] += unit.values[i];
 			}
 
 			//Add path to folders

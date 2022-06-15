@@ -157,6 +157,7 @@ struct CompileSession
         , numThreads(0u)
     {}
 
+    U64 totals[ToUnderlying(CompileCategory::DisplayCount)];
     U64 fullDuration;
     U32 numThreads;
 };

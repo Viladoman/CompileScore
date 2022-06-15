@@ -94,6 +94,8 @@ namespace CompileScore
 
             if (!IsEnabled) return;
 
+            CompilerData.Instance.Hydrate(CompilerData.HydrateFlag.Main);
+
             var currentSnapshot = _buffer.CurrentSnapshot;
             MatchCollection matches = Regex.Matches(currentSnapshot.GetText(), EditorUtils.IncludeRegex);
             foreach (Match match in matches)

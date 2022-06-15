@@ -77,14 +77,6 @@ namespace CompileScore
         }
     }
 
-    public class CompileFolder
-    {
-        public string Name { set; get; }
-        public List<int> Children { set; get; }
-        public List<UnitValue>     Units { set; get; }    
-        public List<CompileValue> Includes { set; get; }
-    }
-
     public class CompileSession
     {
         public uint  Version { set; get; } = 0;
@@ -99,6 +91,7 @@ namespace CompileScore
 
         public const uint VERSION_MIN = 4;
         public const uint VERSION     = 5;
+        public const uint VERSION = 6;
 
         //Keep this in sync with the data exporter
         public enum CompileCategory
@@ -149,17 +142,26 @@ namespace CompileScore
             Forced,
         }
 
+        public enum HydrateFlag
+        {
+            Main = 1,
+            Globals = 2,
+        }
+
         private CompileScorePackage Package { set; get; }
         private IServiceProvider ServiceProvider { set; get; }
 
         private string ScoreLocation { set; get; } = "";
-        
+
         private List<UnitValue> UnitsCollection { set; get; } = new List<UnitValue>();
         private List<UnitTotal> Totals { set; get; } = new List<UnitTotal>();
-        private List<CompileFolder> Folders { set; get; } = new List<CompileFolder>();
         private CompileSession Session { set; get; } = new CompileSession();
 
+        private uint HydrationFlags { set; get; } = 0;
+
         public DataSource Source { private set; get; } = DataSource.Default;
+
+        public CompileFolders Folders { private set; get; } = new CompileFolders();
 
         public class CompileDataset
         {
@@ -198,7 +200,7 @@ namespace CompileScore
             if (EditorContext.Instance.Mode != EditorContext.EditorMode.None)
             {
                 OnSolutionSettingsChanged();
-                OnHighlightModeChanged(); 
+                OnHighlightModeChanged();
             }
         }
 
@@ -256,160 +258,6 @@ namespace CompileScore
             return null;
         }
 
-        private string GetUnitPathRecursive(UnitValue unit, CompileFolder node, string fullpath)
-        {
-            foreach(UnitValue value in node.Units)
-            {
-                if (value == unit)
-                {
-                    return fullpath + value.Name;
-                }
-            }
-
-            foreach (int childrenIndex in node.Children)
-            {
-                if (childrenIndex < Folders.Count)
-                {
-                    CompileFolder folder = Folders[childrenIndex];
-                    string result = GetUnitPathRecursive(unit, folder, fullpath + folder.Name + '/');
-                    if (result != null)
-                    {
-                        return result;
-                    }
-                }
-            }
-
-            return null;
-        }
-        private string GetIncludePathRecursive(CompileValue value, CompileFolder node, string fullpath)
-        {
-            foreach (CompileValue thisValue in node.Includes)
-            {
-                if (thisValue == value)
-                {
-                    return fullpath + thisValue.Name;
-                }
-            }
-
-            foreach (int childrenIndex in node.Children)
-            {
-                if (childrenIndex < Folders.Count)
-                {
-                    CompileFolder folder = Folders[childrenIndex];
-                    string result = GetIncludePathRecursive(value, folder, fullpath + folder.Name + '/');
-                    if (result != null)
-                    {
-                        return result;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        public string GetUnitPath(UnitValue unit)
-        {
-            if (unit != null && Folders != null && Folders.Count > 0 )
-            {
-                return GetUnitPathRecursive(unit, Folders[0], "");
-            }
-            return null;
-        }
-
-        public string GetValuePath(CompileCategory category, CompileValue value)
-        {
-            if (value != null && Folders != null && Folders.Count > 0 && category == CompileCategory.Include)
-            {
-                return GetIncludePathRecursive(value, Folders[0], "");
-            }
-            return null;
-        }
-
-        public string GetUnitPathSafe(UnitValue unit)
-        {
-            string fullPath = GetUnitPath(unit);
-            return fullPath == null ? "" : fullPath;
-        }
-
-        public string GetValuePathSafe(CompileCategory category, CompileValue value)
-        {
-            string fullPath = GetValuePath(category, value);
-            return fullPath == null ? "" : fullPath;
-        }
-
-        private CompileFolder GetFolderFromPathRecursive(CompileFolder node, string[] directories, int index)
-        {
-            if (directories.Length == (index + 1))
-            {
-                //found the folder
-                return node;
-            }
-
-            string thisName = directories[index];
-            foreach (int childrenIndex in node.Children)
-            {
-                if (childrenIndex < Folders.Count && Folders[childrenIndex].Name == thisName)
-                {
-                    return GetFolderFromPathRecursive(Folders[childrenIndex], directories, index + 1);
-                }
-            }
-
-            return null;
-        }
-
-        private CompileFolder GetFolderFromPath(string[] directories)
-        {
-            if (Folders != null && Folders.Count > 0 && directories.Length > 1)
-            {
-                return GetFolderFromPathRecursive(Folders[0], directories, 0);
-            }
-            return null;
-        }
-
-        public UnitValue GetUnitByPath(string path)
-        {
-            if ( path != null )
-            {
-                string[] directories = path.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
-                CompileFolder folder = GetFolderFromPath(directories);
-                if (folder != null)
-                {
-                    string filename = directories[directories.Length-1];
-
-                    foreach (UnitValue unit in folder.Units)
-                    {
-                        if (unit.Name == filename)
-                        {
-                            return unit;
-                        }                  
-                    }
-                }
-            } 
-            return null;
-        }
-
-        public CompileValue GetValueByPath(CompileCategory category, string path)
-        {
-            if (path != null && category == CompileCategory.Include)
-            {                 
-                string[] directories = path.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
-                CompileFolder folder = GetFolderFromPath(directories);
-                if (folder != null)
-                {
-                    string filename = directories[directories.Length - 1];
-
-                    foreach (CompileValue value in folder.Includes)
-                    {
-                        if (value.Name == filename)
-                        {
-                            return value;
-                        }
-                    }
-                }
-            }
-            return null;
-        }
-
         public List<CompileValue> GetCollection(CompileCategory category)
         {
             return Datasets[(int)category].collection;
@@ -438,8 +286,7 @@ namespace CompileScore
 
         public CompileValue GetValueByName(CompileCategory category, string fileName)
         {
-            //TODO ~ ramonv ~ this might fail if 2 values have the same name
-
+            //Caution: This might return a different value if 2 values have the same name
             CompileDataset dataset = Datasets[(int)category];
             if (dataset.dictionary.ContainsKey(fileName)) { return dataset.dictionary[fileName]; }
             return null;
@@ -476,7 +323,7 @@ namespace CompileScore
             SetSource(DataSource.Default);
             SetScoreLocation(GetSettingsScoreLocation());
             WatchScoreFile();
-            LoadSeverities(ScoreLocation);
+            LoadScore(ScoreLocation);
         }
 
         public void ForceLoadFromFilename(string filename)
@@ -499,7 +346,7 @@ namespace CompileScore
                     WatchScoreFile();
                 }
 
-                LoadSeverities(ScoreLocation);
+                LoadScore(ScoreLocation);
             }
             else
             {
@@ -511,7 +358,7 @@ namespace CompileScore
                 }
                 else
                 {
-                    LoadSeverities(ScoreLocation);
+                    LoadScore(ScoreLocation);
                 }
             }
         }
@@ -520,7 +367,7 @@ namespace CompileScore
         {
             if (Source != input)
             {
-                Source = input; 
+                Source = input;
             }
         }
 
@@ -529,7 +376,18 @@ namespace CompileScore
             if (Session.Version >= 5)
             {
                 Session.FullDuration = reader.ReadUInt64();
-                Session.NumThreads   = reader.ReadUInt32();
+                Session.NumThreads = reader.ReadUInt32();
+            }
+
+            if (Session.Version >= 6)
+            {
+                Totals = new List<UnitTotal>();
+                for (int k = 0; k < (int)CompileThresholds.Display; ++k)
+                {
+                    UnitTotal total = new UnitTotal((CompileCategory)k);
+                    total.Total = reader.ReadUInt64();
+                    Totals.Add(total);
+                }
             }
         }
 
@@ -538,7 +396,7 @@ namespace CompileScore
             var name = reader.ReadString();
             var compileData = new UnitValue(name, index);
 
-            for(CompileCategory category = 0; (int)category < (int)CompileThresholds.Display; ++category)
+            for (CompileCategory category = 0; (int)category < (int)CompileThresholds.Display; ++category)
             {
                 compileData.SetValue(category, reader.ReadUInt32());
             }
@@ -558,49 +416,10 @@ namespace CompileScore
             var compileData = new CompileValue(name, acc, min, max, count, maxUnit);
             list.Add(compileData);
         }
-        
-        private void ReadFolder(BinaryReader reader, List<CompileFolder> list)
-        {
-            var folder = new CompileFolder();
-
-            folder.Name = reader.ReadString();
-
-            uint countChildren = reader.ReadUInt32();
-            if ( countChildren >= 0 )
-            {
-                folder.Children = new List<int>();
-                for (uint i = 0; i < countChildren; ++i)
-                {
-                    folder.Children.Add((int)reader.ReadUInt32());
-                }
-            }
-
-            uint countUnits = reader.ReadUInt32();
-            if (countUnits >= 0)
-            {
-                folder.Units = new List<UnitValue>();
-                for (uint i = 0; i < countUnits; ++i)
-                {
-                    folder.Units.Add(GetUnitByIndex(reader.ReadUInt32()));
-                }
-            }
-
-            uint countIncludes = reader.ReadUInt32();
-            if (countIncludes >= 0)
-            {
-                folder.Includes = new List<CompileValue>();
-                for (uint i = 0; i < countIncludes; ++i)
-                {
-                    folder.Includes.Add(GetValue(CompileCategory.Include,(int)reader.ReadUInt32()));
-                }
-            }
-
-            list.Add(folder);
-        }
 
         private void ClearDatasets()
         {
-            for (int i=0;i< (int)CompileThresholds.Gather; ++i)
+            for (int i = 0; i < (int)CompileThresholds.Gather; ++i)
             {
                 CompileDataset dataset = Datasets[i];
                 dataset.collection.Clear();
@@ -609,45 +428,77 @@ namespace CompileScore
             }
         }
 
-        public void ReloadSeverities()
+        public void ReloadScore()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            LoadSeverities(ScoreLocation);
+            LoadScore(ScoreLocation);
         }
 
         static public bool CheckVersion(uint version)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             if (version < VERSION_MIN)
             {
-                OutputLog.Error("Trying to load an unsupported file Version! Expected a minumum version of " + VERSION_MIN + " - Found " + version + " - Please export again with matching Data Exporter");
+                _ = OutputLog.ErrorGlobalAsync("Trying to load an unsupported file Version! Expected a minumum version of " + VERSION_MIN + " - Found " + version + " - Please export again with matching Data Exporter");
                 return false;
             }
             
             if (version > VERSION)
             {
-                OutputLog.Error("Trying to load an unsupported file Version! Expected a maximum version of " + VERSION + " - Found " + version + " - Please export again with matching Data Exporter");
+                _ = OutputLog.ErrorGlobalAsync("Trying to load an unsupported file Version! Expected a maximum version of " + VERSION + " - Found " + version + " - Please export again with matching Data Exporter");
                 return false;
             }
 
             return true;
         }
 
-        private void LoadSeverities(string fullPath)
+        public void Hydrate(HydrateFlag flag)
+        {
+            if ((HydrationFlags & (uint)flag) == 0)
+            {
+                switch (flag)
+                {
+                    case HydrateFlag.Main:
+                        LoadMainScore(ScoreLocation);
+                        break;
+                    case HydrateFlag.Globals: 
+                        LoadGlobals(ScoreLocation); 
+                        break;
+                }
+
+                HydrationFlags |= (uint)flag;
+            }
+        }
+
+        private void LoadScore(string fullPath)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+            uint restoreHydration = HydrationFlags;
 
+            //Clean the data
             Session = new CompileSession();
+            Folders = new CompileFolders();
+            HydrationFlags = 0;
             UnitsCollection.Clear();
             Totals.Clear();
-            Folders.Clear();
             ClearDatasets();
 
+            foreach (HydrateFlag flag in (HydrateFlag[])Enum.GetValues(typeof(HydrateFlag)))
+            {
+                if ((restoreHydration & (uint)flag) != 0)
+                {
+                    Hydrate(flag);
+                }
+            }
+
+            ScoreDataChanged?.Invoke();
+        }
+
+        private void LoadMainScore(string fullPath)
+        {
             if (File.Exists(fullPath))
             {
                 var watch = System.Diagnostics.Stopwatch.StartNew();
-                
+
                 FileStream fileStream = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 using (BinaryReader reader = new BinaryReader(fileStream))
                 {
@@ -668,11 +519,11 @@ namespace CompileScore
                         {
                             ReadCompileUnit(reader, unitList, i);
                         }
-                    
+
                         UnitsCollection = new List<UnitValue>(unitList);
 
-                        //Read Datasets
-                        for(int i = 0; i < (int)CompileThresholds.Gather; ++i)
+                        //Read Main Datasets
+                        for (int i = 0; i < (int)CompileThresholds.Severity; ++i)
                         {
                             uint dataLength = reader.ReadUInt32();
                             var thislist = new List<CompileValue>((int)dataLength);
@@ -685,14 +536,7 @@ namespace CompileScore
 
                         if (Session.Version >= 5)
                         {
-                            //Read Folders
-                            uint foldersLength = reader.ReadUInt32();
-                            var folderList = new List<CompileFolder>((int)foldersLength);
-                            for (uint i = 0; i < foldersLength; ++i)
-                            {
-                                ReadFolder(reader, folderList);
-                            }
-                            Folders = new List<CompileFolder>(folderList);
+                            Folders.ReadFolders(reader);
                         }
                     }
                 }
@@ -704,13 +548,56 @@ namespace CompileScore
 
                 watch.Stop();
                 const long TicksPerMicrosecond = (TimeSpan.TicksPerMillisecond / 1000);
-                ulong microseconds = (ulong)(watch.ElapsedTicks/TicksPerMicrosecond);
-                OutputLog.Log("Score file processed in "+ Common.UIConverters.GetTimeStr(microseconds));
+                ulong microseconds = (ulong)(watch.ElapsedTicks / TicksPerMicrosecond);
+                _ = OutputLog.LogGlobalAsync("Score file main processed in " + Common.UIConverters.GetTimeStr(microseconds));
             }
 
             RecomputeSeverities();
+        }
 
-            ScoreDataChanged?.Invoke();
+        private void LoadGlobals(string fullPath)
+        {
+            //This depends on the main info being ready
+            Hydrate(HydrateFlag.Main);
+     
+            if (Totals.Count == 0)
+            {
+                //The main unit is empty ( there is no point on loading the globals )
+                return;
+            }
+
+            string gblFullPath = fullPath + ".gbl";
+            if (File.Exists(gblFullPath))
+            {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+
+                FileStream fileStream = File.Open(gblFullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using (BinaryReader reader = new BinaryReader(fileStream))
+                {
+                    Session.Version = reader.ReadUInt32();
+                    if (CheckVersion(Session.Version))
+                    {
+                        //Read Remaining Datasets
+                        for (int i = (int)CompileThresholds.Severity; i < (int)CompileThresholds.Gather; ++i)
+                        {
+                            uint dataLength = reader.ReadUInt32();
+                            var thislist = new List<CompileValue>((int)dataLength);
+                            for (uint k = 0; k < dataLength; ++k)
+                            {
+                                ReadCompileValue(reader, thislist);
+                            }
+                            Datasets[i].collection = new List<CompileValue>(thislist);
+                        }
+                    }
+                }
+
+                fileStream.Close();
+
+                watch.Stop();
+                const long TicksPerMicrosecond = (TimeSpan.TicksPerMillisecond / 1000);
+                ulong microseconds = (ulong)(watch.ElapsedTicks / TicksPerMicrosecond);
+                _ = OutputLog.LogGlobalAsync("Score file globals processed in " + Common.UIConverters.GetTimeStr(microseconds));
+            }
         }
 
         public string GetSeverityCriteria()
@@ -755,18 +642,21 @@ namespace CompileScore
             //Compute Severities
             ProcessSeverityData();
 
-            //Process Totals
-            Totals = new List<UnitTotal>();
-            for (int k = 0; k < (int)CompileThresholds.Display; ++k)
+            if (Session.Version <= 5)
             {
-                Totals.Add(new UnitTotal((CompileCategory)k));
-            }
-            
-            foreach (UnitValue unit in UnitsCollection)
-            {  
-                for(int k = 0; k < (int)CompileThresholds.Display;++k)
+                //Process Totals
+                Totals = new List<UnitTotal>();
+                for (int k = 0; k < (int)CompileThresholds.Display; ++k)
                 {
-                    Totals[k].Total += unit.ValuesList[k];
+                    Totals.Add(new UnitTotal((CompileCategory)k));
+                }
+            
+                foreach (UnitValue unit in UnitsCollection)
+                {  
+                    for(int k = 0; k < (int)CompileThresholds.Display;++k)
+                    {
+                        Totals[k].Total += unit.ValuesList[k];
+                    }
                 }
             }
         }
@@ -803,6 +693,11 @@ namespace CompileScore
         {
             GeneralSettingsPageGrid settings = GetGeneralSettings();
 
+            if ( settings == null )
+            {
+                return;
+            }
+
             PropertyInfo valueCriteria = typeof(CompileValue).GetProperty(GetSeverityCriteria());
             
             for (int i = 0; i < (int)CompileThresholds.Severity; ++i)
@@ -834,7 +729,7 @@ namespace CompileScore
         private void OnFileWatchedChanged()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            LoadSeverities(GetScoreFullPath());
+            LoadScore(GetScoreFullPath());
         }
 
         private void WatchScoreFile()
@@ -853,7 +748,7 @@ namespace CompileScore
                 if (SetScoreLocation(GetSettingsScoreLocation()))
                 {
                     WatchScoreFile();
-                    LoadSeverities(ScoreLocation);
+                    LoadScore(ScoreLocation);
                 }
             }
         }

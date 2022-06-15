@@ -10,6 +10,10 @@ namespace CompileScore.Overview
     {
         public OverviewWindowControl()
         {
+            CompilerData compilerData = CompilerData.Instance;
+            compilerData.Hydrate(CompilerData.HydrateFlag.Main);
+            compilerData.Hydrate(CompilerData.HydrateFlag.Globals);
+
             this.InitializeComponent();
 
             //Initialize Tabs

@@ -14,6 +14,11 @@ namespace CompileScore.Timeline
         public TimelineWindowControl()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            CompilerData compilerData = CompilerData.Instance;
+            compilerData.Hydrate(CompilerData.HydrateFlag.Main);
+            compilerData.Hydrate(CompilerData.HydrateFlag.Globals);
+
             this.InitializeComponent();
 
             timeline.SetMode(Timeline.Mode.Timeline);

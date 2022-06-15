@@ -7,7 +7,7 @@
 
 #include "ScoreDefinitions.h"
 
-constexpr U32 SCORE_VERSION = 5;
+constexpr U32 SCORE_VERSION = 6;
 constexpr U32 TIMELINE_FILE_NUM_DIGITS = 4;
 
 static_assert(TIMELINE_FILE_NUM_DIGITS > 0);
@@ -481,6 +481,11 @@ namespace IO
         {
             BinarizeU64(stream, session.fullDuration);
             BinarizeU32(stream, session.numThreads);
+
+            for (size_t i = 0; i < ToUnderlying(CompileCategory::DisplayCount); ++i)
+            {
+                BinarizeU64(stream, session.totals[i]);
+            }
         }
     }
 
@@ -502,6 +507,8 @@ namespace IO
         U32 GetTimelinesPerFile() const { return timelinesPerFile; }
 
         void Binarize( const TCompileIncluders& includers );
+        void BinarizeGlobals( const ScoreData& data );
+        void BinarizeMain( const ScoreData& data );
 
     private: 
         bool AppendTimelineExtension(fastl::string& filename);
@@ -611,6 +618,90 @@ namespace IO
 		LOG_INFO( "Parents exported!" );
     }
 
+    // -----------------------------------------------------------------------------------------------------------
+    void ScoreBinarizer::Impl::BinarizeGlobals(const ScoreData& data)
+    {
+        bool hasContent = false;
+        constexpr size_t firstIndex = ToUnderlying(CompileCategory::Include) + 1;
+        constexpr size_t lastIndex = ToUnderlying(CompileCategory::GatherFull);
+        for (size_t i = firstIndex; i < lastIndex; ++i)
+        {
+            hasContent = hasContent || data.globals[i].empty();
+        }
+
+        if (!hasContent)
+        {
+            return;
+        }
+
+        fastl::string filename = path;
+        filename.append(".gbl");
+
+        LOG_INFO("Writing to file %s", filename.c_str());
+
+        FILE* stream;
+        const errno_t result = fopen_s(&stream, filename.c_str(), "wb");
+
+        if (result)
+        {
+            LOG_ERROR("Unable to create output file %s", filename.c_str());
+            return;
+        }
+
+        //Header
+        Utils::BinarizeU32(stream, SCORE_VERSION);
+
+        for (size_t i = firstIndex; i < lastIndex; ++i)
+        {
+            if (i == ToUnderlying(CompileCategory::OptimizeModule))
+            {
+                Utils::BinarizeGlobalsPath(stream, data.strings, data.globals[i]);
+            }
+            else
+            {
+                Utils::BinarizeGlobalsStr(stream, data.strings, data.globals[i]);
+            }
+        }
+
+        fclose(stream);
+
+        LOG_INFO("Global datas exported!");
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    void ScoreBinarizer::Impl::BinarizeMain(const ScoreData& data)
+    {
+        const char* filename = path;
+
+        LOG_PROGRESS("Writing to file %s", filename);
+
+        FILE* stream;
+        const errno_t result = fopen_s(&stream, filename, "wb");
+
+        if (result)
+        {
+            LOG_ERROR("Unable to create output file %s", filename);
+            return;
+        }
+
+        //Header
+        Utils::BinarizeU32(stream, SCORE_VERSION);
+        Utils::BinarizeU32(stream, GetTimelinesPerFile());
+
+        //Session
+        Utils::BinarizeSession(stream, data.session);
+
+        //Content
+        Utils::BinarizeUnits(stream, data.strings, data.units);
+        Utils::BinarizeGlobalsPath(stream, data.strings, data.globals[ToUnderlying(CompileCategory::Include)]);
+        
+        Utils::BinarizeFolders(stream, data.folders);
+
+        fclose(stream);
+
+        LOG_INFO("Units exported!");
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // -----------------------------------------------------------------------------------------------------------
     ScoreBinarizer::ScoreBinarizer(const char* path, unsigned int timelinesPacking)
@@ -629,43 +720,8 @@ namespace IO
     { 
         //do this one first as the Scoredata file close might trigger refreshers on listeners ( it needs to be the last file to be created ) 
         m_impl->Binarize( data.includers );
-
-        const char* filename = m_impl->path;
-        LOG_PROGRESS("Writing to file %s",filename);
-
-        FILE* stream;
-        const errno_t result = fopen_s(&stream,filename,"wb");
-
-        if (result) 
-        { 
-            LOG_ERROR("Unable to create output file!");
-            return;
-        }
-
-        //Header
-        Utils::BinarizeU32(stream,SCORE_VERSION);
-        Utils::BinarizeU32(stream,m_impl->GetTimelinesPerFile());
-
-        //Session
-        Utils::BinarizeSession(stream,data.session);
-
-        //Content
-        Utils::BinarizeUnits(stream,data.strings,data.units);
-        for (int i=0;i<ToUnderlying(CompileCategory::GatherFull);++i)
-        { 
-            if (i == ToUnderlying(CompileCategory::Include) || i == ToUnderlying(CompileCategory::OptimizeModule))
-            { 
-                Utils::BinarizeGlobalsPath(stream,data.strings,data.globals[i]);
-            }
-            else
-            {
-                Utils::BinarizeGlobalsStr(stream,data.strings,data.globals[i]);
-            }
-        }    
-
-        Utils::BinarizeFolders(stream, data.folders);
-
-        fclose(stream);
+        m_impl->BinarizeGlobals( data );
+        m_impl->BinarizeMain( data );
 
         LOG_PROGRESS("Done!");
     }

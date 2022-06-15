@@ -32,6 +32,9 @@
     <ClCompile Include="src\Common\CRC64.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="src\fastl\memory.cpp">
+      <Filter>fastl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -110,6 +113,9 @@
     </ClInclude>
     <ClInclude Include="src\Common\CRC64.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\fastl\memory.h">
+      <Filter>fastl</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

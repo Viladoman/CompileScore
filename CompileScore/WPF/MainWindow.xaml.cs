@@ -85,7 +85,7 @@ namespace CompileScore
         }
         private void OnReloadFile(object sender, RoutedEventArgs e)
         {
-            CompilerData.Instance.ReloadSeverities();
+            CompilerData.Instance.ReloadScore();
         }
 
         private void OnHelp(object sender, RoutedEventArgs e)

@@ -9,7 +9,7 @@ namespace CompileScore
             Title = "Compile Score Options";
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             SizeToContent = SizeToContent.Height;
-            Width =  900;
+            Width = 900;
 
             this.Content = new SettingsControl(this, settings == null? new SolutionSettings() : settings);
         }

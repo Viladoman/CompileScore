@@ -31,12 +31,12 @@ namespace CompileScore
 
         static public void OpenFile(UnitValue unit) 
         {
-            OpenFile(CompilerData.Instance.GetUnitPath(unit));
+            OpenFile(CompilerData.Instance.Folders.GetUnitPath(unit));
         }
 
         static public void OpenFile(CompileValue value)
         {
-            OpenFile(CompilerData.Instance.GetValuePath(CompilerData.CompileCategory.Include, value));
+            OpenFile(CompilerData.Instance.Folders.GetValuePath(CompilerData.CompileCategory.Include, value));
         }
     }
 

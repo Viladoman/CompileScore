@@ -51,7 +51,9 @@ namespace CompileScore
                         {
                             string lowerFilename = fileName?.ToLower();
 
-                            CompileValue value = CompilerData.Instance.GetValueByName(CompilerData.CompileCategory.Include,lowerFilename);
+                            CompilerData compilerData = CompilerData.Instance;
+                            compilerData.Hydrate(CompilerData.HydrateFlag.Main);
+                            CompileValue value = compilerData.GetValueByName(CompilerData.CompileCategory.Include,lowerFilename);
 
                             Span span = new Span(line.Extent.Start + match.Index, match.Length);
                             var trackingSpan = _textBuffer.CurrentSnapshot.CreateTrackingSpan(span, SpanTrackingMode.EdgeExclusive);

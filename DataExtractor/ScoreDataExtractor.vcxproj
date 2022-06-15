@@ -29,6 +29,7 @@
     <ClCompile Include="src\Common\Timers.cpp" />
     <ClCompile Include="src\Extractors\ClangScore.cpp" />
     <ClCompile Include="src\Extractors\MSVCScore.cpp" />
+    <ClCompile Include="src\fastl\memory.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -50,6 +51,7 @@
     <ClInclude Include="src\Extractors\MSVCScore.h" />
     <ClInclude Include="src\fastl\algorithm.h" />
     <ClInclude Include="src\fastl\map.h" />
+    <ClInclude Include="src\fastl\memory.h" />
     <ClInclude Include="src\fastl\pair.h" />
     <ClInclude Include="src\fastl\set.h" />
     <ClInclude Include="src\fastl\string.h" />

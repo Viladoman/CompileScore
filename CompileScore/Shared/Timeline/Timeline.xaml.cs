@@ -157,7 +157,11 @@ namespace CompileScore.Timeline
 
             this.DataContext = this;
 
-            CompilerData.Instance.ScoreDataChanged += OnDataChanged;
+            CompilerData compilerData = CompilerData.Instance;
+            compilerData.Hydrate(CompilerData.HydrateFlag.Main);
+            compilerData.Hydrate(CompilerData.HydrateFlag.Globals);
+
+            compilerData.ScoreDataChanged += OnDataChanged;
 
             overlayBrush.Opacity = 0.3;
 
@@ -188,7 +192,7 @@ namespace CompileScore.Timeline
 
             SetMode(Mode.Timeline);
             Unit = unit;
-            SourcePath = unitPath != null && unit != null? unitPath : CompilerData.Instance.GetUnitPath(unit);
+            SourcePath = unitPath != null && unit != null? unitPath : CompilerData.Instance.Folders.GetUnitPath(unit);
 
             SetRoot(CompilerTimeline.Instance.LoadTimeline(Unit));
         }
@@ -199,7 +203,7 @@ namespace CompileScore.Timeline
 
             SetMode(Mode.Includers);
             IncludersValue = value;
-            SourcePath = valuePath != null && IncludersValue != null? valuePath : CompilerData.Instance.GetValuePath(CompilerData.CompileCategory.Include, value);
+            SourcePath = valuePath != null && IncludersValue != null? valuePath : CompilerData.Instance.Folders.GetValuePath(CompilerData.CompileCategory.Include, value);
 
             int index = CompilerData.Instance.GetIndexOf(CompilerData.CompileCategory.Include, value);
             SetRoot(index >= 0 ? Includers.CompilerIncluders.Instance.LoadInclude((uint)index) : null);
@@ -276,6 +280,7 @@ namespace CompileScore.Timeline
         private void OnDataChanged()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+            CompilerData compilerData = CompilerData.Instance;
 
             RefrehsSearchUnitBox();
 
@@ -285,14 +290,14 @@ namespace CompileScore.Timeline
                     {
                         if (Unit != null)
                         {
-                            UnitValue unit = CompilerData.Instance.GetUnitByPath(SourcePath);
+                            UnitValue unit = compilerData.Folders.GetUnitByPath(SourcePath);
                             if ( unit != null )
                             {
                                 SetUnit(unit,SourcePath);
                             }
                             else
                             {
-                                SetUnit(CompilerData.Instance.GetUnitByName(Unit.Name));
+                                SetUnit(compilerData.GetUnitByName(Unit.Name));
                             }
                         }
                         break;
@@ -301,14 +306,14 @@ namespace CompileScore.Timeline
                     {
                         if (IncludersValue != null)
                         {
-                            CompileValue value = CompilerData.Instance.GetValueByPath(CompilerData.CompileCategory.Include,SourcePath);
+                            CompileValue value = compilerData.Folders.GetValueByPath(CompilerData.CompileCategory.Include,SourcePath);
                             if (value != null)
                             {
                                 SetIncluders(value, SourcePath);
                             }
                             else
                             {
-                                SetIncluders(CompilerData.Instance.GetValueByName(CompilerData.CompileCategory.Include, IncludersValue.Name));
+                                SetIncluders(compilerData.GetValueByName(CompilerData.CompileCategory.Include, IncludersValue.Name));
                             }
                         }
 
@@ -507,7 +512,7 @@ namespace CompileScore.Timeline
                     }
 
                     contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open File", (sender, e) => EditorUtils.OpenFile(value)));
-                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetText(CompilerData.Instance.GetValuePathSafe(CompilerData.CompileCategory.Include, value))));
+                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetText(CompilerData.Instance.Folders.GetValuePathSafe(CompilerData.CompileCategory.Include, value))));
                 }
 
                 if (value.Name.Length > 0)
@@ -526,7 +531,7 @@ namespace CompileScore.Timeline
                 }
 
                 contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open File", (sender, e) => EditorUtils.OpenFile(value)));
-                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetText(CompilerData.Instance.GetUnitPathSafe(value))));
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetText(CompilerData.Instance.Folders.GetUnitPathSafe(value))));
 
             }
 

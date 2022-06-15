@@ -82,5 +82,16 @@ namespace CompileScore
             // Retrieve the new pane.
             output.GetPane(ref paneGuid, out pane);
         }
+
+        public static async System.Threading.Tasks.Task ErrorGlobalAsync(string text)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            OutputLog.Error(text);
+        }
+        public static async System.Threading.Tasks.Task LogGlobalAsync(string text)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            OutputLog.Log(text);
+        }
     }
 }

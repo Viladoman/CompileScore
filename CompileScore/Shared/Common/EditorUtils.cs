@@ -136,7 +136,7 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            string fullPath = CompilerData.Instance.GetUnitPath(unit);
+            string fullPath = CompilerData.Instance.Folders.GetUnitPath(unit);
             if (fullPath != null && File.Exists(fullPath))
             {
                 var applicationObject = EditorUtils.ServiceProvider.GetService(typeof(DTE)) as EnvDTE80.DTE2;
@@ -155,7 +155,7 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            string fullPath = CompilerData.Instance.GetValuePath(CompilerData.CompileCategory.Include, value);
+            string fullPath = CompilerData.Instance.Folders.GetValuePath(CompilerData.CompileCategory.Include, value);
             if (fullPath != null && File.Exists(fullPath))
             {
                 var applicationObject = EditorUtils.ServiceProvider.GetService(typeof(DTE)) as EnvDTE80.DTE2;
@@ -193,7 +193,7 @@ namespace CompileScore
 
             var compilerData = CompilerData.Instance;
 
-            var unit = compilerData.GetUnitByPath(path);
+            var unit = compilerData.Folders.GetUnitByPath(path);
             if (unit == null)
             { 
                 unit = compilerData.GetUnitByName(filename); //fallback to just match by name 
@@ -204,10 +204,10 @@ namespace CompileScore
                 return;
             }
 
-            var value = compilerData.GetValueByPath(CompilerData.CompileCategory.Include, path);
+            var value = compilerData.Folders.GetValueByPath(CompilerData.CompileCategory.Include, path);
             if (value == null)
             {
-                value = compilerData.GetValueByName(CompilerData.CompileCategory.Include, filename);
+                value = compilerData.GetValueByName(CompilerData.CompileCategory.Include, filename); //fallback to just match by name 
             }
             if (value != null)
             {
