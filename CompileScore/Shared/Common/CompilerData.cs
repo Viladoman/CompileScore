@@ -90,7 +90,6 @@ namespace CompileScore
         public static CompilerData Instance { get { return lazy.Value; } }
 
         public const uint VERSION_MIN = 4;
-        public const uint VERSION     = 5;
         public const uint VERSION = 6;
 
         //Keep this in sync with the data exporter
