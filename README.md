@@ -74,7 +74,7 @@ Several [Test Projects](https://github.com/Viladoman/CompileScore/tree/master/Te
 ## References
 - [Visual Studio](https://visualstudio.microsoft.com/vs/)
 - [Clang 9+](https://releases.llvm.org/download.html) ( support for -ftime-trace ) 
-- [Microsoft C++ Build Insights SDK](https://docs.microsoft.com/cpp/build-insights/get-started-with-cpp-build-insights)
+- [Microsoft C++ Build Insights SDK](https://docs.microsoft.com/cpp/build-insights/get-started-with-cpp-build-insights) ( MSVC 16.1 or higher )
 
 ## Related 
 If you're not using Visual Studio but are still interested in the data aggregation, you can use [SeeProfiler](https://github.com/Viladoman/SeeProfiler), a standalone C++ compiler profiler which aggregates all the exported data from clang for a global view.
