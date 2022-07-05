@@ -442,7 +442,7 @@ namespace Clang
 				LOG_ERROR("Invalid file buffer for %s", path);
 			}
 
-			IO::Log(IO::Verbosity::Progress,"Parsing... %u files\r",++filesFound);
+			IO::Log(IO::Verbosity::Progress,"Parsed file %u: (%s)\r",++filesFound, path);
 		}
 
 		CompileScore::FinalizeScoreData(scoreData);

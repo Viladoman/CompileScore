@@ -51,6 +51,13 @@ namespace CommandLine
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // -----------------------------------------------------------------------------------------------------------
+    void DisplayVersion()
+    {
+        LOG_ALWAYS("Compile Score Data Extractor"); 
+        LOG_ALWAYS("Scor Data Version : %d", IO::GetDataVersion());
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
     void DisplayHelp()
     {
         ExportParams defaultParams;
@@ -59,6 +66,9 @@ namespace CommandLine
         LOG_ALWAYS("Converts the compiler build trace data into 'scor' format."); 
         LOG_ALWAYS("");
         LOG_ALWAYS("Command Legend:"); 
+
+        LOG_ALWAYS("-help           (-h)  : Prints out all the possible command line arguments for this process");         
+        LOG_ALWAYS("-version        (-ve) : Prints out the data version this process will produce");         
 
         LOG_ALWAYS("-clang  |  -msvc      : Sets the system to use the Clang or MSVC recorders and generators (mandatory)");         
         
@@ -108,10 +118,20 @@ namespace CommandLine
         //Check for Help
         for (int i=1;i<argc;++i)
         { 
-            if (Utils::StringCompare(argv[i],"?") == 0)
+            if (Utils::StringCompare(argv[i],"?") == 0 || Utils::StringCompare(argv[i], "-help") == 0 || Utils::StringCompare(argv[i], "-h") == 0)
             { 
                 DisplayHelp();
                 return FAILURE;
+            }
+        }
+
+        //Check for version display
+        for (int i = 1; i < argc; ++i)
+        {
+            if (Utils::StringCompare(argv[i], "-version") == 0 || Utils::StringCompare(argv[i], "-ve") == 0)
+            {
+                DisplayVersion();
+                break;
             }
         }
 
