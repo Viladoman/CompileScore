@@ -203,13 +203,13 @@ namespace CompileScore
 				CompileFolder& currentFolder = folders[folderIndex];
 
 				auto const& result = currentFolder.children.insert(TCompileDataDictionary::value_type(strHash, static_cast<U32>(folders.size())));
+				folderIndex = result.first->second; //move to the child folder
 				if (result.second)
 				{
 					//New folder found, add to list of project folders
 					folders.emplace_back(folderStart, folderNameLength);
 				}
 				
-				folderIndex = result.first->second; //move to the child folder
 				folderStart = folderEnd + 1;
 			}
 		}
