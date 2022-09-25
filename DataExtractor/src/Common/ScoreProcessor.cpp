@@ -42,7 +42,7 @@ namespace CompileScore
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	CompileData& CreateGlobalEntry(ScoreData& scoreData, CompileEvent& element)
+	U32 CreateGlobalEntry(ScoreData& scoreData, CompileEvent& element)
 	{ 
 		const CompileCategoryType globalIndex = ToUnderlying(element.category);
 		TCompileDatas& global = scoreData.globals[globalIndex];
@@ -62,11 +62,11 @@ namespace CompileScore
 				scoreData.includers.emplace_back();
 			}
 
-			return global.back();
+			return nextIndex;
 		} 
 		
 		element.nameId = result.first->second;
-		return global[element.nameId];
+		return element.nameId;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
@@ -100,6 +100,7 @@ namespace CompileScore
 		}
 
 		//TODO ~ ramonv ~ process self computation to compile event
+		//Arreglar el self del event
 	}
 
 
@@ -107,30 +108,61 @@ namespace CompileScore
 	void ProcessTimelineTrack(ScoreData& scoreData, CompileUnit& unit, TCompileEvents& events, const CompileCategory gatherLimit, const ExportParams::Includers includersMode )
 	{ 
 		fastl::vector<CompileEvent*> eventStack;
+		fastl::vector<U32>           dataIdStack;
 
 		//Process Timeline elements
 		for (CompileEvent& element : events)
 		{ 		
 			//update stack 
-			while (!eventStack.empty() && ( element.start >= eventStack.back()->start + eventStack.back()->duration ) ) eventStack.pop_back();
+			while (!eventStack.empty() && (element.start >= eventStack.back()->start + eventStack.back()->duration))
+			{
+				//Check what happened with the children and fixup any remaining parent data
+				CompileEvent* thisEvent = eventStack.back();
+				if (thisEvent->category < gatherLimit ) // Mark up data stack with -1
+				{
+				//	//Fix self 
+					const U32 index = dataIdStack.back();
+					TCompileDatas& global = scoreData.globals[ToUnderlying(thisEvent->category)];
+					CompileData& thisCompileData = global[index];
+					thisCompileData.selfMaximum = Utils::Max(thisCompileData.selfMaximum, thisEvent->selfDuration );
+				}
+
+				eventStack.pop_back();
+				dataIdStack.pop_back();
+
+				CompileEvent* parent = eventStack.empty() ? nullptr : eventStack.back();
+				if (parent != nullptr && thisEvent->category == parent->category) {
+					parent->selfDuration -= thisEvent->duration;
+				}
+			}
 			CompileEvent* parent = eventStack.empty() ? nullptr : eventStack.back();
 			eventStack.push_back( &element );
 
 			if (element.category < gatherLimit)
 			{ 
-				CompileData& compileData = CreateGlobalEntry(scoreData,element);
+				// MAybe we should return here the index instead so we can store it at dataSTack
+				// and then access the globals in here instead
+				// or just return also the index <- Millor l'index
+				U32 nameId = CreateGlobalEntry(scoreData,element);
+				CompileData& compileData = scoreData.globals[ToUnderlying(element.category)][nameId];
+				dataIdStack.push_back(nameId);
+
 				compileData.accumulated += element.duration;
 				compileData.minimum = Utils::Min(element.duration,compileData.minimum);
 
 				if (element.duration >= compileData.maximum)
 				{ 
 					compileData.maximum = element.duration;
-					compileData.maxId =unit.unitId;
+					compileData.maxId = unit.unitId;
 				}
 
 				ProcessParent( scoreData, element, parent, unit, includersMode );
 
 				++compileData.count;
+			}
+			else
+			{
+				dataIdStack.push_back(0xffffffff);  
 			}
 
 			if (element.category < CompileCategory::DisplayCount)

@@ -7,7 +7,7 @@
 
 #include "ScoreDefinitions.h"
 
-constexpr U32 SCORE_VERSION = 6;
+constexpr U32 SCORE_VERSION = 7;
 constexpr U32 TIMELINE_FILE_NUM_DIGITS = 4;
 
 static_assert(TIMELINE_FILE_NUM_DIGITS > 0);
@@ -422,6 +422,7 @@ namespace IO
                 BinarizeU64(stream,data.accumulated);
                 BinarizeU32(stream,data.minimum);
                 BinarizeU32(stream,data.maximum);
+                BinarizeU32(stream, data.selfMaximum);
                 BinarizeU32(stream,data.count);
                 BinarizeU32(stream,data.maxId);
             }
@@ -437,6 +438,7 @@ namespace IO
                 BinarizeU64(stream, data.accumulated);
                 BinarizeU32(stream, data.minimum);
                 BinarizeU32(stream, data.maximum);
+                BinarizeU32(stream, data.selfMaximum);
                 BinarizeU32(stream, data.count);
                 BinarizeU32(stream, data.maxId);
             }
@@ -477,6 +479,7 @@ namespace IO
             { 
                 BinarizeU32(stream,evt.start);
                 BinarizeU32(stream,evt.duration);
+                BinarizeU32(stream, evt.selfDuration);
                 BinarizeU32(stream,evt.nameId);
                 BinarizeU8(stream,static_cast<CompileCategoryType>(evt.category));
             }
