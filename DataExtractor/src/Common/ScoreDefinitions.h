@@ -79,6 +79,7 @@ struct CompileData
     CompileData()
         : nameHash(0ull)
         , accumulated(0ull)
+        , accumulatedChildren(0ull)
         , minimum(0xffffffff)
         , maximum(0u)
         , maxId(InvalidCompileId)
@@ -88,6 +89,7 @@ struct CompileData
     CompileData(const U64 _nameHash)
         : nameHash(_nameHash)
         , accumulated(0ull)
+        , accumulatedChildren(0ull)
         , minimum(0xffffffff)
         , maximum(0u)
         , maxId(InvalidCompileId)
@@ -96,6 +98,7 @@ struct CompileData
 
     U64 nameHash; 
     U64 accumulated; 
+    U64 accumulatedChildren;
     U32 minimum; 
     U32 maximum; 
     U32 maxId; //filled by the ScoreProcessor

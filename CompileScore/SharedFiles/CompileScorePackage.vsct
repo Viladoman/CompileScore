@@ -155,7 +155,19 @@
           <ButtonText>About</ButtonText>
         </Strings>
       </Button>
-    </Buttons>
+		<Button guid="guidCompileScorePackageCmdSet1" id="cmdIdStartTrace" priority="0x0100" type="Button">
+			<Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
+			<Strings>
+				<ButtonText>Start Trace</ButtonText>
+			</Strings>
+		</Button>
+		<Button guid="guidCompileScorePackageCmdSet1" id="cmdIdStopTrace" priority="0x0100" type="Button">
+			<Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
+			<Strings>
+				<ButtonText>Stop Trace</ButtonText>
+			</Strings>
+		</Button>
+	</Buttons>
 
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
     <Bitmaps>
@@ -249,7 +261,9 @@
       <IDSymbol value="265" name="cmdidShowTimeline" />
       <IDSymbol value="266" name="cmdIdBuildProject" />
       <IDSymbol value="267" name="cmdIdRebuildProject" />
-    </GuidSymbol>
+      <IDSymbol value="268" name="cmdIdStartTrace" />
+      <IDSymbol value="269" name="cmdIdStopTrace" />
+	</GuidSymbol>
  
   </Symbols>
 </CommandTable>

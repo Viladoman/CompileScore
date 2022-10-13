@@ -98,7 +98,23 @@ namespace CompileScore
             }
         }
 
-        public bool IsAvailable()
+        public void TriggerStartTrace()
+        {
+			ThreadHelper.ThrowIfNotOnUIThread();
+
+			//OutputLog.Focus();
+			OutputLog.Clear();
+			Evaluator.Clear();
+
+			PrepareGathering();
+		}
+
+		public void TriggerStopTrace()
+		{
+			_ = GatherAsync(false);
+		}
+
+		public bool IsAvailable()
         {
             return State == StateType.Idle;
         }
@@ -363,7 +379,7 @@ namespace CompileScore
                 }
                 else if (Action == vsBuildAction.vsBuildActionBuild || Action == vsBuildAction.vsBuildActionRebuildAll)
                 {
-                    _ = GatherAsync();
+                    _ = GatherAsync(true);
                 }
             }
             else
@@ -454,11 +470,12 @@ namespace CompileScore
             SetState(StateType.Idle);
         }
 
-        private async System.Threading.Tasks.Task GatherAsync()
+        private async System.Threading.Tasks.Task GatherAsync(bool focus)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            OutputLog.Focus();
+            if (focus)
+                OutputLog.Focus();
 
             SetState(StateType.Gathering);
 

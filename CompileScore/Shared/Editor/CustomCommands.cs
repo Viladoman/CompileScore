@@ -23,8 +23,10 @@ namespace CompileScore
         public const int CommandId_Rebuild        = 257;
         public const int CommandId_BuildProject   = 266;
         public const int CommandId_RebuildProject = 267;
+		public const int CommandId_StartTrace     = 268;
+		public const int CommandId_StopTrace      = 269;
 
-        public const int CommandId_Generate       = 259;
+		public const int CommandId_Generate       = 259;
 
         public const int CommandId_LoadDefault    = 260;
         public const int CommandId_Settings       = 261;
@@ -97,9 +99,19 @@ namespace CompileScore
                 menuItem.BeforeQueryStatus += Query_Clang_Generate_CanBuild;
                 commandService.AddCommand(menuItem);
             }
-        }
 
-        private static void Query_CanShowTimeline(object sender, EventArgs args)
+			{
+				var menuItem = new OleMenuCommand(Execute_StartTrace, new CommandID(CommandSet_Custom, CommandId_StartTrace));
+				commandService.AddCommand(menuItem);
+			}
+
+			{
+				var menuItem = new OleMenuCommand(Execute_StopTrace, new CommandID(CommandSet_Custom, CommandId_StopTrace));
+				commandService.AddCommand(menuItem);
+			}
+		}
+
+		private static void Query_CanShowTimeline(object sender, EventArgs args)
         {
             var menuCommand = sender as OleMenuCommand;
             if (menuCommand != null)
@@ -212,7 +224,21 @@ namespace CompileScore
             }
         }
 
-        private static void Execute_Clang_Generate(object sender, EventArgs e)
+        private static void Execute_StartTrace(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+			Profiler.Instance.TriggerStartTrace();
+		}
+
+		private static void Execute_StopTrace(object sender, EventArgs e)
+		{
+			ThreadHelper.ThrowIfNotOnUIThread();
+
+			Profiler.Instance.TriggerStopTrace();
+		}
+
+		private static void Execute_Clang_Generate(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             Profiler.Instance.TriggerOperation(Profiler.BuildOperation.GenerateClang);

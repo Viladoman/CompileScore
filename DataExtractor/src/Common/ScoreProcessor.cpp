@@ -131,6 +131,12 @@ namespace CompileScore
 				ProcessParent( scoreData, element, parent, unit, includersMode );
 
 				++compileData.count;
+
+				if (parent && parent->category < gatherLimit)
+				{
+					CompileEvent temp = *parent;
+					CreateGlobalEntry(scoreData, temp).accumulatedChildren += element.duration;
+				}
 			}
 
 			if (element.category < CompileCategory::DisplayCount)
