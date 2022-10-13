@@ -15,9 +15,9 @@ namespace CompileScore
         public CompileValue(string name, ulong accumulated, ulong accumulatedChildren, uint min, uint max, uint count, UnitValue maxUnit)
         {
             Name = name;
-			Accumulated = accumulated;
-			AccumulatedChildren = accumulatedChildren;
-			Min = min;
+            Accumulated = accumulated;
+            AccumulatedChildren = accumulatedChildren;
+            Min = min;
             Max = max;
             Count = count;
             MaxUnit = maxUnit; 
@@ -29,7 +29,7 @@ namespace CompileScore
         public uint Min { get; }
 		public ulong Accumulated { get; }
 		public ulong AccumulatedChildren { get; }
-		public ulong AccumulatedSelf { get => Accumulated - AccumulatedChildren; }
+		public ulong AccumulatedSelf { get => (Accumulated - AccumulatedChildren); }
 		public uint Average { get { return (uint)(Accumulated / Count); }  }
         public uint Count { get; }
         public uint Severity { set; get; }
@@ -411,13 +411,13 @@ namespace CompileScore
         {
             var name = reader.ReadString();
             ulong acc = reader.ReadUInt64();
-			ulong accExc = reader.ReadUInt64();
+            ulong accChildren = reader.ReadUInt64();
             uint min = reader.ReadUInt32();
             uint max = reader.ReadUInt32();
             uint count = reader.ReadUInt32();
             UnitValue maxUnit = GetUnitByIndex(reader.ReadUInt32());
 
-            var compileData = new CompileValue(name, acc, accExc, min, max, count, maxUnit);
+            var compileData = new CompileValue(name, acc, accChildren, min, max, count, maxUnit);
             list.Add(compileData);
         }
 
