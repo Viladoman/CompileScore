@@ -3,7 +3,6 @@
 #ifdef USE_FASTL
 
 #include "algorithm.h"
-#include "pair.h"
 #include "vector.h"
 
 namespace fastl
