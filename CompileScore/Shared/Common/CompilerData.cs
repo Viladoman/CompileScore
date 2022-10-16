@@ -372,14 +372,11 @@ namespace CompileScore
 
         private void ReadSession(BinaryReader reader)
         {
-            if (Session.Version >= 5)
+            if (Session.Version >= 6)
             {
                 Session.FullDuration = reader.ReadUInt64();
                 Session.NumThreads = reader.ReadUInt32();
-            }
 
-            if (Session.Version >= 6)
-            {
                 Totals = new List<UnitTotal>();
                 for (int k = 0; k < (int)CompileThresholds.Display; ++k)
                 {
@@ -435,6 +432,12 @@ namespace CompileScore
 
         static public bool CheckVersion(uint version)
         {
+            if (version == 5)
+            {
+                _ = OutputLog.ErrorGlobalAsync("Trying to load an unsupported file Version! Expected version " + VERSION + " - Found " + version + " - Please export again with matching Data Exporter");
+                return false;
+            }
+
             if (version < VERSION_MIN)
             {
                 _ = OutputLog.ErrorGlobalAsync("Trying to load an unsupported file Version! Expected a minumum version of " + VERSION_MIN + " - Found " + version + " - Please export again with matching Data Exporter");
@@ -533,7 +536,7 @@ namespace CompileScore
                             Datasets[i].collection = new List<CompileValue>(thislist);
                         }
 
-                        if (Session.Version >= 5)
+                        if (Session.Version >= 6)
                         {
                             Folders.ReadFolders(reader);
                         }
@@ -641,7 +644,7 @@ namespace CompileScore
             //Compute Severities
             ProcessSeverityData();
 
-            if (Session.Version <= 5)
+            if (Session.Version <= 4)
             {
                 //Process Totals
                 Totals = new List<UnitTotal>();
