@@ -1,95 +1,55 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{96484913-F404-4774-B66A-B27BC2636EAE}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>CompileScore</RootNamespace>
     <AssemblyName>CompileScore</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <TargetFramework>net472</TargetFramework>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Deterministic>true</Deterministic>
+    <AssemblyTitle>CompileScore</AssemblyTitle>
+    <Company>Ramon Viladomat</Company>
+    <Product>CompileScore</Product>
+    <Description>Compile Score viewer</Description>
+    <Copyright>Copyright © 2020 - Ramon Viladomat</Copyright>
+    <AssemblyVersion>1.7.0.0</AssemblyVersion>
+    <FileVersion>1.7.0.0</FileVersion>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <UseWPF>true</UseWPF>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <DebugType>portable</DebugType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <DebugType>portable</DebugType>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>CompileScore.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
+    <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
-    <Compile Include="..\Shared\Common\CompileFolders.cs">
-      <Link>Shared\Common\CompileFolders.cs</Link>
-    </Compile>
-    <Compile Include="..\Shared\Common\Documentation.cs">
-      <Link>Shared\Common\Documentation.cs</Link>
-    </Compile>
-    <Compile Include="..\Shared\Includers\CompilerIncluders.cs">
-      <Link>Shared\Includers\CompilerIncluders.cs</Link>
-    </Compile>
-    <Compile Include="..\Shared\Includers\IncludersWindow.cs">
-      <Link>Shared\Includers\IncludersWindow.cs</Link>
-    </Compile>
-    <Compile Include="..\Shared\Includers\IncludersWindowControl.xaml.cs">
-      <Link>Shared\Includers\IncludersWindowControl.xaml.cs</Link>
+    <Compile Include="..\Shared\Common\CompileFolders.cs" Link="Shared\Common\CompileFolders.cs" />
+    <Compile Include="..\Shared\Common\Documentation.cs" Link="Shared\Common\Documentation.cs" />
+    <Compile Include="..\Shared\Includers\CompilerIncluders.cs" Link="Shared\Includers\CompilerIncluders.cs" />
+    <Compile Include="..\Shared\Includers\IncludersWindow.cs" Link="Shared\Includers\IncludersWindow.cs" />
+    <Compile Include="..\Shared\Includers\IncludersWindowControl.xaml.cs" Link="Shared\Includers\IncludersWindowControl.xaml.cs">
       <DependentUpon>IncludersWindowControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="..\Shared\Settings\AboutWindow.xaml.cs">
-      <Link>Shared\Settings\AboutWindow.xaml.cs</Link>
+    <Compile Include="..\Shared\Settings\AboutWindow.xaml.cs" Link="Shared\Settings\AboutWindow.xaml.cs">
       <DependentUpon>AboutWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="..\Shared\Timeline\Timeline.xaml.cs">
-      <Link>Shared\Timeline\Timeline.xaml.cs</Link>
+    <Compile Include="..\Shared\Timeline\Timeline.xaml.cs" Link="Shared\Timeline\Timeline.xaml.cs">
       <DependentUpon>Timeline.xaml</DependentUpon>
     </Compile>
-    <Compile Include="..\Shared\Timeline\TimelineNodeTooltip.xaml.cs">
-      <Link>Shared\Timeline\TimelineNodeTooltip.xaml.cs</Link>
+    <Compile Include="..\Shared\Timeline\TimelineNodeTooltip.xaml.cs" Link="Shared\Timeline\TimelineNodeTooltip.xaml.cs">
       <DependentUpon>TimelineNodeTooltip.xaml</DependentUpon>
     </Compile>
-    <Compile Include="..\Shared\Timeline\TimelineSearch.xaml.cs">
-      <Link>Shared\Timeline\TimelineSearch.xaml.cs</Link>
+    <Compile Include="..\Shared\Timeline\TimelineSearch.xaml.cs" Link="Shared\Timeline\TimelineSearch.xaml.cs">
       <DependentUpon>TimelineSearch.xaml</DependentUpon>
     </Compile>
     <Page Include="..\Shared\Includers\IncludersWindowControl.xaml">
@@ -142,92 +102,30 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Compile Include="..\Shared\Common\CompilerData.cs">
-      <Link>Shared\Common\CompilerData.cs</Link>
-    </Compile>
-    <Compile Include="..\Shared\Common\DocumentLifeTimeManager.cs">
-      <Link>Shared\Common\DocumentLifeTimeManager.cs</Link>
-    </Compile>
-    <Compile Include="..\Shared\Common\OutputLog.cs">
-      <Link>Shared\Common\OutputLog.cs</Link>
-    </Compile>
-    <Compile Include="..\Shared\Common\ScoreColors.cs">
-      <Link>Shared\Common\ScoreColors.cs</Link>
-    </Compile>
-    <Compile Include="..\Shared\Common\UIConverters.cs">
-      <Link>Shared\Common\UIConverters.cs</Link>
-    </Compile>
-    <Compile Include="..\Shared\Overview\CompileDataTable.xaml.cs">
-      <Link>Shared\Overview\CompileDataTable.xaml.cs</Link>
+    <Compile Include="..\Shared\Common\CompilerData.cs" Link="Shared\Common\CompilerData.cs" />
+    <Compile Include="..\Shared\Common\DocumentLifeTimeManager.cs" Link="Shared\Common\DocumentLifeTimeManager.cs" />
+    <Compile Include="..\Shared\Common\OutputLog.cs" Link="Shared\Common\OutputLog.cs" />
+    <Compile Include="..\Shared\Common\ScoreColors.cs" Link="Shared\Common\ScoreColors.cs" />
+    <Compile Include="..\Shared\Common\UIConverters.cs" Link="Shared\Common\UIConverters.cs" />
+    <Compile Include="..\Shared\Overview\CompileDataTable.xaml.cs" Link="Shared\Overview\CompileDataTable.xaml.cs">
       <DependentUpon>CompileDataTable.xaml</DependentUpon>
     </Compile>
-    <Compile Include="..\Shared\Overview\OverviewTable.xaml.cs">
-      <Link>Shared\Overview\OverviewTable.xaml.cs</Link>
+    <Compile Include="..\Shared\Overview\OverviewTable.xaml.cs" Link="Shared\Overview\OverviewTable.xaml.cs">
       <DependentUpon>OverviewTable.xaml</DependentUpon>
     </Compile>
-    <Compile Include="..\Shared\Overview\OverviewTotalsTable.xaml.cs">
-      <Link>Shared\Overview\OverviewTotalsTable.xaml.cs</Link>
+    <Compile Include="..\Shared\Overview\OverviewTotalsTable.xaml.cs" Link="Shared\Overview\OverviewTotalsTable.xaml.cs">
       <DependentUpon>OverviewTotalsTable.xaml</DependentUpon>
     </Compile>
-    <Compile Include="..\Shared\Overview\OverviewWindowControl.xaml.cs">
-      <Link>Shared\Overview\OverviewWindowControl.xaml.cs</Link>
+    <Compile Include="..\Shared\Overview\OverviewWindowControl.xaml.cs" Link="Shared\Overview\OverviewWindowControl.xaml.cs">
       <DependentUpon>OverviewWindowControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="..\Shared\Timeline\CompilerTimeline.cs">
-      <Link>Shared\Timeline\CompilerTimeline.cs</Link>
-    </Compile>
-    <Compile Include="..\Shared\Timeline\TimelineWindow.cs">
-      <Link>Shared\Timeline\TimelineWindow.cs</Link>
-    </Compile>
-    <Compile Include="..\Shared\Timeline\TimelineWindowControl.xaml.cs">
-      <Link>Shared\Timeline\TimelineWindowControl.xaml.cs</Link>
+    <Compile Include="..\Shared\Timeline\CompilerTimeline.cs" Link="Shared\Timeline\CompilerTimeline.cs" />
+    <Compile Include="..\Shared\Timeline\TimelineWindow.cs" Link="Shared\Timeline\TimelineWindow.cs" />
+    <Compile Include="..\Shared\Timeline\TimelineWindowControl.xaml.cs" Link="Shared\Timeline\TimelineWindowControl.xaml.cs">
       <DependentUpon>TimelineWindowControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Fake\FakeVSIX.cs" />
-    <Compile Include="Fake\ColorTheme.cs" />
-    <Compile Include="Fake\FakeVS.cs" />
-    <Compile Include="Fake\WindowProxy.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="CompileScore.ico" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
