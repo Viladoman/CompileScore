@@ -12,6 +12,8 @@ namespace CompileScore
 { 
 	namespace Utils
 	{ 
+		enum : U32 { kInvalidIndex = 0xffffffff };
+
 		// -----------------------------------------------------------------------------------------------------------
 		template <typename T> inline constexpr T Min(const T a, const T b) { return a < b? a : b; }
 		template <typename T> inline constexpr T Max(const T a, const T b) { return a < b? b : a; }
@@ -98,9 +100,6 @@ namespace CompileScore
 		{
 			scoreData.includers[ child.nameId ].units.emplace( unit.unitId );
 		}
-
-		//TODO ~ ramonv ~ process self computation to compile event
-		//Arreglar el self del event
 	}
 
 
@@ -118,12 +117,12 @@ namespace CompileScore
 			{
 				//Check what happened with the children and fixup any remaining parent data
 				CompileEvent* thisEvent = eventStack.back();
-				if (thisEvent->category < gatherLimit ) // Mark up data stack with -1
+				const U32 thisIndex = dataIdStack.back();
+				if ( thisIndex != Utils::kInvalidIndex && element.category < gatherLimit)
 				{
-				//	//Fix self 
-					const U32 index = dataIdStack.back();
+					// Finalize post computation when closing this event ( self duration calculations )
 					TCompileDatas& global = scoreData.globals[ToUnderlying(thisEvent->category)];
-					CompileData& thisCompileData = global[index];
+					CompileData& thisCompileData = global[thisIndex];
 					thisCompileData.selfMaximum = Utils::Max(thisCompileData.selfMaximum, thisEvent->selfDuration );
 				}
 
@@ -140,12 +139,9 @@ namespace CompileScore
 
 			if (element.category < gatherLimit)
 			{ 
-				// MAybe we should return here the index instead so we can store it at dataSTack
-				// and then access the globals in here instead
-				// or just return also the index <- Millor l'index
-				U32 nameId = CreateGlobalEntry(scoreData,element);
-				CompileData& compileData = scoreData.globals[ToUnderlying(element.category)][nameId];
-				dataIdStack.push_back(nameId);
+				const U32 globalIndex = CreateGlobalEntry(scoreData,element);
+				CompileData& compileData = scoreData.globals[ToUnderlying(element.category)][globalIndex];
+				dataIdStack.push_back(globalIndex);
 
 				compileData.accumulated += element.duration;
 				compileData.minimum = Utils::Min(element.duration,compileData.minimum);
@@ -162,7 +158,7 @@ namespace CompileScore
 			}
 			else
 			{
-				dataIdStack.push_back(0xffffffff);  
+				dataIdStack.push_back(Utils::kInvalidIndex);  
 			}
 
 			if (element.category < CompileCategory::DisplayCount)

@@ -8,12 +8,11 @@ namespace CompileScore.Timeline
 {
     public class TimelineNode
     {
-        public TimelineNode(string label, uint start, uint duration, uint selfDuration, CompilerData.CompileCategory category, object compileValue = null)
+        public TimelineNode(string label, uint start, uint duration, CompilerData.CompileCategory category, object compileValue = null)
         {
             Label = label;
             Start = start;
             Duration = duration;
-            SelfDuration = selfDuration;
             Children = new List<TimelineNode>();
             Value = compileValue;
             Category = category;
@@ -26,7 +25,6 @@ namespace CompileScore.Timeline
 
         public uint Start { set; get; }
         public uint Duration { set; get; }
-        public uint SelfDuration { set; get; }
         public uint DepthLevel { set; get; }
         public uint MaxDepthLevel { set; get; }
         public Brush UIColor { set; get; }
@@ -48,7 +46,6 @@ namespace CompileScore.Timeline
 
         const int TIMELINE_FILE_NUM_DIGITS = 4;
         private uint timelinePacking = 100;
-        private uint version;
 
         private CompileScorePackage Package { get; set; }
 
@@ -81,8 +78,6 @@ namespace CompileScore.Timeline
                 using (BinaryReader reader = new BinaryReader(fileStream))
                 {
                     uint thisVersion = reader.ReadUInt32();
-                    version = thisVersion;
-
                     if (CompilerData.CheckVersion(thisVersion))
                     {
                         for (uint i = 0; i < timelineInFileNum && !ReachedEndOfStream(reader); ++i)
@@ -128,11 +123,6 @@ namespace CompileScore.Timeline
         {
             uint start = reader.ReadUInt32();
             uint duration = reader.ReadUInt32();
-            uint selfDuration = 0;
-            if (version >= 7)
-            {
-                selfDuration = reader.ReadUInt32();
-            }
             uint eventId = reader.ReadUInt32();
             CompilerData.CompileCategory category = (CompilerData.CompileCategory)reader.ReadByte();
             CompileValue value = CompilerData.Instance.GetValue(category,(int)eventId);
@@ -140,7 +130,7 @@ namespace CompileScore.Timeline
             string label = value != null ? value.Name : Common.UIConverters.ToSentenceCase(category.ToString()); 
             label += " ( "+ Common.UIConverters.GetTimeStr(duration) +" )" ;
 
-            return new TimelineNode(label, start, duration, selfDuration, category, value);
+            return new TimelineNode(label, start, duration, category, value);
         }
 
         private void AdjustNodeProperties(TimelineNode node)

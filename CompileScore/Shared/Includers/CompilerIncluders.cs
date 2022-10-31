@@ -128,7 +128,7 @@ namespace CompileScore.Includers
             value.Visited = true;
 
             CompileValue compileValue = CompilerData.Instance.GetValue(CompilerData.CompileCategory.Include, (int)index);
-            Timeline.TimelineNode node = new Timeline.TimelineNode(null, 0, 0, 0, CompilerData.CompileCategory.Include, compileValue);
+            Timeline.TimelineNode node = new Timeline.TimelineNode(null, 0, 0, CompilerData.CompileCategory.Include, compileValue);
 
             if (value.Includes != null)
             {
@@ -171,7 +171,7 @@ namespace CompileScore.Includers
         {
             UnitValue unit = CompilerData.Instance.GetUnitByIndex(index);
             string label = unit == null? "-- Unknown -- " : unit.Name; 
-            return new Timeline.TimelineNode(label, 0, durationMultiplier, 0, CompilerData.CompileCategory.ExecuteCompiler, unit);
+            return new Timeline.TimelineNode(label, 0, durationMultiplier, CompilerData.CompileCategory.ExecuteCompiler, unit);
         }
 
         private void InitializeTree(Timeline.TimelineNode node)
