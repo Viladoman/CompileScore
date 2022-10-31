@@ -156,7 +156,7 @@ namespace CompileScore.Includers
 
             if (value.Includes == null && value.Units == null)
             {
-                Timeline.TimelineNode child = new Timeline.TimelineNode("-- Dead End --", 0, durationMultiplier, CompilerData.CompileCategory.DebugType);
+                Timeline.TimelineNode child = new Timeline.TimelineNode("-- Dead End --", 0, durationMultiplier, 0, CompilerData.CompileCategory.DebugType);
                 node.Duration += child.Duration;
                 node.AddChild(child);
             }

@@ -423,6 +423,7 @@ namespace IO
                 BinarizeU64(stream,data.accumulatedChildren);
                 BinarizeU32(stream,data.minimum);
                 BinarizeU32(stream,data.maximum);
+                BinarizeU32(stream, data.selfMaximum);
                 BinarizeU32(stream,data.count);
                 BinarizeU32(stream,data.maxId);
             }
@@ -439,6 +440,7 @@ namespace IO
                 BinarizeU64(stream, data.accumulatedChildren);
                 BinarizeU32(stream, data.minimum);
                 BinarizeU32(stream, data.maximum);
+                BinarizeU32(stream, data.selfMaximum);
                 BinarizeU32(stream, data.count);
                 BinarizeU32(stream, data.maxId);
             }
@@ -479,6 +481,7 @@ namespace IO
             { 
                 BinarizeU32(stream,evt.start);
                 BinarizeU32(stream,evt.duration);
+                BinarizeU32(stream, evt.selfDuration);
                 BinarizeU32(stream,evt.nameId);
                 BinarizeU8(stream,static_cast<CompileCategoryType>(evt.category));
             }

@@ -82,6 +82,7 @@ struct CompileData
         , accumulatedChildren(0ull)
         , minimum(0xffffffff)
         , maximum(0u)
+        , selfMaximum(0u)
         , maxId(InvalidCompileId)
         , count(0u)
     {}
@@ -92,6 +93,7 @@ struct CompileData
         , accumulatedChildren(0ull)
         , minimum(0xffffffff)
         , maximum(0u)
+        , selfMaximum(0u)
         , maxId(InvalidCompileId)
         , count(0u)
     {}
@@ -101,6 +103,7 @@ struct CompileData
     U64 accumulatedChildren;
     U32 minimum; 
     U32 maximum; 
+    U32 selfMaximum; // Without children's time
     U32 maxId; //filled by the ScoreProcessor
     U32 count;
 };
@@ -113,6 +116,7 @@ struct CompileEvent
         , duration(0u)
         , nameHash(0ull)
         , nameId(InvalidCompileId)
+        , selfDuration(0u)
     {}
 
     CompileEvent(CompileCategory _category, U32 _start, U32 _duration, U64 _nameHash)
@@ -121,12 +125,14 @@ struct CompileEvent
         , duration(_duration)
         , nameHash(_nameHash)
         , nameId(InvalidCompileId)
+        , selfDuration(_duration)
     {}
 
     U64             nameHash;
     U32             nameId; //filled by the ScoreProcessor
     U32             start; 
     U32             duration;
+    U32             selfDuration; // Without children's duration
     CompileCategory category; 
 };
 

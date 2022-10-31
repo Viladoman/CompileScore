@@ -39,6 +39,10 @@ DataExtractor/bin/*
 DataExtractor/.vs/*
 DataExtractor/packages/*
 
+TestProjects/NMake/tmp/*
+TestProjects/NMake/bin/*
+TestProjects/NMake/.vs/*
+
 TestProjects/CMake/tmp/*
 TestProjects/CMake/bin/*
 TestProjects/CMake/.vs/*

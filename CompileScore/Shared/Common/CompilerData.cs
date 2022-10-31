@@ -13,12 +13,14 @@ namespace CompileScore
     public class CompileValue
     {
         public CompileValue(string name, ulong accumulated, ulong accumulatedChildren, uint min, uint max, uint count, UnitValue maxUnit)
+        public CompileValue(string name, ulong accumulated, ulong accumulatedChildren, uint min, uint max, uint selfMax, uint count, UnitValue maxUnit)
         {
             Name = name;
             Accumulated = accumulated;
             AccumulatedChildren = accumulatedChildren;
             Min = min;
             Max = max;
+            SelfMax = selfMax;
             Count = count;
             MaxUnit = maxUnit; 
             Severity = 0;
@@ -27,6 +29,7 @@ namespace CompileScore
         public string Name { get; }
         public uint Max { get; }
         public uint Min { get; }
+        public uint SelfMax { get; }
 		public ulong Accumulated { get; }
 		public ulong AccumulatedChildren { get; }
 		public ulong AccumulatedSelf { get => (Accumulated - AccumulatedChildren); }
@@ -93,8 +96,8 @@ namespace CompileScore
         private static readonly Lazy<CompilerData> lazy = new Lazy<CompilerData>(() => new CompilerData());
         public static CompilerData Instance { get { return lazy.Value; } }
 
-        public const uint VERSION_MIN = 7;
-        public const uint VERSION = 7;
+        public const uint VERSION_MIN = 8;
+        public const uint VERSION = 8;
 
         //Keep this in sync with the data exporter
         public enum CompileCategory
@@ -376,14 +379,11 @@ namespace CompileScore
 
         private void ReadSession(BinaryReader reader)
         {
-            if (Session.Version >= 5)
+            if (Session.Version >= 6)
             {
                 Session.FullDuration = reader.ReadUInt64();
                 Session.NumThreads = reader.ReadUInt32();
-            }
 
-            if (Session.Version >= 6)
-            {
                 Totals = new List<UnitTotal>();
                 for (int k = 0; k < (int)CompileThresholds.Display; ++k)
                 {
@@ -414,10 +414,15 @@ namespace CompileScore
             ulong accChildren = reader.ReadUInt64();
             uint min = reader.ReadUInt32();
             uint max = reader.ReadUInt32();
+            uint selfMax = 0;
+            if (Session.Version >= 7)
+            {
+                selfMax = reader.ReadUInt32();
+            }
             uint count = reader.ReadUInt32();
             UnitValue maxUnit = GetUnitByIndex(reader.ReadUInt32());
 
-            var compileData = new CompileValue(name, acc, accChildren, min, max, count, maxUnit);
+            var compileData = new CompileValue(name, acc, accChildren, min, max, selfMax,count, maxUnit);
             list.Add(compileData);
         }
 
@@ -440,6 +445,12 @@ namespace CompileScore
 
         static public bool CheckVersion(uint version)
         {
+            if (version == 5)
+            {
+                _ = OutputLog.ErrorGlobalAsync("Trying to load an unsupported file Version! Expected version " + VERSION + " - Found " + version + " - Please export again with matching Data Exporter");
+                return false;
+            }
+
             if (version < VERSION_MIN)
             {
                 _ = OutputLog.ErrorGlobalAsync("Trying to load an unsupported file Version! Expected a minumum version of " + VERSION_MIN + " - Found " + version + " - Please export again with matching Data Exporter");
@@ -538,7 +549,7 @@ namespace CompileScore
                             Datasets[i].collection = new List<CompileValue>(thislist);
                         }
 
-                        if (Session.Version >= 5)
+                        if (Session.Version >= 6)
                         {
                             Folders.ReadFolders(reader);
                         }
@@ -646,7 +657,7 @@ namespace CompileScore
             //Compute Severities
             ProcessSeverityData();
 
-            if (Session.Version <= 5)
+            if (Session.Version <= 4)
             {
                 //Process Totals
                 Totals = new List<UnitTotal>();

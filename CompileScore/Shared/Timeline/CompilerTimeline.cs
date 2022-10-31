@@ -78,7 +78,6 @@ namespace CompileScore.Timeline
                 using (BinaryReader reader = new BinaryReader(fileStream))
                 {
                     uint thisVersion = reader.ReadUInt32();
-
                     if (CompilerData.CheckVersion(thisVersion))
                     {
                         for (uint i = 0; i < timelineInFileNum && !ReachedEndOfStream(reader); ++i)
@@ -150,7 +149,7 @@ namespace CompileScore.Timeline
         {
             uint numEvents = reader.ReadUInt32();
 
-            TimelineNode root = new TimelineNode(CompilerData.CompileCategory.Thread.ToString(), 0, 0, CompilerData.CompileCategory.Thread);
+            TimelineNode root = new TimelineNode(CompilerData.CompileCategory.Thread.ToString(), 0, 0, 0, CompilerData.CompileCategory.Thread);
 
             TimelineNode parent = root;
 
@@ -216,7 +215,7 @@ namespace CompileScore.Timeline
         {
             uint numTracks = reader.ReadUInt32();
 
-            TimelineNode root = new TimelineNode("", 0, 0, CompilerData.CompileCategory.Timeline);
+            TimelineNode root = new TimelineNode("", 0, 0, 0, CompilerData.CompileCategory.Timeline);
             InitializeNodeRecursive(root);
 
             for (uint i=0;i<numTracks;++i)
