@@ -127,15 +127,15 @@
         
         <DataGrid Grid.Row="1" x:Name="compileDataGrid" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="Column" SelectionUnit="FullRow" Margin="0">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Name"         Binding="{Binding Name}" IsReadOnly="True" Width="300"/>
-                <DataGridTextColumn Header="Count"        Binding="{Binding Count}" IsReadOnly="True" Width="75"/>
-                <DataGridTextColumn Header="Accumulated (inc)"  Binding="{Binding Accumulated,  Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="140"/>
-                <DataGridTextColumn Header="Accumulated (exc)"  Binding="{Binding AccumulatedSelf,  Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="140"/>
-                <DataGridTextColumn Header="Max"          Binding="{Binding Max,          Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
-                <DataGridTextColumn Header="Max Self"     Binding="{Binding SelfMax,      Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
-                <DataGridTextColumn Header="Min"          Binding="{Binding Min,          Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
-                <DataGridTextColumn Header="Avg"          Binding="{Binding Average,      Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
-                <DataGridTextColumn Header="Max location" Binding="{Binding MaxUnit.Name}" IsReadOnly="True" Width="200"/>
+                <DataGridTextColumn Header="Name"              Binding="{Binding Name}"           IsReadOnly="True" Width="300"/>
+                <DataGridTextColumn Header="Count"             Binding="{Binding Count}"          IsReadOnly="True" Width="75"/>
+                <DataGridTextColumn Header="Accumulated"       Binding="{Binding Accumulated,     Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="140"/>
+                <DataGridTextColumn Header="Accumulated Self"  Binding="{Binding SelfAccumulated, Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="140"/>
+                <DataGridTextColumn Header="Max"               Binding="{Binding Max,             Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
+                <DataGridTextColumn Header="Max Self"          Binding="{Binding SelfMax,         Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
+                <DataGridTextColumn Header="Min"               Binding="{Binding Min,             Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
+                <DataGridTextColumn Header="Avg"               Binding="{Binding Average,         Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
+                <DataGridTextColumn Header="Max location"      Binding="{Binding MaxUnit.Name}"   IsReadOnly="True" Width="200"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

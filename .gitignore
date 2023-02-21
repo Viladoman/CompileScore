@@ -16,6 +16,7 @@
 *.scor
 *.scor.*
 *.vcxproj.user
+*.csproj.user
 
 # Shared
 CompileScore/.vs/
@@ -50,9 +51,3 @@ TestProjects/CMake/.vs/*
 TestProjects/Regular/tmp/*
 TestProjects/Regular/bin/*
 TestProjects/Regular/.vs/*
-CompileScore/CompileScore.unrealvs
-CompileScore/vs-chromium-project.txt
-CompileScore/VSIX17/CompileScoreVS17.csproj.user
-DataExtractor/ScoreDataExtractor.unrealvs
-DataExtractor/UpgradeLog.htm
-DataExtractor/vs-chromium-project.txt

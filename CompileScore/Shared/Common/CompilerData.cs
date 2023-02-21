@@ -12,12 +12,11 @@ namespace CompileScore
 
     public class CompileValue
     {
-        public CompileValue(string name, ulong accumulated, ulong accumulatedChildren, uint min, uint max, uint count, UnitValue maxUnit)
-        public CompileValue(string name, ulong accumulated, ulong accumulatedChildren, uint min, uint max, uint selfMax, uint count, UnitValue maxUnit)
+        public CompileValue(string name, ulong accumulated, ulong selfAccumulated, uint min, uint max, uint selfMax, uint count, UnitValue maxUnit)
         {
             Name = name;
             Accumulated = accumulated;
-            AccumulatedChildren = accumulatedChildren;
+            SelfAccumulated = selfAccumulated;
             Min = min;
             Max = max;
             SelfMax = selfMax;
@@ -31,8 +30,7 @@ namespace CompileScore
         public uint Min { get; }
         public uint SelfMax { get; }
 		public ulong Accumulated { get; }
-		public ulong AccumulatedChildren { get; }
-		public ulong AccumulatedSelf { get => (Accumulated - AccumulatedChildren); }
+		public ulong SelfAccumulated { get; }
 		public uint Average { get { return (uint)(Accumulated / Count); }  }
         public uint Count { get; }
         public uint Severity { set; get; }
@@ -379,18 +377,15 @@ namespace CompileScore
 
         private void ReadSession(BinaryReader reader)
         {
-            if (Session.Version >= 6)
-            {
-                Session.FullDuration = reader.ReadUInt64();
-                Session.NumThreads = reader.ReadUInt32();
+            Session.FullDuration = reader.ReadUInt64();
+            Session.NumThreads = reader.ReadUInt32();
 
-                Totals = new List<UnitTotal>();
-                for (int k = 0; k < (int)CompileThresholds.Display; ++k)
-                {
-                    UnitTotal total = new UnitTotal((CompileCategory)k);
-                    total.Total = reader.ReadUInt64();
-                    Totals.Add(total);
-                }
+            Totals = new List<UnitTotal>();
+            for (int k = 0; k < (int)CompileThresholds.Display; ++k)
+            {
+                UnitTotal total = new UnitTotal((CompileCategory)k);
+                total.Total = reader.ReadUInt64();
+                Totals.Add(total);
             }
         }
 
@@ -411,18 +406,14 @@ namespace CompileScore
         {
             var name = reader.ReadString();
             ulong acc = reader.ReadUInt64();
-            ulong accChildren = reader.ReadUInt64();
+            ulong selfAcc = reader.ReadUInt64();
             uint min = reader.ReadUInt32();
             uint max = reader.ReadUInt32();
-            uint selfMax = 0;
-            if (Session.Version >= 7)
-            {
-                selfMax = reader.ReadUInt32();
-            }
+            uint selfMax = reader.ReadUInt32();
             uint count = reader.ReadUInt32();
             UnitValue maxUnit = GetUnitByIndex(reader.ReadUInt32());
 
-            var compileData = new CompileValue(name, acc, accChildren, min, max, selfMax,count, maxUnit);
+            var compileData = new CompileValue(name, acc, selfAcc, min, max, selfMax,count, maxUnit);
             list.Add(compileData);
         }
 
@@ -445,21 +436,9 @@ namespace CompileScore
 
         static public bool CheckVersion(uint version)
         {
-            if (version == 5)
+            if (version < VERSION_MIN || version > VERSION )
             {
-                _ = OutputLog.ErrorGlobalAsync("Trying to load an unsupported file Version! Expected version " + VERSION + " - Found " + version + " - Please export again with matching Data Exporter");
-                return false;
-            }
-
-            if (version < VERSION_MIN)
-            {
-                _ = OutputLog.ErrorGlobalAsync("Trying to load an unsupported file Version! Expected a minumum version of " + VERSION_MIN + " - Found " + version + " - Please export again with matching Data Exporter");
-                return false;
-            }
-            
-            if (version > VERSION)
-            {
-                _ = OutputLog.ErrorGlobalAsync("Trying to load an unsupported file Version! Expected a maximum version of " + VERSION + " - Found " + version + " - Please export again with matching Data Exporter");
+                _ = OutputLog.ErrorGlobalAsync("Trying to load an unsupported file Version! Expected a version between " + VERSION_MIN + " and " + VERSION + " - Found " + version + " - Please export again with matching Data Exporter");
                 return false;
             }
 
@@ -549,10 +528,7 @@ namespace CompileScore
                             Datasets[i].collection = new List<CompileValue>(thislist);
                         }
 
-                        if (Session.Version >= 6)
-                        {
-                            Folders.ReadFolders(reader);
-                        }
+                        Folders.ReadFolders(reader);
                     }
                 }
 
@@ -656,24 +632,6 @@ namespace CompileScore
 
             //Compute Severities
             ProcessSeverityData();
-
-            if (Session.Version <= 4)
-            {
-                //Process Totals
-                Totals = new List<UnitTotal>();
-                for (int k = 0; k < (int)CompileThresholds.Display; ++k)
-                {
-                    Totals.Add(new UnitTotal((CompileCategory)k));
-                }
-            
-                foreach (UnitValue unit in UnitsCollection)
-                {  
-                    for(int k = 0; k < (int)CompileThresholds.Display;++k)
-                    {
-                        Totals[k].Total += unit.ValuesList[k];
-                    }
-                }
-            }
         }
 
         private void ComputeNormalizedThresholds(List<uint> normalizedThresholds, List<uint> inputList)

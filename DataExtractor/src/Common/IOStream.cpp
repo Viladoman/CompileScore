@@ -7,7 +7,7 @@
 
 #include "ScoreDefinitions.h"
 
-constexpr U32 SCORE_VERSION = 7;
+constexpr U32 SCORE_VERSION = 8;
 constexpr U32 TIMELINE_FILE_NUM_DIGITS = 4;
 
 static_assert(TIMELINE_FILE_NUM_DIGITS > 0);
@@ -419,13 +419,13 @@ namespace IO
             for (const CompileData& data : globals)
             { 
                 BinarizeStringHash(stream,strings,data.nameHash);
-                BinarizeU64(stream,data.accumulated);
-                BinarizeU64(stream,data.accumulatedChildren);
-                BinarizeU32(stream,data.minimum);
-                BinarizeU32(stream,data.maximum);
-                BinarizeU32(stream, data.selfMaximum);
-                BinarizeU32(stream,data.count);
-                BinarizeU32(stream,data.maxId);
+				BinarizeU64(stream, data.accumulated);
+				BinarizeU64(stream, data.selfAccumulated);
+				BinarizeU32(stream, data.minimum);
+				BinarizeU32(stream, data.maximum);
+				BinarizeU32(stream, data.selfMaximum);
+				BinarizeU32(stream, data.count);
+				BinarizeU32(stream, data.maxId);
             }
         }
 
@@ -437,7 +437,7 @@ namespace IO
             {
                 BinarizeStringPath(stream, strings, data.nameHash);
                 BinarizeU64(stream, data.accumulated);
-                BinarizeU64(stream, data.accumulatedChildren);
+                BinarizeU64(stream, data.selfAccumulated);
                 BinarizeU32(stream, data.minimum);
                 BinarizeU32(stream, data.maximum);
                 BinarizeU32(stream, data.selfMaximum);
@@ -481,7 +481,6 @@ namespace IO
             { 
                 BinarizeU32(stream,evt.start);
                 BinarizeU32(stream,evt.duration);
-                BinarizeU32(stream, evt.selfDuration);
                 BinarizeU32(stream,evt.nameId);
                 BinarizeU8(stream,static_cast<CompileCategoryType>(evt.category));
             }
