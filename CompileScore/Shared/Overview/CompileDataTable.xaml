@@ -129,7 +129,8 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Name"         Binding="{Binding Name}" IsReadOnly="True" Width="300"/>
                 <DataGridTextColumn Header="Count"        Binding="{Binding Count}" IsReadOnly="True" Width="75"/>
-                <DataGridTextColumn Header="Accumulated"  Binding="{Binding Accumulated,  Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="100"/>
+                <DataGridTextColumn Header="Accumulated (inc)"  Binding="{Binding Accumulated,  Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="140"/>
+                <DataGridTextColumn Header="Accumulated (exc)"  Binding="{Binding AccumulatedSelf,  Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="140"/>
                 <DataGridTextColumn Header="Max"          Binding="{Binding Max,          Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
                 <DataGridTextColumn Header="Max Self"     Binding="{Binding SelfMax,      Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
                 <DataGridTextColumn Header="Min"          Binding="{Binding Min,          Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>

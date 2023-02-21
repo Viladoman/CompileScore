@@ -79,6 +79,7 @@ struct CompileData
     CompileData()
         : nameHash(0ull)
         , accumulated(0ull)
+        , accumulatedChildren(0ull)
         , minimum(0xffffffff)
         , maximum(0u)
         , selfMaximum(0u)
@@ -89,6 +90,7 @@ struct CompileData
     CompileData(const U64 _nameHash)
         : nameHash(_nameHash)
         , accumulated(0ull)
+        , accumulatedChildren(0ull)
         , minimum(0xffffffff)
         , maximum(0u)
         , selfMaximum(0u)
@@ -98,6 +100,7 @@ struct CompileData
 
     U64 nameHash; 
     U64 accumulated; 
+    U64 accumulatedChildren;
     U32 minimum; 
     U32 maximum; 
     U32 selfMaximum; // Without children's time

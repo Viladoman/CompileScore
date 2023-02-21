@@ -161,6 +161,12 @@ namespace CompileScore
 				dataIdStack.push_back(Utils::kInvalidIndex);  
 			}
 
+			if (parent && parent->category < gatherLimit)
+			{
+				CompileEvent temp = *parent;
+				CreateGlobalEntry(scoreData, temp).accumulatedChildren += element.duration;
+			}
+
 			if (element.category < CompileCategory::DisplayCount)
 			{
 				if ( parent == nullptr || parent->category != element.category )

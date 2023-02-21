@@ -420,6 +420,7 @@ namespace IO
             { 
                 BinarizeStringHash(stream,strings,data.nameHash);
                 BinarizeU64(stream,data.accumulated);
+                BinarizeU64(stream,data.accumulatedChildren);
                 BinarizeU32(stream,data.minimum);
                 BinarizeU32(stream,data.maximum);
                 BinarizeU32(stream, data.selfMaximum);
@@ -436,6 +437,7 @@ namespace IO
             {
                 BinarizeStringPath(stream, strings, data.nameHash);
                 BinarizeU64(stream, data.accumulated);
+                BinarizeU64(stream, data.accumulatedChildren);
                 BinarizeU32(stream, data.minimum);
                 BinarizeU32(stream, data.maximum);
                 BinarizeU32(stream, data.selfMaximum);
