@@ -12,6 +12,7 @@ namespace CompileScore
 { 
 	namespace Utils
 	{ 
+		// -----------------------------------------------------------------------------------------------------------
 		enum : U32 { kInvalidIndex = 0xffffffff };
 
 		// -----------------------------------------------------------------------------------------------------------
@@ -20,12 +21,12 @@ namespace CompileScore
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	U64 StoreString(ScoreData& scoreData, const char* str, size_t length)
+	U64 StoreString(ScoreData& scoreData, const fastl::string& str)
 	{
-		const U64 strHash = Hash::AppendToCRC64(0ull, str, length);
+		const U64 strHash = Hash::AppendToCRC64(0ull, str.c_str(), str.length() );
 		if (strHash)
 		{
-			auto const& result = scoreData.strings.insert(TCompileStrings::value_type(strHash, fastl::string(str, length)));
+			auto const& result = scoreData.strings.insert(TCompileStrings::value_type(strHash, str));
 			if (result.second)
 			{
 				//Convert to lower case to improve search performance later
@@ -36,11 +37,81 @@ namespace CompileScore
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
+	U64 StoreString(ScoreData& scoreData, const char* str, size_t length)
+	{
+		return StoreString(scoreData, fastl::string(str, length));
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
 	U64 StoreString(ScoreData& scoreData, const char* str)
 	{
 		U32 length = 0u;
 		for (; str[length] != '\0'; ++length) {}
 		return StoreString(scoreData, str, length);
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	U64 StorePathString(ScoreData& scoreData, const char* str, size_t length)
+	{
+		fastl::string path(str, length);
+		StringUtils::NormalizePath(path);
+		return StoreString(scoreData, path);
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	U64 StoreSymbolString(ScoreData& scoreData, const char* str, size_t length)
+	{
+		ExportParams* exportParams = Context::Get<ExportParams>();
+		if (exportParams && exportParams->templateArgs == ExportParams::TemplateArgs::Keep) 
+		{
+			return StoreString(scoreData, str, length);
+		}
+		else
+		{
+			fastl::string symbolName(str, length);
+			StringUtils::CollapseTemplates(symbolName);
+			return StoreString(scoreData, symbolName);
+		}
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	U64 StoreSymbolString(ScoreData& scoreData, const char* str)
+	{
+		U32 length = 0u;
+		for (; str[length] != '\0'; ++length) {}
+		return StoreSymbolString(scoreData, str, length);
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	U64 StoreCategoryValueString(ScoreData& scoreData, const char* str, size_t length, CompileCategory category)
+	{
+		switch (category)
+		{
+		case CompileCategory::Include:
+		case CompileCategory::ExecuteCompiler:
+			return StorePathString(scoreData, str, length); 
+
+		case CompileCategory::ParseClass:
+		case CompileCategory::ParseTemplate:
+		case CompileCategory::InstantiateClass:
+		case CompileCategory::InstantiateConcept:
+		case CompileCategory::InstantiateVariable:
+		case CompileCategory::InstantiateFunction:
+		case CompileCategory::CodeGenFunction:
+		case CompileCategory::OptimizeFunction:
+			return StoreSymbolString(scoreData, str, length);
+
+		default: 
+			return StoreString(scoreData, str, length); 
+		}
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	U64 StoreCategoryValueString(ScoreData& scoreData, const char* str, CompileCategory category)
+	{
+		U32 length = 0u;
+		for (; str[length] != '\0'; ++length) {}
+		return StoreCategoryValueString(scoreData, str, length, category);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------

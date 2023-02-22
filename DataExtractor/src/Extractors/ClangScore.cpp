@@ -103,6 +103,8 @@ namespace Clang
 		constexpr static Json::Token tagInvalidB              = Utils::CreateLiteralToken("thread_name");
 		constexpr static Json::Token prefixInvalidA           = Utils::CreateLiteralToken("Total");
 
+		//TODO ~ ramonv ~ look for new tags in updated clang builds 
+
 		if (token.type == Json::Token::Type::String)
 		{ 
 			if (Utils::EqualTokens(token,tagInclude))               return CompileCategory::Include;
@@ -176,7 +178,7 @@ namespace Clang
 					if (Utils::EqualTokens(token,tagDetail))
 					{ 
 						if (!reader.NextToken(token) || token.type != Json::Token::Type::String) return false;  
-						output.nameHash = CompileScore::StoreString(scoreData,token.str,token.length);
+						output.nameHash = CompileScore::StoreCategoryValueString(scoreData,token.str,token.length, output.category);
 					}
 					else 
 					{ 
@@ -241,6 +243,7 @@ namespace Clang
 		timeline.tracks.emplace_back(); //we only use one events track in Clang
 
 		fastl::string inputPath{path};
+		StringUtils::NormalizePath(inputPath);
 		StringUtils::RemoveExtension(inputPath); //remove the .json
 		timeline.nameHash = CompileScore::StoreString(scoreData, inputPath.c_str(), inputPath.length());
 

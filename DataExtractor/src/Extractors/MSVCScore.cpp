@@ -315,7 +315,7 @@ namespace MSVC
         TUProcess& process = GetProcess(activity.ProcessId());
 
         const fastl::string path = Utils::GetPath(activity);
-        const U64 pathHash = CompileScore::StoreString(m_scoreData, path.c_str(), path.length());
+        const U64 pathHash = CompileScore::StorePathString(m_scoreData, path.c_str(), path.length());
 
         //Activate the TU depending on the data we have ( handling unnamed passes ) 
         if (pathHash)
@@ -439,7 +439,7 @@ namespace MSVC
     {
         if (TUEntry* entry = GetProcess(symbolName.ProcessId()).GetActiveTU()) 
         {
-            entry->symbols[symbolName.Key()] = CompileScore::StoreString(m_scoreData,symbolName.Name());
+           entry->symbols[symbolName.Key()] = CompileScore::StoreSymbolString(m_scoreData,symbolName.Name());
         }
     }
 
@@ -462,7 +462,7 @@ namespace MSVC
     { 
         if (activeTU)
         { 
-            const U64 nameHash = CompileScore::StoreString(m_scoreData,name.c_str());
+            const U64 nameHash = CompileScore::StoreCategoryValueString(m_scoreData,name.c_str(),category);
             const U32 startTime = ComputeEventStartTime(activeTU,activity);
 
             MSVCCompileTrack& track = activeTU->GetTrack(activity.ThreadId());

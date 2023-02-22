@@ -111,28 +111,31 @@ struct CompileData
 struct CompileEvent
 { 
     CompileEvent()
-        : category(CompileCategory::Invalid)
+        : nameHash(0ull)
+        , selfDuration(0u)
+        , nameId(InvalidCompileId)
         , start(0u)
         , duration(0u)
-        , nameHash(0ull)
-        , nameId(InvalidCompileId)
-        , selfDuration(0u)
+        , category(CompileCategory::Invalid)
     {}
 
     CompileEvent(CompileCategory _category, U32 _start, U32 _duration, U64 _nameHash)
-        : category(_category)
+        : nameHash(_nameHash)
+        , selfDuration(_duration)
+        , nameId(InvalidCompileId)
         , start(_start)
         , duration(_duration)
-        , nameHash(_nameHash)
-        , nameId(InvalidCompileId)
-        , selfDuration(_duration)
+        , category(_category)
     {}
 
+    //NOT EXPORTED
     U64             nameHash;
+    U32             selfDuration;
+
+    //EXPORTED
     U32             nameId; //filled by the ScoreProcessor
     U32             start; 
     U32             duration;
-    U32             selfDuration; // Without children's duration
     CompileCategory category; 
 };
 

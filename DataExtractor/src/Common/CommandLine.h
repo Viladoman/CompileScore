@@ -40,6 +40,12 @@ struct ExportParams
         Disabled
     };
 
+    enum class TemplateArgs
+    {
+        Collapse, 
+        Keep,
+    };
+
     ExportParams();
 
     const char*  input; 
@@ -48,6 +54,7 @@ struct ExportParams
     Command      command;
     Detail       detail;
     Includers    includers;
+    TemplateArgs templateArgs;
     Timeline     timeline;
     Detail       timelineDetail;
     unsigned int timelinePacking;
