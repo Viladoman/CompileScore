@@ -49,6 +49,9 @@ namespace CompileScore
 
         [UIDescription(Label = "Extract Includers", Tooltip = "If true it will extract the includers data (.incl file). This data contains which elements include other elements.")]
         public bool ExtractIncluders { set; get; } = true;
+
+        [UIDescription(Label = "Collapse Template Arguments", Tooltip = "If true it will collapse all template arguments aggregating all instances of the same template to the same entry.")]
+        public bool CollapseTemplateArgs{ set; get; } = true;
     }
 
     public class SolutionSettings

@@ -65,6 +65,7 @@ namespace CompileScore
         private ExtractorDetail TimelineDetail { set; get; } = ExtractorDetail.Basic;
         private uint TimelinePacking { set; get; } = 100;
         private bool ExtracIncluders { set; get; } = true;
+        private bool CollapseTemplateArgs { set; get; } = true;
 
         public void Initialize(IServiceProvider provider)
         {
@@ -127,6 +128,7 @@ namespace CompileScore
             TimelineDetail = generatorSettings.TimelineDetail;
             TimelinePacking = generatorSettings.TimelinePacking;
             ExtracIncluders = generatorSettings.ExtractIncluders;
+            CollapseTemplateArgs = generatorSettings.CollapseTemplateArgs;
         }
 
         private bool CreateDirectory(string path)
@@ -470,6 +472,16 @@ namespace CompileScore
             SetState(StateType.Idle);
         }
 
+        private string GenerateGlobalCommandLineArguments()
+        {
+            string detail = " -d " + (int)OverviewDetail;
+            string timeline = TimelinePacking == 0 ? " -nt" : " -tp " + TimelinePacking + " -td " + (int)TimelineDetail;
+            string includers = ExtracIncluders ? "" : " -ni ";
+            string tempArgs = CollapseTemplateArgs ? "" : " -kta";
+
+            return includers + tempArgs + timeline + detail;
+        }
+
         private async System.Threading.Tasks.Task GatherAsync(bool focus)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -488,11 +500,9 @@ namespace CompileScore
             string quotes = outputPath.IndexOf(' ') >= 0? "\"" : "";
             string outputCommand = outputPath.Length > 0 ? " -o " + quotes + outputPath + quotes : "";
             
-            string detail = " -d " + (int)OverviewDetail;
-            string timeline = TimelinePacking == 0 ? " -nt" : " -tp " + TimelinePacking + " -td " + (int)TimelineDetail;
-            string includers = ExtracIncluders ? "" : " -ni ";
+            string globalArgs = GenerateGlobalCommandLineArguments();
 
-            string commandLine = GetPlatformFlag() + " -stop" + includers + timeline + detail + inputCommand + outputCommand;
+            string commandLine = GetPlatformFlag() + " -stop" + globalArgs + inputCommand + outputCommand;
 
             CreateDirectory(Path.GetDirectoryName(outputPath));
 
@@ -529,11 +539,9 @@ namespace CompileScore
             string quotes = outputPath.IndexOf(' ') >= 0 ? "\"" : "";
             CreateDirectory(Path.GetDirectoryName(outputPath));
 
-            string detail = " -d " + (int)OverviewDetail;
-            string timeline = TimelinePacking == 0 ? " -nt" : " -tp " + TimelinePacking + " -td " + (int)TimelineDetail;
-            string includers = ExtracIncluders ? "" : " -ni ";
+            string globalArgs = GenerateGlobalCommandLineArguments();
 
-            string commandLine = "-clang -extract" + includers + timeline + detail + " -i " + inputPath + " -o " + quotes + outputPath + quotes;
+            string commandLine = "-clang -extract" + globalArgs + " -i " + inputPath + " -o " + quotes + outputPath + quotes;
 
             OutputLog.Log("Calling ScoreDataExtractor with " + commandLine);
             int exitCode = await ExternalProcess.ExecuteAsync(GetScoreExtractorToolPath(), commandLine);
