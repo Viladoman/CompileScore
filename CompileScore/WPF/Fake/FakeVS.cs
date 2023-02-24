@@ -48,6 +48,8 @@ namespace CompileScore
         {
             public static void Run(Func<System.Threading.Tasks.Task> asyncMethod) { asyncMethod.Invoke(); }
 
+            public static async System.Threading.Tasks.Task RunAsync(Func<System.Threading.Tasks.Task> asyncMethod) { await asyncMethod.Invoke(); }
+
             private static async System.Threading.Tasks.Task DummyTask() { await System.Threading.Tasks.Task.Delay(10); return; }
 
             public static System.Threading.Tasks.Task SwitchToMainThreadAsync() { return DummyTask(); }

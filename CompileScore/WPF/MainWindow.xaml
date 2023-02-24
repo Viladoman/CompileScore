@@ -8,7 +8,7 @@
         Foreground="{DynamicResource {x:Static common:ColorTheme.Foreground}}"
         Background="{DynamicResource {x:Static common:ColorTheme.Background}}"
         mc:Ignorable="d"
-        Title="Compile Score" Height="450" Width="1000">
+        Title="Compile Score" Height="450" Width="1500">
 
     <Window.CommandBindings>
         <CommandBinding Command="Open" Executed="OnMenuFileOpen" />

@@ -170,6 +170,8 @@ namespace CompileScore
         private CompileSession Session { set; get; } = new CompileSession();
 
         private uint HydrationFlags { set; get; } = 0;
+        private uint LoadingFlags { set; get; } = 0;
+        private uint LoadingBatch { set; get; } = 0;
 
         public DataSource Source { private set; get; } = DataSource.Default;
 
@@ -181,6 +183,7 @@ namespace CompileScore
 
         private class MainLoadChunk
         {
+            public uint LoadingBatch { set; get; } = 0;
             public CompileSession Session { set; get; } = new CompileSession();
             public List<UnitTotal> Totals { set; get; } = new List<UnitTotal>();
             public List<UnitValue> Units { set; get; } = new List<UnitValue>();
@@ -190,6 +193,7 @@ namespace CompileScore
 
         private class GlobalsChunk
         {
+            public uint LoadingBatch { set; get; } = 0;
             public CompileDataset[] Datasets { set; get; } = new CompileDataset[(int)CompileThresholds.Gather].Select(h => new CompileDataset()).ToArray();
         }
 
@@ -477,6 +481,8 @@ namespace CompileScore
         {
             if ((HydrationFlags & (uint)flag) == 0)
             {
+                HydrationFlags |= (uint)flag;
+
                 switch (flag)
                 {
                     case HydrateFlag.Main:
@@ -486,8 +492,19 @@ namespace CompileScore
                         LoadGlobals(ScoreLocation); 
                         break;
                 }
+            }
+        }
 
-                HydrationFlags |= (uint)flag;
+        public bool IsLoadingData()
+        {
+            return LoadingFlags != 0;
+        }
+
+        private void TryNotifyDataChanged()
+        {
+            if ( !IsLoadingData() )
+            {
+                ScoreDataChanged?.Invoke(); 
             }
         }
 
@@ -495,6 +512,9 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             uint restoreHydration = HydrationFlags;
+
+            //Increase the score Instance number
+            ++LoadingBatch;
 
             //Clean the data
             Session = new CompileSession();
@@ -512,7 +532,7 @@ namespace CompileScore
                 }
             }
 
-            ScoreDataChanged?.Invoke();
+            TryNotifyDataChanged();
         }
 
         private static void ReadMainScore(string fullPath, MainLoadChunk chunk)
@@ -635,35 +655,57 @@ namespace CompileScore
         private void LoadMainScore(string fullPath)
         {
             MainLoadChunk chunk = new MainLoadChunk();
-            ReadMainScore(fullPath, chunk); //move this to async
+            chunk.LoadingBatch = LoadingBatch;
+            LoadingFlags |= (uint)HydrateFlag.Main;
 
-            // TODO ~ ramonv ~ if this returns old data ( discard / ) 
-            
-            ApplyLoadChunk(chunk);
+            _ = ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                ReadMainScore(fullPath, chunk);
 
-            //TODO ~ ramonv ~ add here a TryNotify
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                if (LoadingBatch == chunk.LoadingBatch)
+                {
+                    ApplyLoadChunk(chunk);
+                    LoadingFlags &= ~(uint)HydrateFlag.Main;
+                    TryNotifyDataChanged();
+                }
+            });
         }
 
-        private void LoadGlobals(string fullPath) 
+        private void LoadGlobals(string fullPath)
         {
             //This depends on the main info being ready
             Hydrate(HydrateFlag.Main);
 
-            //TODO ~ ramonv ~ wait on thread for Main data to be there 
-
-            if (Totals.Count == 0)
-            {
-                //The main unit is empty ( there is no point on loading the globals )
-                return;
-            }
-
             GlobalsChunk chunk = new GlobalsChunk();
-            ReadGlobals(fullPath, chunk, UnitsCollection);
+            chunk.LoadingBatch = LoadingBatch;
+            LoadingFlags |= (uint)HydrateFlag.Globals;
 
-            //TODO ~ ramovn ~ discard if the data got deprecated 
-            ApplyLoadChunk(chunk);
+            _ = ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                //Wait for the Main data to be ready and applied as we need it to load and populate the globals
+                while ((LoadingFlags & (uint)HydrateFlag.Main) != 0)
+                {
+                    await System.Threading.Tasks.Task.Delay(50);
+                }
 
-            //TODO ~ ramonv ~ add here a TryNotify
+                if (Totals.Count > 0)
+                {
+                    //Only read the globals if there is data to read
+                    ReadGlobals(fullPath, chunk, UnitsCollection);
+                }
+
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                //Only finish the job if this is the latest request
+                if (LoadingBatch == chunk.LoadingBatch)
+                {
+                    ApplyLoadChunk(chunk);
+                    LoadingFlags &= ~(uint)HydrateFlag.Globals;
+                    TryNotifyDataChanged();
+                }
+            });
         }
 
         public string GetSeverityCriteria()
