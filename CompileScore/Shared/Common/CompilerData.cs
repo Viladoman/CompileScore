@@ -85,8 +85,16 @@ namespace CompileScore
     public class CompileSession
     {
         public uint  Version { set; get; } = 0;
+        public uint  TimelinePacking { set; get; } = 0; 
         public ulong FullDuration { set; get; } = 0;
         public uint  NumThreads { set; get; } = 0;
+    }
+
+    public class CompileDataset
+    {
+        public List<CompileValue> collection = new List<CompileValue>();
+        public Dictionary<string, CompileValue> dictionary = new Dictionary<string, CompileValue>();
+        public List<uint> normalizedThresholds = new List<uint>();
     }
 
     public sealed class CompilerData
@@ -167,14 +175,23 @@ namespace CompileScore
 
         public CompileFolders Folders { private set; get; } = new CompileFolders();
 
-        public class CompileDataset
+        private CompileDataset[] Datasets { set; get; } = new CompileDataset[(int)CompileThresholds.Gather].Select(h => new CompileDataset()).ToArray();
+
+        //load structures 
+
+        private class MainLoadChunk
         {
-            public List<CompileValue> collection = new List<CompileValue>();
-            public Dictionary<string, CompileValue> dictionary = new Dictionary<string, CompileValue>();
-            public List<uint> normalizedThresholds = new List<uint>();
+            public CompileSession Session { set; get; } = new CompileSession();
+            public List<UnitTotal> Totals { set; get; } = new List<UnitTotal>();
+            public List<UnitValue> Units { set; get; } = new List<UnitValue>();
+            public CompileDataset[] Datasets { set; get; } = new CompileDataset[(int)CompileThresholds.Gather].Select(h => new CompileDataset()).ToArray();
+            public CompileFolders Folders { set; get; }  = new CompileFolders();
         }
 
-        private CompileDataset[] Datasets { set; get; } = new CompileDataset[(int)CompileThresholds.Gather].Select(h => new CompileDataset()).ToArray();
+        private class GlobalsChunk
+        {
+            public CompileDataset[] Datasets { set; get; } = new CompileDataset[(int)CompileThresholds.Gather].Select(h => new CompileDataset()).ToArray();
+        }
 
         //events
         public event Notify ScoreDataChanged;
@@ -244,9 +261,14 @@ namespace CompileScore
             return UnitsCollection;
         }
 
+        public static UnitValue GetUnitByIndex(uint index, List<UnitValue> units)
+        {
+            return index < units.Count ? units[(int)index] : null;
+        }
+
         public UnitValue GetUnitByIndex(uint index)
         {
-            return index < UnitsCollection.Count ? UnitsCollection[(int)index] : null;
+            return GetUnitByIndex(index, UnitsCollection);
         }
 
         public UnitValue GetUnitByName(string name)
@@ -296,14 +318,19 @@ namespace CompileScore
             return null;
         }
 
-        public CompileValue GetValue(CompileCategory category, int index)
+        public static CompileValue GetValue(CompileCategory category, int index, CompileDataset[] datasets)
         {
             if ((int)category < (int)CompileThresholds.Gather)
             {
-                CompileDataset dataset = Datasets[(int)category];
+                CompileDataset dataset = datasets[(int)category];
                 return index >= 0 && index < dataset.collection.Count ? dataset.collection[index] : null;
             }
             return null;
+        }
+
+        public CompileValue GetValue(CompileCategory category, int index)
+        {
+            return GetValue(category, index, Datasets);
         }
 
         public int GetIndexOf(CompileCategory category, CompileValue value)
@@ -375,21 +402,22 @@ namespace CompileScore
             }
         }
 
-        private void ReadSession(BinaryReader reader)
+        private static void ReadSession(BinaryReader reader, uint version,  CompileSession session, List<UnitTotal> totals)
         {
-            Session.FullDuration = reader.ReadUInt64();
-            Session.NumThreads = reader.ReadUInt32();
+            session.Version = version;
+            session.TimelinePacking = reader.ReadUInt32();
+            session.FullDuration = reader.ReadUInt64();
+            session.NumThreads = reader.ReadUInt32();
 
-            Totals = new List<UnitTotal>();
             for (int k = 0; k < (int)CompileThresholds.Display; ++k)
             {
                 UnitTotal total = new UnitTotal((CompileCategory)k);
                 total.Total = reader.ReadUInt64();
-                Totals.Add(total);
+                totals.Add(total);
             }
         }
 
-        private void ReadCompileUnit(BinaryReader reader, List<UnitValue> list, uint index)
+        private static void ReadCompileUnit(BinaryReader reader, List<UnitValue> list, uint index)
         {
             var name = reader.ReadString();
             var compileData = new UnitValue(name, index);
@@ -402,7 +430,7 @@ namespace CompileScore
             list.Add(compileData);
         }
 
-        private void ReadCompileValue(BinaryReader reader, List<CompileValue> list)
+        private static void ReadCompileValue(BinaryReader reader, List<CompileValue> list, List<UnitValue> units)
         {
             var name = reader.ReadString();
             ulong acc = reader.ReadUInt64();
@@ -411,7 +439,7 @@ namespace CompileScore
             uint max = reader.ReadUInt32();
             uint selfMax = reader.ReadUInt32();
             uint count = reader.ReadUInt32();
-            UnitValue maxUnit = GetUnitByIndex(reader.ReadUInt32());
+            UnitValue maxUnit = GetUnitByIndex(reader.ReadUInt32(), units);
 
             var compileData = new CompileValue(name, acc, selfAcc, min, max, selfMax,count, maxUnit);
             list.Add(compileData);
@@ -487,7 +515,7 @@ namespace CompileScore
             ScoreDataChanged?.Invoke();
         }
 
-        private void LoadMainScore(string fullPath)
+        private static void ReadMainScore(string fullPath, MainLoadChunk chunk)
         {
             if (File.Exists(fullPath))
             {
@@ -497,24 +525,19 @@ namespace CompileScore
                 using (BinaryReader reader = new BinaryReader(fileStream))
                 {
                     // Read version
-                    Session.Version = reader.ReadUInt32();
-                    if (CheckVersion(Session.Version))
+                    uint version = reader.ReadUInt32(); 
+                    if (CheckVersion(version))
                     {
-                        // Read Header
-                        Timeline.CompilerTimeline.Instance.TimelinePacking = reader.ReadUInt32();
-
                         // Read Session
-                        ReadSession(reader);
+                        ReadSession(reader, version, chunk.Session, chunk.Totals);
 
                         // Read Units 
                         uint unitsLength = reader.ReadUInt32();
-                        var unitList = new List<UnitValue>((int)unitsLength);
+                        chunk.Units = new List<UnitValue>((int)unitsLength);
                         for (uint i = 0; i < unitsLength; ++i)
                         {
-                            ReadCompileUnit(reader, unitList, i);
+                            ReadCompileUnit(reader, chunk.Units, i);
                         }
-
-                        UnitsCollection = new List<UnitValue>(unitList);
 
                         //Read Main Datasets
                         for (int i = 0; i < (int)CompileThresholds.Severity; ++i)
@@ -523,40 +546,29 @@ namespace CompileScore
                             var thislist = new List<CompileValue>((int)dataLength);
                             for (uint k = 0; k < dataLength; ++k)
                             {
-                                ReadCompileValue(reader, thislist);
+                                ReadCompileValue(reader, thislist, chunk.Units);
                             }
-                            Datasets[i].collection = new List<CompileValue>(thislist);
+                            chunk.Datasets[i].collection = new List<CompileValue>(thislist);
                         }
 
-                        Folders.ReadFolders(reader);
+                        chunk.Folders.ReadFolders(reader, chunk.Units, chunk.Datasets);
                     }
                 }
 
                 fileStream.Close();
 
                 //Post process on read data
-                PostProcessLoadedData();
+                PostProcessLoadedData(chunk.Datasets);
 
                 watch.Stop();
                 const long TicksPerMicrosecond = (TimeSpan.TicksPerMillisecond / 1000);
                 ulong microseconds = (ulong)(watch.ElapsedTicks / TicksPerMicrosecond);
                 _ = OutputLog.LogGlobalAsync("Score file main processed in " + Common.UIConverters.GetTimeStr(microseconds));
             }
-
-            RecomputeSeverities();
         }
 
-        private void LoadGlobals(string fullPath)
+        private static void ReadGlobals( string fullPath, GlobalsChunk chunk, List<UnitValue> Units )
         {
-            //This depends on the main info being ready
-            Hydrate(HydrateFlag.Main);
-     
-            if (Totals.Count == 0)
-            {
-                //The main unit is empty ( there is no point on loading the globals )
-                return;
-            }
-
             string gblFullPath = fullPath + ".gbl";
             if (File.Exists(gblFullPath))
             {
@@ -565,8 +577,8 @@ namespace CompileScore
                 FileStream fileStream = File.Open(gblFullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 using (BinaryReader reader = new BinaryReader(fileStream))
                 {
-                    Session.Version = reader.ReadUInt32();
-                    if (CheckVersion(Session.Version))
+                    uint version = reader.ReadUInt32();
+                    if (CheckVersion(version))
                     {
                         //Read Remaining Datasets
                         for (int i = (int)CompileThresholds.Severity; i < (int)CompileThresholds.Gather; ++i)
@@ -575,9 +587,9 @@ namespace CompileScore
                             var thislist = new List<CompileValue>((int)dataLength);
                             for (uint k = 0; k < dataLength; ++k)
                             {
-                                ReadCompileValue(reader, thislist);
+                                ReadCompileValue(reader, thislist, Units);
                             }
-                            Datasets[i].collection = new List<CompileValue>(thislist);
+                            chunk.Datasets[i].collection = new List<CompileValue>(thislist);
                         }
                     }
                 }
@@ -589,6 +601,69 @@ namespace CompileScore
                 ulong microseconds = (ulong)(watch.ElapsedTicks / TicksPerMicrosecond);
                 _ = OutputLog.LogGlobalAsync("Score file globals processed in " + Common.UIConverters.GetTimeStr(microseconds));
             }
+        }
+
+        private void ApplyLoadChunk(MainLoadChunk chunk)
+        {
+            Session = chunk.Session;
+            Totals = chunk.Totals; 
+            UnitsCollection = chunk.Units;
+            Datasets = chunk.Datasets;
+            Folders = chunk.Folders;
+
+            //Propagate session information
+            if ( Session.TimelinePacking > 0 )
+            {
+                Timeline.CompilerTimeline.Instance.TimelinePacking = Session.TimelinePacking; 
+            }
+
+            //Compute Severities
+            ProcessSeverityData();
+            RecomputeSeverities();
+        }
+
+        private void ApplyLoadChunk(GlobalsChunk chunk)
+        {
+            //Read Remaining Datasets
+            for (int i = (int)CompileThresholds.Severity; i < (int)CompileThresholds.Gather; ++i)
+            {
+                Datasets[i] = chunk.Datasets[i];
+            }
+        }
+             
+
+        private void LoadMainScore(string fullPath)
+        {
+            MainLoadChunk chunk = new MainLoadChunk();
+            ReadMainScore(fullPath, chunk); //move this to async
+
+            // TODO ~ ramonv ~ if this returns old data ( discard / ) 
+            
+            ApplyLoadChunk(chunk);
+
+            //TODO ~ ramonv ~ add here a TryNotify
+        }
+
+        private void LoadGlobals(string fullPath) 
+        {
+            //This depends on the main info being ready
+            Hydrate(HydrateFlag.Main);
+
+            //TODO ~ ramonv ~ wait on thread for Main data to be there 
+
+            if (Totals.Count == 0)
+            {
+                //The main unit is empty ( there is no point on loading the globals )
+                return;
+            }
+
+            GlobalsChunk chunk = new GlobalsChunk();
+            ReadGlobals(fullPath, chunk, UnitsCollection);
+
+            //TODO ~ ramovn ~ discard if the data got deprecated 
+            ApplyLoadChunk(chunk);
+
+            //TODO ~ ramonv ~ add here a TryNotify
         }
 
         public string GetSeverityCriteria()
@@ -614,12 +689,12 @@ namespace CompileScore
             }
         }
 
-        private void PostProcessLoadedData()
+        private static void PostProcessLoadedData(CompileDataset[] datasets)
         {
             //Build the mapping between names and entries for fast queries
             for (int i = 0; i < (int)CompileThresholds.Severity; ++i)
             {
-                CompileDataset dataset = Datasets[i];
+                CompileDataset dataset = datasets[i];
                 foreach (CompileValue entry in dataset.collection)
                 {
                     //Unique insert ( this will cause incorrect results when dealing with multiple files with the same name )
@@ -629,9 +704,6 @@ namespace CompileScore
                     }
                 }
             }
-
-            //Compute Severities
-            ProcessSeverityData();
         }
 
         private void ComputeNormalizedThresholds(List<uint> normalizedThresholds, List<uint> inputList)

@@ -171,13 +171,11 @@ namespace CompileScore
             return null;
         }
 
-        private void ReadFolder(BinaryReader reader, List<CompileFolder> list)
+        private void ReadFolder(BinaryReader reader, List<CompileFolder> list, List<UnitValue> units, CompileDataset[] datasets)
         {
             var folder = new CompileFolder();
 
             folder.Name = reader.ReadString();
-
-            CompilerData compilerData = CompilerData.Instance;
 
             uint countChildren = reader.ReadUInt32();
             if (countChildren >= 0)
@@ -195,7 +193,7 @@ namespace CompileScore
                 folder.Units = new List<UnitValue>();
                 for (uint i = 0; i < countUnits; ++i)
                 {
-                    folder.Units.Add(compilerData.GetUnitByIndex(reader.ReadUInt32()));
+                    folder.Units.Add(CompilerData.GetUnitByIndex(reader.ReadUInt32(), units));
                 }
             }
 
@@ -205,21 +203,21 @@ namespace CompileScore
                 folder.Includes = new List<CompileValue>();
                 for (uint i = 0; i < countIncludes; ++i)
                 {
-                    folder.Includes.Add(compilerData.GetValue(CompilerData.CompileCategory.Include, (int)reader.ReadUInt32()));
+                    folder.Includes.Add(CompilerData.GetValue(CompilerData.CompileCategory.Include, (int)reader.ReadUInt32(), datasets));
                 }
             }
 
             list.Add(folder);
         }
 
-        public void ReadFolders(BinaryReader reader)
+        public void ReadFolders(BinaryReader reader, List<UnitValue> units, CompileDataset[] datasets)
         {
             //Read Folders
             uint foldersLength = reader.ReadUInt32();
             var folderList = new List<CompileFolder>((int)foldersLength);
             for (uint i = 0; i < foldersLength; ++i)
             {
-                ReadFolder(reader, folderList);
+                ReadFolder(reader, folderList, units, datasets);
             }
             Folders = new List<CompileFolder>(folderList);
         }
