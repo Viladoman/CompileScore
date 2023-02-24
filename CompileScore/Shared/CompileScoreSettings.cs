@@ -28,7 +28,7 @@ namespace CompileScore
         private bool optionNormalizedSeverity = true;
         private HighlightMode optionHighlightMode = HighlightMode.Full;
         private List<uint> optionValueSeverities = new List<uint> { 250u, 1000u, 25000u, 100000u };
-        private List<float> optionNormalizedSeverities = new List<float> { 20.0f, 40.0f, 60.0f, 80.0f };
+        private List<float> optionNormalizedSeverities = new List<float> { 50.0f, 75.0f, 90.0f, 98.0f };
 
         public List<uint> GetOptionValueSeverities() { return optionValueSeverities; }
         public List<float> GetOptionNormalizedSeverities() { return optionNormalizedSeverities; }
