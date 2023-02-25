@@ -158,13 +158,13 @@
 		<Button guid="guidCompileScorePackageCmdSet1" id="cmdIdStartTrace" priority="0x0100" type="Button">
 			<Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
 			<Strings>
-				<ButtonText>Start Recording</ButtonText>
+				<ButtonText>Start Trace</ButtonText>
 			</Strings>
 		</Button>
 		<Button guid="guidCompileScorePackageCmdSet1" id="cmdIdStopTrace" priority="0x0100" type="Button">
 			<Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
 			<Strings>
-				<ButtonText>Stop Recording</ButtonText>
+				<ButtonText>Stop Trace</ButtonText>
 			</Strings>
 		</Button>
 	</Buttons>
