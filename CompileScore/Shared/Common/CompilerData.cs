@@ -21,7 +21,8 @@ namespace CompileScore
             Max = max;
             SelfMax = selfMax;
             Count = count;
-            MaxUnit = maxUnit; 
+            MaxUnit = maxUnit;
+            SelfMaxUnit = selfMaxUnit;
             Severity = 0;
         }
 
