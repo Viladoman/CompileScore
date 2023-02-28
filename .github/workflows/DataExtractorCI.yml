@@ -39,13 +39,13 @@ jobs:
       run: msbuild /m /p:Configuration=${{matrix.buildconfig}} /p:Platform=${{matrix.buildplatform}} ${{ env.solutionName }}
       
     - name: Upload Artifacts 1
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: CompileScore-Extractor-${{matrix.buildplatform}}-${{matrix.buildconfig}}
         path: ${{env.baseDir}}/bin/${{matrix.buildplatform}}/${{matrix.buildconfig}}/*.exe  
         
     - name: Upload Artifacts 2
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: CompileScore-Extractor-${{matrix.buildplatform}}-${{matrix.buildconfig}}
         path: ${{env.baseDir}}/bin/${{matrix.buildplatform}}/${{matrix.buildconfig}}/*.dll  

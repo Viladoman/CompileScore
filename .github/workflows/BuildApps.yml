@@ -48,19 +48,19 @@ jobs:
       run: msbuild /m /p:Configuration=${{matrix.buildconfig}} ${{ env.appsSolutionName }}
       
     - name: Upload VSIX 2019 Extension Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: CompileScore-VSIX2019-${{matrix.buildconfig}}
         path: ${{env.appsDir}}/VSIX16/bin/${{matrix.buildconfig}}/CompileScore.vsix
     
     - name: Upload VSIX 2022 Extension Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: CompileScore-VSIX2022-${{matrix.buildconfig}}
         path: ${{env.appsDir}}/VSIX17/bin/${{matrix.buildconfig}}/CompileScore.vsix
     
     - name: Upload App Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: CompileScore-App-${{matrix.buildconfig}}
         path: ${{env.appsDir}}/WPF/bin/${{matrix.buildconfig}}/*
