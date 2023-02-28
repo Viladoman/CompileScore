@@ -503,6 +503,7 @@ namespace CompileScore.Timeline
                     {
                         //outside timeline
                         contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Locate Max Timeline", (a, b) => CompilerTimeline.Instance.DisplayTimeline(value.MaxUnit, value)));
+                        contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Locate Max Self Timeline", (a, b) => CompilerTimeline.Instance.DisplayTimeline(value.SelfMaxUnit, value)));
                     }
                     
                     if (CurrentMode != Mode.Includers)

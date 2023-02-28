@@ -136,6 +136,7 @@
                 <DataGridTextColumn Header="Min"               Binding="{Binding Min,             Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
                 <DataGridTextColumn Header="Avg"               Binding="{Binding Average,         Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
                 <DataGridTextColumn Header="Max location"      Binding="{Binding MaxUnit.Name}"   IsReadOnly="True" Width="200"/>
+                <DataGridTextColumn Header="Max Self location" Binding="{Binding MaxUnit.Name}"   IsReadOnly="True" Width="200"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

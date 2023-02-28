@@ -84,6 +84,7 @@ struct CompileData
         , maximum(0u)
         , selfMaximum(0u)
         , maxId(InvalidCompileId)
+        , selfMaxId(InvalidCompileId)
         , count(0u)
     {}
 
@@ -95,6 +96,7 @@ struct CompileData
         , maximum(0u)
         , selfMaximum(0u)
         , maxId(InvalidCompileId)
+        , selfMaxId(InvalidCompileId)
         , count(0u)
     {}
 
@@ -105,6 +107,7 @@ struct CompileData
     U32 maximum; 
     U32 selfMaximum; // Without children's time
     U32 maxId; //filled by the ScoreProcessor
+    U32 selfMaxId;
     U32 count;
 };
 

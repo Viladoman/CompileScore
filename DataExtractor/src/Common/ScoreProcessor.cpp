@@ -194,7 +194,13 @@ namespace CompileScore
 					// Finalize post computation when closing this event ( self duration calculations )
 					TCompileDatas& global = scoreData.globals[ToUnderlying(thisEvent->category)];
 					CompileData& thisCompileData = global[thisIndex];
-					thisCompileData.selfMaximum = Utils::Max(thisCompileData.selfMaximum, thisEvent->selfDuration );
+
+					if (thisEvent->selfDuration >= thisCompileData.selfMaximum)
+					{
+						thisCompileData.selfMaximum = thisEvent->selfDuration;
+						thisCompileData.selfMaxId = unit.unitId;
+					}
+
 					thisCompileData.selfAccumulated += thisEvent->selfDuration;
 				}
 

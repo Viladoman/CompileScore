@@ -12,7 +12,7 @@ namespace CompileScore
 
     public class CompileValue
     {
-        public CompileValue(string name, ulong accumulated, ulong selfAccumulated, uint min, uint max, uint selfMax, uint count, UnitValue maxUnit)
+        public CompileValue(string name, ulong accumulated, ulong selfAccumulated, uint min, uint max, uint selfMax, uint count, UnitValue maxUnit, UnitValue selfMaxUnit)
         {
             Name = name;
             Accumulated = accumulated;
@@ -35,6 +35,7 @@ namespace CompileScore
         public uint Count { get; }
         public uint Severity { set; get; }
         public UnitValue MaxUnit { get; }
+        public UnitValue SelfMaxUnit { get; }
     }
 
     public class UnitTotal
@@ -102,8 +103,8 @@ namespace CompileScore
         private static readonly Lazy<CompilerData> lazy = new Lazy<CompilerData>(() => new CompilerData());
         public static CompilerData Instance { get { return lazy.Value; } }
 
-        public const uint VERSION_MIN = 8;
-        public const uint VERSION = 8;
+        public const uint VERSION_MIN = 9;
+        public const uint VERSION = 9;
 
         //Keep this in sync with the data exporter
         public enum CompileCategory
@@ -444,8 +445,9 @@ namespace CompileScore
             uint selfMax = reader.ReadUInt32();
             uint count = reader.ReadUInt32();
             UnitValue maxUnit = GetUnitByIndex(reader.ReadUInt32(), units);
+            UnitValue selfMaxUnit = GetUnitByIndex(reader.ReadUInt32(), units);
 
-            var compileData = new CompileValue(name, acc, selfAcc, min, max, selfMax,count, maxUnit);
+            var compileData = new CompileValue(name, acc, selfAcc, min, max, selfMax,count, maxUnit, selfMaxUnit);
             list.Add(compileData);
         }
 
