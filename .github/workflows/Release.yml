@@ -77,7 +77,7 @@ jobs:
         asset_content_type: application/zip
          
     - name: Generate App Asset
-      working-directory: ${{env.appsDir}}/WPF/bin/Release
+      working-directory: ${{env.appsDir}}/WPF/bin/Release/net472
       run: Compress-Archive -Path CompileScore.exe -DestinationPath CompileScoreApp.zip
       
     - name: Upload App Asset
