@@ -16,7 +16,53 @@ namespace CompileScore
 		template <typename T> inline constexpr T Min(const T a, const T b) { return a < b? a : b; }
 		template <typename T> inline constexpr T Max(const T a, const T b) { return a < b? b : a; }
 	}
+	// -----------------------------------------------------------------------------------------------------------
+	U64 StoreEventName(ScoreData& scoreData, const char* str, size_t length)
+	{
+		fastl::string newStr("");
+		unsigned int nestingLevel = 0;
+		size_t currentPosition = 0;
+		char currentChar;
+		for (; currentPosition < length; currentPosition++)
+		{
+			currentChar = str[currentPosition];
+			if (currentChar == '>')
+			{
+				nestingLevel--;
+			}
+			if (nestingLevel == 0)
+			{
+				newStr += currentChar;
+			}
+			if (currentChar == '<')
+			{
+				nestingLevel++;
+				if (nestingLevel == 1)
+				{
+					newStr += "...";
+				}
+			}
+		}
 
+		const U64 newStrHash = Hash::AppendToCRC64(0ull, newStr.c_str(), newStr.length());
+		if (newStrHash)
+		{
+			auto const& result = scoreData.strings.insert(TCompileStrings::value_type(newStrHash, newStr));
+			if (result.second)
+			{
+				//Convert to lower case to improve search performance later
+				StringUtils::ToLower(result.first->second);
+			}
+		}
+		return newStrHash;
+	}
+	// -----------------------------------------------------------------------------------------------------------
+	U64 StoreEventName(ScoreData& scoreData, const char* str)
+	{
+		U32 length = 0u;
+		for (; str[length] != '\0'; ++length) {}
+		return StoreEventName(scoreData, str, length);
+	}
 	// -----------------------------------------------------------------------------------------------------------
 	U64 StoreString(ScoreData& scoreData, const char* str, size_t length)
 	{

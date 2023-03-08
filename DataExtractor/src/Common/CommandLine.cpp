@@ -67,28 +67,30 @@ namespace CommandLine
         LOG_ALWAYS("");
         LOG_ALWAYS("Command Legend:"); 
 
-        LOG_ALWAYS("-help           (-h)  : Prints out all the possible command line arguments for this process");         
-        LOG_ALWAYS("-version        (-ve) : Prints out the data version this process will produce");         
+        LOG_ALWAYS("-help                  (-h)   : Prints out all the possible command line arguments for this process");
+        LOG_ALWAYS("-version               (-ve)  : Prints out the data version this process will produce");
 
-        LOG_ALWAYS("-clang  |  -msvc      : Sets the system to use the Clang or MSVC recorders and generators (mandatory)");         
+        LOG_ALWAYS("-clang  |  -msvc              : Sets the system to use the Clang or MSVC recorders and generators (mandatory)");
         
-        LOG_ALWAYS("-input          (-i)  : The path to the input folder to parse for -ftime-trace data or the direct path to the .etl file"); 
-        LOG_ALWAYS("-output         (-o)  : The output file full path for the results ('%s' by default)",defaultParams.output); 
+        LOG_ALWAYS("-input                 (-i)   : The path to the input folder to parse for -ftime-trace data or the direct path to the .etl file");
+        LOG_ALWAYS("-output                (-o)   : The output file full path for the results ('%s' by default)",defaultParams.output);
         
-        LOG_ALWAYS("-start                : The system will start recording build data for the given compiler. (Clang: needs input folder to inspect)");
-        LOG_ALWAYS("-cancel               : The system will stop the current recording for the given compiler without generating anything.");
-        LOG_ALWAYS("-stop                 : The system will stop recording. Supported output types are .scor, .etl (MSVC only) and .ctl (Clang only)");
-        LOG_ALWAYS("-extract              : The system will just perform a data extraction, meaning valid input files are .etl (MSVC only), .ctl (Cland only) and folder (Clang only)");
+        LOG_ALWAYS("-start                        : The system will start recording build data for the given compiler. (Clang: needs input folder to inspect)");
+        LOG_ALWAYS("-cancel                       : The system will stop the current recording for the given compiler without generating anything.");
+        LOG_ALWAYS("-stop                         : The system will stop recording. Supported output types are .scor, .etl (MSVC only) and .ctl (Clang only)");
+        LOG_ALWAYS("-extract                      : The system will just perform a data extraction, meaning valid input files are .etl (MSVC only), .ctl (Cland only) and folder (Clang only)");
 
-        LOG_ALWAYS("-detail         (-d)  : Sets the level of detail exported (3 by default), check the table below - example: '-d 1'");        
-        LOG_ALWAYS("-timelinedetail (-td) : Sets the level of detail for the timelines exported (3 by default), check the table below - example: '-td 1'"); 
+        LOG_ALWAYS("-detail                (-d)   : Sets the level of detail exported (3 by default), check the table below - example: '-d 1'");
+        LOG_ALWAYS("-timelinedetail        (-td)  : Sets the level of detail for the timelines exported (3 by default), check the table below - example: '-td 1'");
         
-        LOG_ALWAYS("-notimeline     (-nt) : No timeline files will be generated"); 
-        LOG_ALWAYS("-timelinepack   (-tp) : Sets the number of timelines packed in the same file - example '-tp 200' (100 by default)");
+        LOG_ALWAYS("-notimeline            (-nt)  : No timeline files will be generated");
+        LOG_ALWAYS("-timelinepack          (-tp)  : Sets the number of timelines packed in the same file - example '-tp 200' (100 by default)");
 
-        LOG_ALWAYS("-noincluders    (-ni) : No includers file will be generated");
+        LOG_ALWAYS("-noincluders           (-ni)  : No includers file will be generated");
 
-        LOG_ALWAYS("-verbosity      (-v)  : Sets the verbosity level - example: '-v 1'"); 
+        LOG_ALWAYS("-keeptemplatearguments (-kta) : Template arguments will be kept");
+
+        LOG_ALWAYS("-verbosity             (-v)   : Sets the verbosity level - example: '-v 1'");
         LOG_ALWAYS("\t0 - Silent"); 
         LOG_ALWAYS("\t1 - Progress (default)"); 
         LOG_ALWAYS("\t2 - Full"); 
@@ -178,6 +180,10 @@ namespace CommandLine
                 else if ((Utils::StringCompare(argValue,"-ni")==0 || Utils::StringCompare(argValue,"-noincluders")==0))
                 {
                     params.includers = ExportParams::Includers::Disabled;
+                }
+                else if ((Utils::StringCompare(argValue, "-kt")==0 || Utils::StringCompare(argValue,"-keeptemplatearguments")==0))
+                {
+                    params.templateArguments = ExportParams::TemplateArguments::Enabled;
                 }
                 else if ((Utils::StringCompare(argValue,"-nt")==0 || Utils::StringCompare(argValue,"-notimeline")==0))
                 {

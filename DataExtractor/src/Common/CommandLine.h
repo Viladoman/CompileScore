@@ -40,17 +40,23 @@ struct ExportParams
         Disabled
     };
 
+    enum class TemplateArguments
+    {
+        Enabled,
+        Disabled
+    };
     ExportParams();
 
-    const char*  input; 
-    const char*  output;
-    Source       source; 
-    Command      command;
-    Detail       detail;
-    Includers    includers;
-    Timeline     timeline;
-    Detail       timelineDetail;
-    unsigned int timelinePacking;
+    const char*        input;
+    const char*        output;
+    Source             source;
+    Command            command;
+    Detail             detail;
+    Includers          includers;
+    Timeline           timeline;
+    Detail             timelineDetail;
+    TemplateArguments  templateArguments;
+    unsigned int       timelinePacking;
 };
 
 namespace CommandLine

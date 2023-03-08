@@ -146,6 +146,7 @@ namespace Clang
 		constexpr static Json::Token tagArgs     = Utils::CreateLiteralToken("args");
 		constexpr static Json::Token tagDetail   = Utils::CreateLiteralToken("detail");
 		constexpr static Json::Token tagThread   = Utils::CreateLiteralToken("tid");
+		ExportParams* exportParams = Context::Get<ExportParams>();
 
 		//Open Object token already parsed by the caller
 		Json::Token token; 
@@ -155,7 +156,14 @@ namespace Clang
 			{
 				if (!reader.NextToken(token) || token.type != Json::Token::Type::String) return false;
 				output.category = ToCompileCategory(token);
-				if (output.nameHash == 0ull) output.nameHash = CompileScore::StoreString(scoreData,token.str,token.length);
+				if (exportParams->templateArguments == ExportParams::TemplateArguments::Enabled)
+				{
+					if (output.nameHash == 0ull) output.nameHash = CompileScore::StoreString(scoreData, token.str, token.length);
+				}
+				else
+				{
+					if (output.nameHash == 0ull) output.nameHash = CompileScore::StoreEventName(scoreData, token.str, token.length);
+				}
 			}
 			else if (Utils::EqualTokens(token,tagStart))
 			{
@@ -175,8 +183,15 @@ namespace Clang
 				{ 
 					if (Utils::EqualTokens(token,tagDetail))
 					{ 
-						if (!reader.NextToken(token) || token.type != Json::Token::Type::String) return false;  
-						output.nameHash = CompileScore::StoreString(scoreData,token.str,token.length);
+						if (!reader.NextToken(token) || token.type != Json::Token::Type::String) return false;
+						if (exportParams->templateArguments == ExportParams::TemplateArguments::Enabled)
+						{
+							output.nameHash = CompileScore::StoreString(scoreData, token.str, token.length);
+						}
+						else
+						{
+							output.nameHash = CompileScore::StoreEventName(scoreData, token.str, token.length);
+						}
 					}
 					else 
 					{ 

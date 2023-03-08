@@ -437,9 +437,18 @@ namespace MSVC
     // -----------------------------------------------------------------------------------------------------------
     void Gatherer::OnSymbolName(const MSBI::SimpleEvents::SymbolName& symbolName)
     {
+        ExportParams* exportParams = Context::Get<ExportParams>();
+
         if (TUEntry* entry = GetProcess(symbolName.ProcessId()).GetActiveTU()) 
         {
-            entry->symbols[symbolName.Key()] = CompileScore::StoreString(m_scoreData,symbolName.Name());
+            if (exportParams->templateArguments == ExportParams::TemplateArguments::Enabled)
+            {
+                entry->symbols[symbolName.Key()] = CompileScore::StoreString(m_scoreData, symbolName.Name());
+            }
+            else
+            {
+                entry->symbols[symbolName.Key()] = CompileScore::StoreEventName(m_scoreData, symbolName.Name());
+            }
         }
     }
 
