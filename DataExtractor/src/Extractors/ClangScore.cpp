@@ -167,7 +167,8 @@ namespace Clang
 			else if (Utils::EqualTokens(token,tagDuration))
 			{
 				if (!reader.NextToken(token) || token.type != Json::Token::Type::Number) return false; 
-				output.duration = Utils::TokenToU32(token);
+				output.duration     = Utils::TokenToU32(token);
+				output.selfDuration = output.duration;
 			}
 			else if (Utils::EqualTokens(token,tagArgs))
 			{
