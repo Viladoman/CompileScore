@@ -106,10 +106,17 @@ namespace IO
     // -----------------------------------------------------------------------------------------------------------
     FileTimeStamp GetCurrentTime()
     { 
-        auto timestamp = fs::file_time_type::clock::now();
-        return reinterpret_cast<FileTimeStamp&>(timestamp);
+		auto timestamp = fs::file_time_type::clock::now();
+		return reinterpret_cast<FileTimeStamp&>(timestamp);
     }
 
+    // -----------------------------------------------------------------------------------------------------------
+    U64 GetLastWriteTimeInMicros(const char* path)
+    {
+        const fs::file_time_type timestamp = fs::last_write_time(path);;
+        std::chrono::microseconds duration = std::chrono::duration_cast<std::chrono::microseconds>(timestamp.time_since_epoch());
+        return static_cast<U64>(duration.count());
+    }
 }
 
 

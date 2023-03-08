@@ -219,13 +219,20 @@ namespace Clang
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	void NormalizeStartTimes(ScoreTimeline& timeline)
+	void NormalizeStartTimes(const char* path, CompileUnitContext& context, ScoreTimeline& timeline)
 	{ 
 		TCompileEvents& events = timeline.tracks[0]; 
 
 		if (!events.empty())
 		{
 			const U32 offset = events[0].start;
+
+			//Base the start times on the .json creation time instead of relying on consistent in json wall clock time
+			const U64 fileEndTime = IO::GetLastWriteTimeInMicros(path);
+			const U64 fileStartTime = fileEndTime - events[0].duration;
+			context.startTime[0] = fileStartTime + (context.startTime[0] - offset);
+			context.startTime[1] = fileStartTime + (context.startTime[1] - offset);
+
 			for (CompileEvent& entry : events)
 			{ 
 				entry.start -= offset;
@@ -265,7 +272,7 @@ namespace Clang
 		{ 
 			CompileEvent compileEvent; 
 			if (token.type != Json::Token::Type::ObjectOpen || !ProcessEvent(scoreData,compileEvent,context,reader)) return false;
-			
+	
 			if (compileEvent.category == CompileCategory::FrontEnd)
 			{
 				context.startTime[0] = compileEvent.start;
@@ -282,7 +289,8 @@ namespace Clang
 		}
 
 		//From here we can ignore the rest of the file
-		NormalizeStartTimes(timeline);
+		NormalizeStartTimes(path, context, timeline);
+
 		CompileScore::ProcessTimeline(scoreData,timeline,context);
 		return true;
 	}
