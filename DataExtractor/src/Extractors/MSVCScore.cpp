@@ -783,5 +783,12 @@ namespace MSVC
 
         return result;
     }
+
+    // -----------------------------------------------------------------------------------------------------------
+    int Extractor::Clean(const ExportParams& params)
+    {
+		LOG_ERROR("Clean command not supported on MSVC mode.");
+		return FAILURE;
+    }
 }
 

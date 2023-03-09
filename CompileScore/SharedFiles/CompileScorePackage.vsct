@@ -86,14 +86,6 @@
         </Strings>
       </Button>
 
-      <!--
-      <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdClean" priority="0x0100" type="Button">
-        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
-        <Strings>
-          <ButtonText>Clean Profile Data</ButtonText>
-        </Strings>
-      </Button>
-      -->
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdLoadDefault" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
         <Strings>
@@ -106,6 +98,24 @@
         <Strings>
           <ButtonText>Clang Full Score Generation</ButtonText>
         </Strings>
+      </Button>
+	  <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdClean" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
+        <Strings>
+          <ButtonText>Clang Clean Folder Traces</ButtonText>
+        </Strings>
+      </Button>
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdStartTrace" priority="0x0100" type="Button">
+	    <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
+	    <Strings>
+		  <ButtonText>Start Trace</ButtonText>
+	    </Strings>
+      </Button>
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdStopTrace" priority="0x0100" type="Button">
+	    <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
+	    <Strings>
+		  <ButtonText>Stop Trace</ButtonText>
+	    </Strings>
       </Button>
 
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdidBuild" priority="0x0100" type="Button">
@@ -155,18 +165,6 @@
           <ButtonText>About</ButtonText>
         </Strings>
       </Button>
-		<Button guid="guidCompileScorePackageCmdSet1" id="cmdIdStartTrace" priority="0x0100" type="Button">
-			<Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
-			<Strings>
-				<ButtonText>Start Trace</ButtonText>
-			</Strings>
-		</Button>
-		<Button guid="guidCompileScorePackageCmdSet1" id="cmdIdStopTrace" priority="0x0100" type="Button">
-			<Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
-			<Strings>
-				<ButtonText>Stop Trace</ButtonText>
-			</Strings>
-		</Button>
 	</Buttons>
 
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->

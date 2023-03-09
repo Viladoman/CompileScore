@@ -19,6 +19,7 @@ namespace CompileScore
         {
             //This names need to match the function names of CompileValue
             Max,
+            SelfMax,
             Min,
             Average,
             Count,
