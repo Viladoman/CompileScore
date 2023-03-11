@@ -80,6 +80,7 @@ namespace CommandLine
         LOG_ALWAYS("-cancel                  : The system will stop the current recording for the given compiler without generating anything.");
         LOG_ALWAYS("-stop                    : The system will stop recording. Supported output types are .scor, .etl (MSVC only) and .ctl (Clang only)");
         LOG_ALWAYS("-extract                 : The system will just perform a data extraction, meaning valid input files are .etl (MSVC only), .ctl (Cland only) and folder (Clang only)");
+        LOG_ALWAYS("-clean                   : The system will delete the clang .json trace files if a folder is provided (Clang only)");
 
         LOG_ALWAYS("-detail           (-d)   : Sets the level of detail exported (3 by default), check the table below - example: '-d 1'");        
         LOG_ALWAYS("-timelinedetail   (-td)  : Sets the level of detail for the timelines exported (3 by default), check the table below - example: '-td 1'"); 
@@ -176,6 +177,10 @@ namespace CommandLine
                 else if (Utils::StringCompare(argValue,"-extract") == 0)
                 { 
                     params.command = ExportParams::Command::Generate;
+                }
+                else if (Utils::StringCompare(argValue, "-clean") == 0)
+                {
+                    params.command = ExportParams::Command::Clean;
                 }
                 else if ((Utils::StringCompare(argValue,"-ni")==0 || Utils::StringCompare(argValue,"-noincluders")==0))
                 {

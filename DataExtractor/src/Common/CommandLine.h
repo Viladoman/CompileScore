@@ -16,6 +16,7 @@ struct ExportParams
         Cancel,
         Stop,
         Generate,
+        Clean,
     };
 
     enum class Detail

@@ -21,6 +21,8 @@ int ExecuteCommand(const ExportParams& params)
         return Extractor::StopRecording(params);
     case ExportParams::Command::Generate: 
         return Extractor::GenerateScore(params);
+    case ExportParams::Command::Clean:
+        return Extractor::Clean(params);
     default:
         LOG_ERROR("Unknown command provided.");
         return FAILURE;

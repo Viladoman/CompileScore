@@ -167,7 +167,8 @@ namespace Clang
 			else if (Utils::EqualTokens(token,tagDuration))
 			{
 				if (!reader.NextToken(token) || token.type != Json::Token::Type::Number) return false; 
-				output.duration = Utils::TokenToU32(token);
+				output.duration     = Utils::TokenToU32(token);
+				output.selfDuration = output.duration;
 			}
 			else if (Utils::EqualTokens(token,tagArgs))
 			{
@@ -218,18 +219,42 @@ namespace Clang
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	void NormalizeStartTimes(ScoreTimeline& timeline)
+	void NormalizeStartTimes(const char* path, CompileUnitContext& context, ScoreTimeline& timeline)
 	{ 
 		TCompileEvents& events = timeline.tracks[0]; 
 
 		if (!events.empty())
 		{
 			const U32 offset = events[0].start;
+
+			//Base the start times on the .json creation time instead of relying on consistent in json wall clock time
+			const U64 fileEndTime = IO::GetLastWriteTimeInMicros(path);
+			const U64 fileStartTime = fileEndTime - events[0].duration;
+			context.startTime[0] = fileStartTime + (context.startTime[0] - offset);
+			context.startTime[1] = fileStartTime + (context.startTime[1] - offset);
+
 			for (CompileEvent& entry : events)
 			{ 
 				entry.start -= offset;
 			}
 		}
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	bool CheckClangTraceJson(Json::Reader& reader)
+	{
+		constexpr Json::Token literalTraceEvents = Utils::CreateLiteralToken("traceEvents");
+
+		Json::Token token;
+
+		//check this is a trackEvents or a different json file
+		if (!reader.NextToken(token) || token.type != Json::Token::Type::ObjectOpen) return false;
+		if (!reader.NextToken(token)) return false;
+
+		// We are assuming that the json node starts with the traceEvents
+		if (!Utils::EqualTokens(token, literalTraceEvents)) return false;
+
+		return true;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
@@ -249,22 +274,18 @@ namespace Clang
 
 		//Parse JSON
 		Json::Reader reader(content);
-		Json::Token token; 
-		
-		//check this is a trackEvents or a different json file
-		if (!reader.NextToken(token) || token.type != Json::Token::Type::ObjectOpen) return false;
-		if (!reader.NextToken(token)) return false;
-		
-		// We are assuming that the json node starts with the traceEvents
-		if (!Utils::EqualTokens(token,literalTraceEvents)) return false;
 
+		//Read the first bits and validate we are reading a clang trace
+		if (!CheckClangTraceJson(reader)) return false;
+
+		Json::Token token; 
 		if (!reader.NextToken(token) || token.type != Json::Token::Type::ArrayOpen)  return false;
 		
 		while (reader.NextToken(token) && token.type != Json::Token::Type::ArrayClose)
 		{ 
 			CompileEvent compileEvent; 
 			if (token.type != Json::Token::Type::ObjectOpen || !ProcessEvent(scoreData,compileEvent,context,reader)) return false;
-			
+	
 			if (compileEvent.category == CompileCategory::FrontEnd)
 			{
 				context.startTime[0] = compileEvent.start;
@@ -281,7 +302,8 @@ namespace Clang
 		}
 
 		//From here we can ignore the rest of the file
-		NormalizeStartTimes(timeline);
+		NormalizeStartTimes(path, context, timeline);
+
 		CompileScore::ProcessTimeline(scoreData,timeline,context);
 		return true;
 	}
@@ -429,12 +451,12 @@ namespace Clang
 		LOG_PROGRESS("Scanning dir: %s",params.input);
 
 		Context::Scoped<IO::ScoreBinarizer> binarizer(params.output,params.timelinePacking);
-
 		size_t filesFound = 0u;
+		
 		IO::DirectoryScanner dirScan(params.input,".json",timeThreshold);
 		while (const char* path = dirScan.SeekNext())
 		{ 
-			LOG_INFO("Found file %s", path);
+			++filesFound;
 			if (IO::FileTextBuffer fileBuffer = IO::ReadTextFile(path))
 			{ 
 				ProcessFile(scoreData,path,fileBuffer);
@@ -444,12 +466,44 @@ namespace Clang
 			{ 
 				LOG_ERROR("Invalid file buffer for %s", path);
 			}
-
-			IO::Log(IO::Verbosity::Progress,"Parsed file %u: (%s)\r",++filesFound, path);
+			LOG_INFO("Parsed file %u: (%s)\n",filesFound, path);
 		}
+		LOG_PROGRESS("Found %u files.\n",filesFound);
 
 		CompileScore::FinalizeScoreData(scoreData);
 		binarizer.Get().Binarize(scoreData);
+
+		return SUCCESS;
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	int CleanScoreDirectory(const ExportParams& params)
+	{
+		LOG_PROGRESS("Scanning dir: %s", params.input);
+
+		size_t filesFound = 0u;
+		IO::DirectoryScanner dirScan(params.input, ".json");
+		while (const char* path = dirScan.SeekNext())
+		{
+			if (IO::FileTextBuffer fileBuffer = IO::ReadTextFile(path))
+			{
+				//Read the first bits and validate we are reading a clang trace
+				Json::Reader reader(fileBuffer);
+				if (CheckClangTraceJson(reader)) 
+				{
+					IO::DeleteFile(path);
+					++filesFound;
+					LOG_INFO("Removed file %u: (%s)\n", filesFound, path);
+				}
+				IO::DestroyBuffer(fileBuffer);
+			}
+			else
+			{
+				LOG_ERROR("Invalid file buffer for %s", path);
+			}
+		}
+
+		LOG_PROGRESS("Removed %u files.\n",filesFound);
 
 		return SUCCESS;
 	}
@@ -481,7 +535,7 @@ namespace Clang
 			LOG_INFO("Found file %s", path);
 			fileStream.Append(path);
 			fileStream.Append('\n');
-			IO::Log(IO::Verbosity::Progress,"Parsing... %u files\r",++filesFound);
+			IO::Log(IO::Verbosity::Info,"Parsing... %u files\n",++filesFound);
 		}
 
 		LOG_PROGRESS("Found %d files", filesFound);
@@ -596,4 +650,22 @@ namespace Clang
 		LOG_ERROR("Input file is not a folder or a .ctl file.");
 	    return FAILURE;
 	} 
+
+	// -----------------------------------------------------------------------------------------------------------
+	int Extractor::Clean(const ExportParams& params)
+	{
+		if (params.input == nullptr)
+		{
+			LOG_ERROR("No input path provided.");
+			return FAILURE;
+		}
+	
+		if (!IO::IsDirectory(params.input))
+		{
+			LOG_ERROR("Input provided is not a directory.");
+			return FAILURE;
+		}
+
+		return CleanScoreDirectory(params);
+	}
 }

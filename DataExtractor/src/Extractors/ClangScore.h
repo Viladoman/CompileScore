@@ -10,5 +10,6 @@ namespace Clang
 		static int CancelRecording(const ExportParams& params);
 		static int StopRecording(const ExportParams& params);
 		static int GenerateScore(const ExportParams& params);
+		static int Clean(const ExportParams& params);
 	};
 }

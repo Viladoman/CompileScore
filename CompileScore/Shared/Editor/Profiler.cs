@@ -33,7 +33,8 @@ namespace CompileScore
         {
             Build,
             Rebuild,
-            GenerateClang
+            GenerateClang, 
+            CleanClang,
         }
 
         private enum StateType
@@ -96,6 +97,7 @@ namespace CompileScore
                 case BuildOperation.Build: TriggerBuildSolution(); break;
                 case BuildOperation.Rebuild: TriggerBuildSolution(); break;
                 case BuildOperation.GenerateClang: _ = TriggerClangGeneratorAsync(); break;
+                case BuildOperation.CleanClang: _ = TriggerClangCleanAsync(); break;
             }
         }
 
@@ -265,6 +267,24 @@ namespace CompileScore
             await GenerateClangScoreAsync();
 
             SetState(StateType.Idle);
+        }
+
+        private async System.Threading.Tasks.Task TriggerClangCleanAsync()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (!ValidateGenerator()) return;
+
+            OutputLog.Focus();
+            OutputLog.Clear();
+            Evaluator.Clear();
+
+            SetState(StateType.Gathering);
+
+            await CleanClangTracesAsync();
+
+            SetState(StateType.Idle);
+
         }
 
         private void DisplayError(string message)
@@ -536,12 +556,13 @@ namespace CompileScore
             //Process Data
             string inputPath = FixPath(Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.InputPath));
             string outputPath = Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.OutputPath);
-            string quotes = outputPath.IndexOf(' ') >= 0 ? "\"" : "";
+            string quotesIn = inputPath.IndexOf(' ') >= 0 ? "\"" : "";
+            string quotesOut = outputPath.IndexOf(' ') >= 0 ? "\"" : "";
             CreateDirectory(Path.GetDirectoryName(outputPath));
 
             string globalArgs = GenerateGlobalCommandLineArguments();
 
-            string commandLine = "-clang -extract" + globalArgs + " -i " + inputPath + " -o " + quotes + outputPath + quotes;
+            string commandLine = "-clang -extract" + globalArgs + " -i " + quotesIn + inputPath + quotesIn + " -o " + quotesOut + outputPath + quotesOut;
 
             OutputLog.Log("Calling ScoreDataExtractor with " + commandLine);
             int exitCode = await ExternalProcess.ExecuteAsync(GetScoreExtractorToolPath(), commandLine);
@@ -555,6 +576,31 @@ namespace CompileScore
             EditorUtils.FocusOverviewWindow();
 
             OutputLog.Log("Score generation completed!");
+        }
+
+        private async System.Threading.Tasks.Task CleanClangTracesAsync()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (CompilerSource != Compiler.Clang)
+            {
+                return;
+            }
+
+            string inputPath = FixPath(Evaluator.Evaluate(SettingsManager.Instance.Settings.ScoreGenerator.InputPath));
+            string quotesIn = inputPath.IndexOf(' ') >= 0 ? "\"" : "";
+
+            string commandLine = "-clang -clean -i " + quotesIn + inputPath + quotesIn;
+
+            OutputLog.Log("Calling ScoreDataExtractor with " + commandLine);
+            int exitCode = await ExternalProcess.ExecuteAsync(GetScoreExtractorToolPath(), commandLine);
+
+            if (exitCode != 0)
+            {
+                DisplayError("Compile Score Data Extractor process failed with code " + exitCode + ". Please check the output pane for more information.");
+            }
+
+            OutputLog.Log("Score Clean completed!");
         }
 
         private string FixPath(string path)

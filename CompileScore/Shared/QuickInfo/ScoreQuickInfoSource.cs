@@ -88,7 +88,9 @@ namespace CompileScore
                                     new ClassifiedTextElement(
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, "Max: "),
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.UIConverters.GetTimeStr(value.Max)),
-                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " Min: "),
+                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " (Self: "),
+                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.UIConverters.GetTimeStr(value.SelfMax)),
+                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, ") Min: "),
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.UIConverters.GetTimeStr(value.Min)),
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " Average: "),
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.UIConverters.GetTimeStr(value.Average)),

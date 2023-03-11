@@ -35,10 +35,11 @@ namespace CompileScore.Timeline
 
                     CompileValue val = (node.Value as CompileValue);
                     descriptionText.Text = val.Name;
-                    detailsText.Text = "Max: "+Common.UIConverters.GetTimeStr(val.Max)
-                                     +" Min: "+ Common.UIConverters.GetTimeStr(val.Min)
-                                     +" Avg: "+ Common.UIConverters.GetTimeStr(val.Average) 
-                                     +" Count: "+ val.Count;
+                    detailsText.Text = "Max: "   + Common.UIConverters.GetTimeStr(val.Max)
+                                     +" (Self: " + Common.UIConverters.GetTimeStr(val.SelfMax) + ")"
+                                     +" Min: "   + Common.UIConverters.GetTimeStr(val.Min)
+                                     +" Avg: "   + Common.UIConverters.GetTimeStr(val.Average) 
+                                     +" Count: " + val.Count;
                 }
                 else if (node.Value is UnitValue)
                 {

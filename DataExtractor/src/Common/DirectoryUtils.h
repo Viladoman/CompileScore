@@ -23,4 +23,5 @@ namespace IO
 	bool IsDirectory(const char* path);
 	bool IsExtension(const char* path, const char* extension);
 	FileTimeStamp GetCurrentTime();
+	U64 GetLastWriteTimeInMicros(const char* path);
 }

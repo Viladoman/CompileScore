@@ -27,6 +27,7 @@ namespace CompileScore
 		public const int CommandId_StopTrace      = 269;
 
 		public const int CommandId_Generate       = 259;
+		public const int CommandId_Clean          = 258;
 
         public const int CommandId_LoadDefault    = 260;
         public const int CommandId_Settings       = 261;
@@ -96,11 +97,17 @@ namespace CompileScore
 
             {
                 var menuItem = new OleMenuCommand(Execute_Clang_Generate, new CommandID(CommandSet_Custom, CommandId_Generate));
-                menuItem.BeforeQueryStatus += Query_Clang_Generate_CanBuild;
+                menuItem.BeforeQueryStatus += Query_Is_Clang_Available;
                 commandService.AddCommand(menuItem);
             }
 
-			{
+            {
+                var menuItem = new OleMenuCommand(Execute_Clang_Clean, new CommandID(CommandSet_Custom, CommandId_Clean));
+                menuItem.BeforeQueryStatus += Query_Is_Clang_Available;
+                commandService.AddCommand(menuItem);
+            }
+
+            {
 				var menuItem = new OleMenuCommand(Execute_StartTrace, new CommandID(CommandSet_Custom, CommandId_StartTrace));
 				commandService.AddCommand(menuItem);
 			}
@@ -129,7 +136,7 @@ namespace CompileScore
             }
         }
 
-        private static void Query_Clang_Generate_CanBuild(object sender, EventArgs args)
+        private static void Query_Is_Clang_Available(object sender, EventArgs args)
         {
             var menuCommand = sender as OleMenuCommand;
             if (menuCommand != null)
@@ -242,6 +249,12 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             Profiler.Instance.TriggerOperation(Profiler.BuildOperation.GenerateClang);
+        }
+
+        private static void Execute_Clang_Clean(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            Profiler.Instance.TriggerOperation(Profiler.BuildOperation.CleanClang);
         }
 
         private static void Execute_LoadDefault(object sender, EventArgs e)
