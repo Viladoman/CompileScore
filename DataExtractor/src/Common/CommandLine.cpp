@@ -134,7 +134,7 @@ namespace CommandLine
             if (Utils::StringCompare(argv[i], "-version") == 0 || Utils::StringCompare(argv[i], "-ve") == 0)
             {
                 DisplayVersion();
-                break;
+                return FAILURE;
             }
         }
 
