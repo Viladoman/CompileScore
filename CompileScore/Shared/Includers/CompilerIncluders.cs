@@ -15,7 +15,7 @@ namespace CompileScore.Includers
 
     class CompilerIncluders
     {
-        const uint durationMultiplier = 1000;
+        public const uint durationMultiplier = 1000;
         const uint basePadding = 20;
 
         private static readonly Lazy<CompilerIncluders> lazy = new Lazy<CompilerIncluders>(() => new CompilerIncluders());
