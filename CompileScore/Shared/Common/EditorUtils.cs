@@ -57,25 +57,29 @@ namespace CompileScore
 
             return window;
         }
-
+        
         static private IEnumerable<ProjectItem> EnumerateProjectItems(ProjectItems items)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (items != null)
             {
-                for (int i = 1; i <= items.Count; ++i)
+                foreach (ProjectItem itm in items)
                 {
-                    var itm = items.Item(i);
+                    yield return itm;
 
                     foreach (var res in EnumerateProjectItems(itm.ProjectItems))
                     {
                         yield return res;
                     }
 
-                    for (short j = 0; itm != null && j < itm.FileCount; ++j)
+                    Project subProject = itm.SubProject;
+                    if (subProject != null)
                     {
-                        yield return itm;
+                        foreach (var res in EnumerateProjectItems(subProject.ProjectItems))
+                        {
+                            yield return res;
+                        }
                     }
                 }
             }
@@ -104,7 +108,7 @@ namespace CompileScore
 
                 foreach (var item in EnumerateProjectItems(project.ProjectItems))
                 {
-                    if (item.Name.ToLower() == filename)
+                    if (String.Equals(item.Name, filename, StringComparison.OrdinalIgnoreCase))
                     {
                         return item;
                     }
