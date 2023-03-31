@@ -15,6 +15,8 @@ namespace CompileScore.Timeline
             get { return node; } 
         }
 
+        public Timeline.Mode Mode { set; get; }
+
         public TimelineNodeTooltip()
         {
             InitializeComponent();
@@ -25,7 +27,7 @@ namespace CompileScore.Timeline
             if (node != null)
             {
                 headerText.Text = Common.UIConverters.ToSentenceCase(node.Category.ToString());
-                durationText.Text = Common.UIConverters.GetTimeStr(node.Duration);
+                durationText.Text = Mode == Timeline.Mode.Includers? node.Duration.ToString() : Common.UIConverters.GetTimeStr(node.Duration);
 
                 if (node.Value is CompileValue)
                 {

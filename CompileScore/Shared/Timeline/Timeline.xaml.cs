@@ -242,6 +242,8 @@ namespace CompileScore.Timeline
             {
                 CurrentMode = newMode;
 
+                (tooltip.Content as TimelineNodeTooltip).Mode = newMode;
+
                 if (CurrentMode != Mode.Timeline) { Unit = null; }
                 if (CurrentMode != Mode.Includers) { IncludersValue = null; }
 
