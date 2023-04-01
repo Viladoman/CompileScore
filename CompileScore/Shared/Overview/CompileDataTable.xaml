@@ -10,7 +10,8 @@
              d:DesignHeight="450" d:DesignWidth="900">
     
     <UserControl.Resources>
-        <common:UITimeConverter x:Key="uiTimeConverter"/>
+        <common:UITimeConverter     x:Key="uiTimeConverter"/>
+        <common:FolderNameConverter x:Key="uiFolderName"/>
         <Style TargetType="Label">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}"/>
         </Style>
@@ -124,8 +125,8 @@
 
             <TextBlock Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Path=Items.Count, ElementName=compileDataGrid, StringFormat='Count {0}'}" />
         </Grid>
-        
-        <DataGrid Grid.Row="1" x:Name="compileDataGrid" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="Column" SelectionUnit="FullRow" Margin="0">
+
+        <DataGrid Grid.Row="1" x:Name="compileDataGrid" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="Column" SelectionUnit="FullRow" Margin="0" FrozenColumnCount="1">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Name"              Binding="{Binding Name}"           IsReadOnly="True" Width="300"/>
                 <DataGridTextColumn Header="Count"             Binding="{Binding Count}"          IsReadOnly="True" Width="75"/>
@@ -135,8 +136,8 @@
                 <DataGridTextColumn Header="Max Self"          Binding="{Binding SelfMax,         Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
                 <DataGridTextColumn Header="Min"               Binding="{Binding Min,             Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
                 <DataGridTextColumn Header="Avg"               Binding="{Binding Average,         Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
-                <DataGridTextColumn Header="Max location"      Binding="{Binding MaxUnit.Name}"   IsReadOnly="True" Width="200"/>
-                <DataGridTextColumn Header="Max Self location" Binding="{Binding MaxUnit.Name}"   IsReadOnly="True" Width="200"/>
+                <DataGridTextColumn Header="Max location"      Binding="{Binding MaxUnit.Name}"     IsReadOnly="True" Width="170"/>
+                <DataGridTextColumn Header="Max Self location" Binding="{Binding SelfMaxUnit.Name}" IsReadOnly="True" Width="170"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

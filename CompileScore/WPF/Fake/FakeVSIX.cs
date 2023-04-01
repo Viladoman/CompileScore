@@ -36,7 +36,7 @@ namespace CompileScore
 
         static public void OpenFile(CompileValue value)
         {
-            OpenFile(CompilerData.Instance.Folders.GetValuePath(CompilerData.CompileCategory.Include, value));
+            OpenFile(CompilerData.Instance.Folders.GetValuePath(value));
         }
     }
 

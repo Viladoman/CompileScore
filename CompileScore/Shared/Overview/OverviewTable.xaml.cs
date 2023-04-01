@@ -31,7 +31,9 @@ namespace CompileScore.Overview
             {
                 CreateColumn(category);
             }
-            
+
+            CreateFullPathColumn();
+
             OnDataChanged();
             CompilerData.Instance.ScoreDataChanged += OnDataChanged;
         }
@@ -49,6 +51,21 @@ namespace CompileScore.Overview
             textColumn.Header = header;
             textColumn.IsReadOnly = true;
             textColumn.Width = Math.Max(75,header.Length * 8);
+            compileDataGrid.Columns.Add(textColumn);
+        }
+
+        private void CreateFullPathColumn()
+        {
+            string header = "Full Path";
+
+            Binding binding = new Binding();
+            binding.Converter = this.Resources["uiFolderName"] as IValueConverter;
+
+            var textColumn = new DataGridTextColumn();
+            textColumn.Binding = binding;
+            textColumn.Header = header;
+            textColumn.IsReadOnly = true;
+            textColumn.Width = 600;
             compileDataGrid.Columns.Add(textColumn);
         }
 

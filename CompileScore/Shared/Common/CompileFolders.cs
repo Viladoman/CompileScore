@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Data;
 using System.IO;
-using System.Text;
 
 namespace CompileScore
 {
     public class CompileFolder
     {
         public string Name { set; get; }
+        public int Parent { set; get; } = -1;
         public List<int> Children { set; get; }
         public List<UnitValue> Units { set; get; }
         public List<CompileValue> Includes { set; get; }
@@ -16,74 +16,33 @@ namespace CompileScore
     public class CompileFolders
     {
         private List<CompileFolder> Folders { set; get; } = new List<CompileFolder>();
+        private Dictionary<UnitValue, CompileFolder>    UnitsDictionary { set; get; } = new Dictionary<UnitValue, CompileFolder>();
+        private Dictionary<CompileValue, CompileFolder> IncludesDictionary { set; get; } = new Dictionary<CompileValue, CompileFolder>();
 
-        private string GetUnitPathRecursive(UnitValue unit, CompileFolder node, string fullpath)
+        private string BuildPathNameUp(CompileFolder folder, string rightHand)
         {
-            foreach (UnitValue value in node.Units)
-            {
-                if (value == unit)
-                {
-                    return fullpath + value.Name;
-                }
-            }
-
-            foreach (int childrenIndex in node.Children)
-            {
-                if (childrenIndex < Folders.Count)
-                {
-                    CompileFolder folder = Folders[childrenIndex];
-                    string result = GetUnitPathRecursive(unit, folder, fullpath + folder.Name + '/');
-                    if (result != null)
-                    {
-                        return result;
-                    }
-                }
-            }
-
-            return null;
-        }
-        private string GetIncludePathRecursive(CompileValue value, CompileFolder node, string fullpath)
-        {
-            foreach (CompileValue thisValue in node.Includes)
-            {
-                if (thisValue == value)
-                {
-                    return fullpath + thisValue.Name;
-                }
-            }
-
-            foreach (int childrenIndex in node.Children)
-            {
-                if (childrenIndex < Folders.Count)
-                {
-                    CompileFolder folder = Folders[childrenIndex];
-                    string result = GetIncludePathRecursive(value, folder, fullpath + folder.Name + '/');
-                    if (result != null)
-                    {
-                        return result;
-                    }
-                }
-            }
-
-            return null;
+            string thisPath = folder.Name.Length > 0 ? folder.Name + '/' + rightHand : rightHand;
+            return folder.Parent >= 0 ? BuildPathNameUp(Folders[folder.Parent],thisPath) : thisPath;
         }
 
         public string GetUnitPath(UnitValue unit)
         {
-            if (unit != null && Folders != null && Folders.Count > 0)
+            if (!UnitsDictionary.ContainsKey(unit))
             {
-                return GetUnitPathRecursive(unit, Folders[0], "");
+                return null;
             }
-            return null;
+
+            return BuildPathNameUp(UnitsDictionary[unit],unit.Name); 
         }
 
-        public string GetValuePath(CompilerData.CompileCategory category, CompileValue value)
+        public string GetValuePath(CompileValue value)
         {
-            if (value != null && Folders != null && Folders.Count > 0 && category == CompilerData.CompileCategory.Include)
+            if (!IncludesDictionary.ContainsKey(value))
             {
-                return GetIncludePathRecursive(value, Folders[0], "");
+                return null;
             }
-            return null;
+
+            return BuildPathNameUp(IncludesDictionary[value], value.Name);
         }
 
         public string GetUnitPathSafe(UnitValue unit)
@@ -92,9 +51,9 @@ namespace CompileScore
             return fullPath == null ? "" : fullPath;
         }
 
-        public string GetValuePathSafe(CompilerData.CompileCategory category, CompileValue value)
+        public string GetValuePathSafe(CompileValue value)
         {
-            string fullPath = GetValuePath(category, value);
+            string fullPath = GetValuePath(value);
             return fullPath == null ? "" : fullPath;
         }
 
@@ -210,16 +169,45 @@ namespace CompileScore
             list.Add(folder);
         }
 
+        public void FinalizeFolders()
+        {
+            for (int parentIndex = 0; parentIndex < Folders.Count; ++parentIndex)
+            {
+                //Set parent index
+                CompileFolder folder = Folders[parentIndex];
+                for (int childIndex = 0; childIndex < folder.Children.Count; ++childIndex)
+                {
+                    Folders[folder.Children[childIndex]].Parent = parentIndex;
+                }
+
+                //setup acceleration structures
+                foreach (UnitValue unitValue in folder.Units)
+                {
+                    UnitsDictionary[unitValue] = folder;
+                }
+
+                foreach (CompileValue compileValue in folder.Includes)
+                {
+                    IncludesDictionary[compileValue] = folder;
+                }
+            }
+        }
+
         public void ReadFolders(BinaryReader reader, List<UnitValue> units, CompileDataset[] datasets)
         {
+            //Reset data
+            UnitsDictionary.Clear();
+            IncludesDictionary.Clear();
+
             //Read Folders
             uint foldersLength = reader.ReadUInt32();
-            var folderList = new List<CompileFolder>((int)foldersLength);
+            Folders = new List<CompileFolder>((int)foldersLength);
             for (uint i = 0; i < foldersLength; ++i)
             {
-                ReadFolder(reader, folderList, units, datasets);
+                ReadFolder(reader, Folders, units, datasets);
             }
-            Folders = new List<CompileFolder>(folderList);
+
+            FinalizeFolders();
         }
     }
 }

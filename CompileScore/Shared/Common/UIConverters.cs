@@ -188,6 +188,37 @@ namespace CompileScore.Common
         }
     }
 
+    public class FolderNameConverter : IValueConverter 
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            try
+            {
+                if (value is UnitValue)
+                {
+                    return CompilerData.Instance.Folders.GetUnitPathSafe((UnitValue)value);
+                }
+                else if ( value is CompileValue )
+                {
+                    return CompilerData.Instance.Folders.GetValuePathSafe((CompileValue)value);
+                }
+                else
+                {
+                    return "??";
+                }
+            }
+            catch (Exception e)
+            {
+                return e.ToString();
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
     public class RatioToPercentConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

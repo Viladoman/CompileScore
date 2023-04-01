@@ -159,7 +159,7 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            string fullPath = CompilerData.Instance.Folders.GetValuePath(CompilerData.CompileCategory.Include, value);
+            string fullPath = CompilerData.Instance.Folders.GetValuePath(value);
             if (fullPath != null && File.Exists(fullPath))
             {
                 var applicationObject = EditorUtils.ServiceProvider.GetService(typeof(DTE)) as EnvDTE80.DTE2;

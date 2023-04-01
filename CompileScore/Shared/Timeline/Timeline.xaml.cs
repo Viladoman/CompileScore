@@ -203,7 +203,7 @@ namespace CompileScore.Timeline
 
             SetMode(Mode.Includers);
             IncludersValue = value;
-            SourcePath = valuePath != null && IncludersValue != null? valuePath : CompilerData.Instance.Folders.GetValuePath(CompilerData.CompileCategory.Include, value);
+            SourcePath = valuePath != null && IncludersValue != null? valuePath : CompilerData.Instance.Folders.GetValuePath(value);
 
             int index = CompilerData.Instance.GetIndexOf(CompilerData.CompileCategory.Include, value);
             SetRoot(index >= 0 ? Includers.CompilerIncluders.Instance.LoadInclude((uint)index) : null);
@@ -515,7 +515,7 @@ namespace CompileScore.Timeline
                     }
 
                     contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open File", (sender, e) => EditorUtils.OpenFile(value)));
-                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetText(CompilerData.Instance.Folders.GetValuePathSafe(CompilerData.CompileCategory.Include, value))));
+                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetText(CompilerData.Instance.Folders.GetValuePathSafe(value))));
                 }
 
                 if (value.Name.Length > 0)

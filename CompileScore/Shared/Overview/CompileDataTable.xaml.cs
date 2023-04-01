@@ -31,7 +31,27 @@ namespace CompileScore.Overview
         public void SetCategory(CompilerData.CompileCategory category)
         {
             Category = category;
+
+            if (category == CompilerData.CompileCategory.Include )
+            {
+                CreateFullPathColumn();
+            }
+
             OnDataChanged();
+        }
+        private void CreateFullPathColumn()
+        {
+            string header = "Full Path";
+
+            Binding binding = new Binding();
+            binding.Converter = this.Resources["uiFolderName"] as IValueConverter;
+
+            var textColumn = new DataGridTextColumn();
+            textColumn.Binding = binding;
+            textColumn.Header = header;
+            textColumn.IsReadOnly = true;
+            textColumn.Width = 600;
+            compileDataGrid.Columns.Add(textColumn);
         }
 
         private static bool FilterCompileValue(CompileValue value, string filterText)
@@ -102,7 +122,7 @@ namespace CompileScore.Overview
             if (Category == CompilerData.CompileCategory.Include)
             {
                 contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open File", (a, b) => EditorUtils.OpenFile(value)));
-                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetText(CompilerData.Instance.Folders.GetValuePathSafe(CompilerData.CompileCategory.Include, value))));
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetText(CompilerData.Instance.Folders.GetValuePathSafe(value))));
             }
 
             if (value.Name.Length > 0)

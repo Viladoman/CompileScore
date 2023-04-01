@@ -11,6 +11,7 @@
 
     <UserControl.Resources>
         <common:UITimeConverterZero x:Key="uiTimeConverter"/>
+        <common:FolderNameConverter x:Key="uiFolderName"/>
         <Style TargetType="Label">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}"/>
         </Style>
@@ -126,7 +127,7 @@
             
             <TextBlock Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Path=Items.Count, ElementName=compileDataGrid, StringFormat='Count {0}'}" />
         </Grid>
-        <DataGrid  Grid.Row="1" FrozenColumnCount="1" x:Name="compileDataGrid" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="Column" SelectionUnit="FullRow">
+        <DataGrid  Grid.Row="1" FrozenColumnCount="1" x:Name="compileDataGrid" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="Column" SelectionUnit="FullRow" >
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Name"  Binding="{Binding Name}" IsReadOnly="True" Width="200"/>
             </DataGrid.Columns>
