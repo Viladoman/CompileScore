@@ -36,10 +36,7 @@ namespace CompileScore.Overview
         {
             TabItem tab = new TabItem();
             tab.Header = CompileScore.Common.UIConverters.ToSentenceCase(Enum.GetName(typeof(CompilerData.CompileCategory), (int)category));
-
-            CompileDataTable content = new CompileDataTable();
-            content.SetCategory(category);
-            tab.Content = content;
+            tab.Content = new CompileDataTable(category);
             tabControl.Items.Add(tab);
         }
 

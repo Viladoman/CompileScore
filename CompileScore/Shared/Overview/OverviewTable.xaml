@@ -129,7 +129,7 @@
         </Grid>
         <DataGrid  Grid.Row="1" FrozenColumnCount="1" x:Name="compileDataGrid" IsReadOnly="True" AutoGenerateColumns="False" HeadersVisibility="Column" SelectionUnit="FullRow" >
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Name"  Binding="{Binding Name}" IsReadOnly="True" Width="200"/>
+                <DataGridTextColumn Header="Name"  Binding="{Binding Unit.Name}" IsReadOnly="True" Width="200"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

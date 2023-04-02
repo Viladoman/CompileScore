@@ -1,6 +1,7 @@
 ﻿using CompileScore.Common;
 using Microsoft.VisualStudio.Shell;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,6 +16,18 @@ namespace CompileScore.Overview
     /// </summary>
     public partial class OverviewTable : UserControl
     {
+        private class UnitProxyValue
+        { 
+            public UnitProxyValue(UnitValue unit)
+            {
+                Unit = unit;
+                FullPath = CompilerData.Instance.Folders.GetUnitPathSafe(unit); //TODO ~ Ramovn ~ move this to a task
+            }
+
+            public UnitValue Unit { get; }
+            public string FullPath { set; get; }
+        }
+
         private ICollectionView dataView;
 
         private int originalColumns = 0;
@@ -41,7 +54,7 @@ namespace CompileScore.Overview
         private void CreateColumn(CompilerData.CompileCategory category)
         {
             string header = Common.UIConverters.GetHeaderStr(category);
-            string bindingText = "ValuesList[" + (int)category + "]";
+            string bindingText = "Unit.ValuesList[" + (int)category + "]";
             
             Binding binding = new Binding(bindingText);
             binding.Converter = this.Resources["uiTimeConverter"] as IValueConverter;
@@ -56,14 +69,9 @@ namespace CompileScore.Overview
 
         private void CreateFullPathColumn()
         {
-            string header = "Full Path";
-
-            Binding binding = new Binding();
-            binding.Converter = this.Resources["uiFolderName"] as IValueConverter;
-
             var textColumn = new DataGridTextColumn();
-            textColumn.Binding = binding;
-            textColumn.Header = header;
+            textColumn.Header = "Full Path";
+            textColumn.Binding = new Binding("FullPath");
             textColumn.IsReadOnly = true;
             textColumn.Width = 600;
             compileDataGrid.Columns.Add(textColumn);
@@ -88,13 +96,22 @@ namespace CompileScore.Overview
         private void UpdateFilterFunction()
         {
             string filterText = searchTextBox.Text.ToLower();
-            this.dataView.Filter = d => FilterCompileValue((UnitValue)d, filterText);
+            this.dataView.Filter = d => FilterCompileValue(((UnitProxyValue)d).Unit, filterText);
         }
 
         private void OnDataChanged()
         {
             RefreshColumns();
-            this.dataView = CollectionViewSource.GetDefaultView(CompilerData.Instance.GetUnits());
+
+            //create proxy structures for display
+            List<UnitValue> original = CompilerData.Instance.GetUnits();
+            List<UnitProxyValue> proxy = new List<UnitProxyValue>(original.Count);
+            foreach ( UnitValue value in original)
+            {
+                proxy.Add(new UnitProxyValue(value)); 
+            }
+            
+            this.dataView = CollectionViewSource.GetDefaultView(proxy);
             UpdateFilterFunction();
             compileDataGrid.ItemsSource = this.dataView;
         }
@@ -114,10 +131,10 @@ namespace CompileScore.Overview
             DataGridRow row = (sender as DataGridRow);
             if (row == null) return;
 
-            UnitValue value = (row.Item as UnitValue);
+            UnitProxyValue value = (row.Item as UnitProxyValue);
             if (value == null) return;
 
-            Timeline.CompilerTimeline.Instance.DisplayTimeline(value);
+            Timeline.CompilerTimeline.Instance.DisplayTimeline(value.Unit);
         }
 
         private void DataGridRow_ContextMenu(object sender, MouseEventArgs e)
@@ -130,8 +147,10 @@ namespace CompileScore.Overview
             if (row == null) return;
 
             dataGrid.SelectedItem = row.Item;
-            UnitValue value = (row.Item as UnitValue);
-            if (value == null) return;
+            UnitProxyValue proxyValue = (row.Item as UnitProxyValue);
+            if (proxyValue == null) return;
+
+            UnitValue value = proxyValue.Unit;
 
             System.Windows.Forms.ContextMenuStrip contextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
 

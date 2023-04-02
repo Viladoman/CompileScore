@@ -1,5 +1,6 @@
 ﻿using CompileScore.Common;
 using Microsoft.VisualStudio.Shell;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,16 +15,30 @@ namespace CompileScore.Overview
     /// </summary>
     public partial class CompileDataTable : UserControl
     {
+        private class IncludeViewerProxy
+        {
+            public IncludeViewerProxy(CompileValue original)
+            {
+                Value = original;
+                FullPath = CompilerData.Instance.Folders.GetValuePathSafe(original); //TODO ~ Ramovn ~ move this to a task
+            }
+
+            public CompileValue Value { get; } 
+            public string FullPath { set;  get; }
+        }
+
+
         private ICollectionView dataView;
 
         private CompilerData.CompileCategory Category { set; get; }
 
-        public CompileDataTable()
+        public CompileDataTable(CompilerData.CompileCategory category)
         {
             InitializeComponent();
 
             compileDataGrid.MouseRightButtonDown += DataGridRow_ContextMenu;
 
+            SetCategory(category);
             OnDataChanged();
             CompilerData.Instance.ScoreDataChanged += OnDataChanged;
         }
@@ -32,25 +47,39 @@ namespace CompileScore.Overview
         {
             Category = category;
 
-            if (category == CompilerData.CompileCategory.Include )
+            string prefix = category == CompilerData.CompileCategory.Include ? "Value." : "";
+
+            //Create columns
+            CreateDataGridColumn("Name",              prefix + "Name",             300);
+            CreateDataGridColumn("Count",             prefix + "Count",            75);
+            CreateDataGridColumn("Accumulated",       prefix + "Accumulated",      140, "uiTimeConverter");
+            CreateDataGridColumn("Accumulated Self",  prefix + "SelfAccumulated",  140, "uiTimeConverter");
+            CreateDataGridColumn("Max",               prefix + "Max",              80,  "uiTimeConverter");
+            CreateDataGridColumn("Max Self",          prefix + "SelfMax",          80,  "uiTimeConverter");
+            CreateDataGridColumn("Min",               prefix + "Min",              80,  "uiTimeConverter");
+            CreateDataGridColumn("Avg",               prefix + "Average",          80,  "uiTimeConverter");
+            CreateDataGridColumn("Max location",      prefix + "MaxUnit.Name",     170);
+            CreateDataGridColumn("Max Self location", prefix + "SelfMaxUnit.Name", 170);
+
+            if (category == CompilerData.CompileCategory.Include)
             {
-                CreateFullPathColumn();
+                CreateDataGridColumn("Full Path", "FullPath", 600);
             }
-
-            OnDataChanged();
         }
-        private void CreateFullPathColumn()
-        {
-            string header = "Full Path";
 
-            Binding binding = new Binding();
-            binding.Converter = this.Resources["uiFolderName"] as IValueConverter;
+        private void CreateDataGridColumn(string header, string bindingName, DataGridLength width, string converter = null)
+        {
+            Binding binding = bindingName == null? new Binding() : new Binding(bindingName);
+            if (converter != null)
+            {
+                binding.Converter = this.Resources[converter] as IValueConverter;
+            }
 
             var textColumn = new DataGridTextColumn();
             textColumn.Binding = binding;
             textColumn.Header = header;
             textColumn.IsReadOnly = true;
-            textColumn.Width = 600;
+            textColumn.Width = width;
             compileDataGrid.Columns.Add(textColumn);
         }
 
@@ -61,13 +90,42 @@ namespace CompileScore.Overview
 
         private void UpdateFilterFunction()
         {
+            //TODO ~ ramonv ~ convert this into just a lookup set for active/unactive... perform the filter in an async task
             string filterText = searchTextBox.Text.ToLower();
-            this.dataView.Filter = d => FilterCompileValue((CompileValue)d, filterText);
+
+            if (Category == CompilerData.CompileCategory.Include)
+            {
+                this.dataView.Filter = d => FilterCompileValue(((IncludeViewerProxy)d).Value, filterText);
+            }
+            else
+            {
+                this.dataView.Filter = d => FilterCompileValue((CompileValue)d, filterText);
+            }
+        }
+
+        private object GetCollection()
+        {
+            if (Category == CompilerData.CompileCategory.Include)
+            {
+                List<CompileValue> originalValues = CompilerData.Instance.GetCollection(Category);
+                List<IncludeViewerProxy> proxy = new List<IncludeViewerProxy>(originalValues.Count);
+
+                foreach(CompileValue val in originalValues)
+                {
+                    proxy.Add(new IncludeViewerProxy(val));
+                }
+
+                return proxy;
+            }
+            else
+            {
+                return CompilerData.Instance.GetCollection(Category);
+            }
         }
 
         private void OnDataChanged()
         {
-            this.dataView = CollectionViewSource.GetDefaultView(CompilerData.Instance.GetCollection(Category));
+            this.dataView = CollectionViewSource.GetDefaultView(GetCollection());
             UpdateFilterFunction();
             compileDataGrid.ItemsSource = this.dataView;
         }
@@ -78,16 +136,25 @@ namespace CompileScore.Overview
             this.dataView.Refresh();
         }
 
+        private CompileValue GetValueFromRowItem(DataGridRow row)
+        {
+            if (row == null) return null;
+
+            if (row.Item is IncludeViewerProxy)
+            {
+                return ((IncludeViewerProxy)row.Item).Value;
+            }
+
+            return (row.Item as CompileValue);
+        }
+
         private void DataGridRow_DoubleClick(object sender, MouseButtonEventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (e.ChangedButton != MouseButton.Left) return;
 
-            DataGridRow row = (sender as DataGridRow);
-            if (row == null) return;
-
-            CompileValue value = (row.Item as CompileValue);
+            CompileValue value = GetValueFromRowItem(sender as DataGridRow);
             if (value == null) return;
 
             Timeline.CompilerTimeline.Instance.DisplayTimeline(value.MaxUnit,value);
@@ -104,7 +171,7 @@ namespace CompileScore.Overview
 
             dataGrid.SelectedItem = row.Item;
 
-            CompileValue value = (row.Item as CompileValue);
+            CompileValue value = GetValueFromRowItem(row);
             if (value == null) return;
 
             System.Windows.Forms.ContextMenuStrip contextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
