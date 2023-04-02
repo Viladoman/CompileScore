@@ -27,7 +27,7 @@ namespace CompileScore
 
         public string GetUnitPath(UnitValue unit)
         {
-            if (!UnitsDictionary.ContainsKey(unit))
+            if (unit == null || !UnitsDictionary.ContainsKey(unit))
             {
                 return null;
             }
@@ -37,7 +37,7 @@ namespace CompileScore
 
         public string GetValuePath(CompileValue value)
         {
-            if (!IncludesDictionary.ContainsKey(value))
+            if (value == null || !IncludesDictionary.ContainsKey(value))
             {
                 return null;
             }
