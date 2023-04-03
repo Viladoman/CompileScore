@@ -32,7 +32,6 @@ namespace CompileScore.Overview
         private System.Threading.CancellationTokenSource TokenSource = new System.Threading.CancellationTokenSource();
         private HashSet<CompileValue> FilterSet = new HashSet<CompileValue>();
 
-
         private CompilerData.CompileCategory Category { set; get; }
 
         public CompileDataTable(CompilerData.CompileCategory category)
@@ -94,6 +93,8 @@ namespace CompileScore.Overview
 
         private async System.Threading.Tasks.Task FilterEntriesAsync(string filterText,System.Threading.CancellationToken token)
         {
+            string lowerFilterText = filterText.ToLower(); //TODO ~ ramonv ~ upgrade filtering value
+
             List<CompileValue> originalValues = CompilerData.Instance.GetCollection(Category);
             HashSet<CompileValue> newSet = new HashSet<CompileValue>(originalValues.Count);
 
@@ -101,7 +102,7 @@ namespace CompileScore.Overview
             {
                 token.ThrowIfCancellationRequested();
 
-                if (!FilterCompileValue(value, filterText)) //TODO ~ ramonv ~ upgrade filtering value
+                if (!FilterCompileValue(value, lowerFilterText)) //TODO ~ ramonv ~ upgrade filtering value
                 {
                     newSet.Add(value);
                 }
@@ -131,7 +132,7 @@ namespace CompileScore.Overview
 
             try
             {
-                await ThreadUtils.ForkAsync(() => FilterEntriesAsync(filterText.ToLower(),newTokenSource.Token));
+                await ThreadUtils.ForkAsync(() => FilterEntriesAsync(filterText,newTokenSource.Token));
             }
             catch (System.OperationCanceledException)
             {
