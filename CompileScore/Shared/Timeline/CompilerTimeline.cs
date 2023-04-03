@@ -149,7 +149,7 @@ namespace CompileScore.Timeline
         {
             uint numEvents = reader.ReadUInt32();
 
-            TimelineNode root = new TimelineNode(CompilerData.CompileCategory.Thread.ToString(), 0, 0, 0, CompilerData.CompileCategory.Thread);
+            TimelineNode root = new TimelineNode(CompilerData.CompileCategory.Thread.ToString(), 0, 0, CompilerData.CompileCategory.Thread);
 
             TimelineNode parent = root;
 
@@ -215,7 +215,7 @@ namespace CompileScore.Timeline
         {
             uint numTracks = reader.ReadUInt32();
 
-            TimelineNode root = new TimelineNode("", 0, 0, 0, CompilerData.CompileCategory.Timeline);
+            TimelineNode root = new TimelineNode("", 0, 0, CompilerData.CompileCategory.Timeline);
             InitializeNodeRecursive(root);
 
             for (uint i=0;i<numTracks;++i)
