@@ -102,7 +102,7 @@ namespace CompileScore.Common
                     System.Threading.Thread.Sleep(500);
                 }
 
-                ThreadHelper.JoinableTaskFactory.Run(async delegate {
+                Common.ThreadUtils.Run(async delegate {
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     if (Verbosity)
                     {

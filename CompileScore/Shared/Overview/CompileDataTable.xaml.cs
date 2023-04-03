@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
 
 namespace CompileScore.Overview
 {
@@ -20,7 +21,7 @@ namespace CompileScore.Overview
             public IncludeViewerProxy(CompileValue original)
             {
                 Value = original;
-                FullPath = CompilerData.Instance.Folders.GetValuePathSafe(original); //TODO ~ Ramovn ~ move this to a task
+                FullPath = "...";
             }
 
             public CompileValue Value { get; } 
@@ -103,7 +104,22 @@ namespace CompileScore.Overview
             }
         }
 
-        private object GetCollection()
+        private async System.Threading.Tasks.Task PopulateProxyDataAsync(List<IncludeViewerProxy> data)
+        {
+            foreach (IncludeViewerProxy val in data)
+            {
+                val.FullPath = CompilerData.Instance.Folders.GetValuePathSafe(val.Value);
+            }
+
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (dataView != null)
+            {
+                dataView.Refresh();
+            }
+        }
+
+        private object CreateCollection()
         {
             if (Category == CompilerData.CompileCategory.Include)
             {
@@ -115,6 +131,8 @@ namespace CompileScore.Overview
                     proxy.Add(new IncludeViewerProxy(val));
                 }
 
+                ThreadUtils.Fork( async delegate { await PopulateProxyDataAsync(proxy); });
+
                 return proxy;
             }
             else
@@ -125,7 +143,7 @@ namespace CompileScore.Overview
 
         private void OnDataChanged()
         {
-            this.dataView = CollectionViewSource.GetDefaultView(GetCollection());
+            this.dataView = CollectionViewSource.GetDefaultView(CreateCollection());
             UpdateFilterFunction();
             compileDataGrid.ItemsSource = this.dataView;
         }
@@ -201,6 +219,5 @@ namespace CompileScore.Overview
 
             contextMenuStrip.Show(System.Windows.Forms.Control.MousePosition);
         }
-
     }
 }

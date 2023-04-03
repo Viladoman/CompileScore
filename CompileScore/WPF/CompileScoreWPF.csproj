@@ -106,6 +106,7 @@
     <Compile Include="..\Shared\Common\DocumentLifeTimeManager.cs" Link="Shared\Common\DocumentLifeTimeManager.cs" />
     <Compile Include="..\Shared\Common\OutputLog.cs" Link="Shared\Common\OutputLog.cs" />
     <Compile Include="..\Shared\Common\ScoreColors.cs" Link="Shared\Common\ScoreColors.cs" />
+	<Compile Include="..\Shared\Common\ThreadUtils.cs" Link="Shared\Common\ThreadUtils.cs" />
     <Compile Include="..\Shared\Common\UIConverters.cs" Link="Shared\Common\UIConverters.cs" />
     <Compile Include="..\Shared\Overview\CompileDataTable.xaml.cs" Link="Shared\Overview\CompileDataTable.xaml.cs">
       <DependentUpon>CompileDataTable.xaml</DependentUpon>

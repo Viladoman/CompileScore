@@ -108,7 +108,7 @@ namespace CompileScore
                     System.Threading.Thread.Sleep(500);
                 }
 
-                ThreadHelper.JoinableTaskFactory.Run(async delegate {
+                Common.ThreadUtils.Run(async delegate {
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     OutputLog.Log("File change detected.");
                     FileWatchedChanged?.Invoke();

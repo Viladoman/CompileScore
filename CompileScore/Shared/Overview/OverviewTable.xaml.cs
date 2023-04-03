@@ -21,7 +21,7 @@ namespace CompileScore.Overview
             public UnitProxyValue(UnitValue unit)
             {
                 Unit = unit;
-                FullPath = CompilerData.Instance.Folders.GetUnitPathSafe(unit); //TODO ~ Ramovn ~ move this to a task
+                FullPath = "...";
             }
 
             public UnitValue Unit { get; }
@@ -98,6 +98,20 @@ namespace CompileScore.Overview
             string filterText = searchTextBox.Text.ToLower();
             this.dataView.Filter = d => FilterCompileValue(((UnitProxyValue)d).Unit, filterText);
         }
+        private async System.Threading.Tasks.Task PopulateProxyDataAsync(List<UnitProxyValue> data)
+        {
+            foreach (UnitProxyValue val in data)
+            {
+                val.FullPath = CompilerData.Instance.Folders.GetUnitPathSafe(val.Unit);
+            }
+
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (dataView != null)
+            {
+                dataView.Refresh();
+            }
+        }
 
         private void OnDataChanged()
         {
@@ -110,7 +124,9 @@ namespace CompileScore.Overview
             {
                 proxy.Add(new UnitProxyValue(value)); 
             }
-            
+
+            ThreadUtils.Fork(async delegate { await PopulateProxyDataAsync(proxy); });
+
             this.dataView = CollectionViewSource.GetDefaultView(proxy);
             UpdateFilterFunction();
             compileDataGrid.ItemsSource = this.dataView;

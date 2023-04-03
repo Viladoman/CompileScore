@@ -11,10 +11,10 @@ namespace CompileScore
     {
         public MainWindow()
         {
+            InitSystems();
+
             InitializeComponent();
             Common.ColorTheme.AddThemeToApplicationResources();
-
-            InitSystems();
 
             RefreshToolVisibility();
             CompilerData.Instance.ScoreDataChanged += RefreshToolVisibility;

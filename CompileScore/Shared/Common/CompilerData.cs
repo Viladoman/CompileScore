@@ -661,7 +661,7 @@ namespace CompileScore
             chunk.LoadingBatch = LoadingBatch;
             LoadingFlags |= (uint)HydrateFlag.Main;
 
-            _ = ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            Common.ThreadUtils.Fork(async delegate
             {
                 ReadMainScore(fullPath, chunk);
 
@@ -685,7 +685,7 @@ namespace CompileScore
             chunk.LoadingBatch = LoadingBatch;
             LoadingFlags |= (uint)HydrateFlag.Globals;
 
-            _ = ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            Common.ThreadUtils.Fork(async delegate
             {
                 //Wait for the Main data to be ready and applied as we need it to load and populate the globals
                 while ((LoadingFlags & (uint)HydrateFlag.Main) != 0)

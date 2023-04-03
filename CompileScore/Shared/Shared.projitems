@@ -21,6 +21,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\MacroEvaluator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\OutputLog.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\ScoreColors.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ThreadUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\UIConverters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\WindowProxy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompileScorePackage.cs" />
