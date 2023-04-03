@@ -7,7 +7,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
 
 namespace CompileScore.Overview
 {
@@ -28,8 +27,11 @@ namespace CompileScore.Overview
             public string FullPath { set;  get; }
         }
 
-
         private ICollectionView dataView;
+
+        private System.Threading.CancellationTokenSource TokenSource = new System.Threading.CancellationTokenSource();
+        private HashSet<CompileValue> FilterSet = new HashSet<CompileValue>();
+
 
         private CompilerData.CompileCategory Category { set; get; }
 
@@ -86,21 +88,54 @@ namespace CompileScore.Overview
 
         private static bool FilterCompileValue(CompileValue value, string filterText)
         {
+            //TODO ~ ramonv ~ Improve this filter to be more advanced
             return value.Name.Contains(filterText);
         }
 
-        private void UpdateFilterFunction()
+        private async System.Threading.Tasks.Task FilterEntriesAsync(string filterText,System.Threading.CancellationToken token)
         {
-            //TODO ~ ramonv ~ convert this into just a lookup set for active/unactive... perform the filter in an async task
-            string filterText = searchTextBox.Text.ToLower();
+            List<CompileValue> originalValues = CompilerData.Instance.GetCollection(Category);
+            HashSet<CompileValue> newSet = new HashSet<CompileValue>(originalValues.Count);
 
-            if (Category == CompilerData.CompileCategory.Include)
+            foreach(CompileValue value in originalValues)
             {
-                this.dataView.Filter = d => FilterCompileValue(((IncludeViewerProxy)d).Value, filterText);
+                token.ThrowIfCancellationRequested();
+
+                if (!FilterCompileValue(value, filterText)) //TODO ~ ramonv ~ upgrade filtering value
+                {
+                    newSet.Add(value);
+                }
             }
-            else
+
+            token.ThrowIfCancellationRequested();
+            
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            //swap hashes and filter in dataview
+            FilterSet = newSet;
+            if (dataView != null)
             {
-                this.dataView.Filter = d => FilterCompileValue((CompileValue)d, filterText);
+                dataView.Refresh();
+            }
+        }
+
+        public async System.Threading.Tasks.Task SearchAsync(string filterText)
+        {
+            var newTokenSource = new System.Threading.CancellationTokenSource();
+            var oldTokenSource = System.Threading.Interlocked.Exchange(ref TokenSource, newTokenSource);
+
+            if (!oldTokenSource.IsCancellationRequested)
+            {
+                oldTokenSource.Cancel();
+            }
+
+            try
+            {
+                await ThreadUtils.ForkAsync(() => FilterEntriesAsync(filterText.ToLower(),newTokenSource.Token));
+            }
+            catch (System.OperationCanceledException)
+            {
+                //Search got cancelled
             }
         }
 
@@ -143,15 +178,23 @@ namespace CompileScore.Overview
 
         private void OnDataChanged()
         {
-            this.dataView = CollectionViewSource.GetDefaultView(CreateCollection());
-            UpdateFilterFunction();
-            compileDataGrid.ItemsSource = this.dataView;
+            dataView = CollectionViewSource.GetDefaultView(CreateCollection());
+
+            if (Category == CompilerData.CompileCategory.Include)
+            {
+                dataView.Filter = d => !FilterSet.Contains(((IncludeViewerProxy)d).Value);
+            }
+            else
+            {
+                dataView.Filter = d => !FilterSet.Contains((CompileValue)d);
+            }
+
+            compileDataGrid.ItemsSource = dataView;
         }
 
         private void SearchTextChangedEventHandler(object sender, TextChangedEventArgs args)
         {
-            UpdateFilterFunction();
-            this.dataView.Refresh();
+            _ = SearchAsync(searchTextBox.Text);
         }
 
         private CompileValue GetValueFromRowItem(DataGridRow row)
