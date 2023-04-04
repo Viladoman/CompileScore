@@ -85,26 +85,32 @@ namespace CompileScore.Overview
             compileDataGrid.Columns.Add(textColumn);
         }
 
-        private static bool FilterCompileValue(CompileValue value, string filterText)
+        private static bool FilterCompileValue(CompileValue value, string[] filterWords)
         {
-            //TODO ~ ramonv ~ Improve this filter to be more advanced
-            return value.Name.Contains(filterText);
+            bool result = true;
+            foreach(string word in filterWords)
+            {
+                result = result && value.Name.ContainsNoCase(word);
+            }
+            return result;
         }
 
         private async System.Threading.Tasks.Task FilterEntriesAsync(string filterText,System.Threading.CancellationToken token)
         {
-            string lowerFilterText = filterText.ToLower(); //TODO ~ ramonv ~ upgrade filtering value
-
             List<CompileValue> originalValues = CompilerData.Instance.GetCollection(Category);
             HashSet<CompileValue> newSet = new HashSet<CompileValue>(originalValues.Count);
 
-            foreach(CompileValue value in originalValues)
+            if ( filterText.Length > 0 )
             {
-                token.ThrowIfCancellationRequested();
-
-                if (!FilterCompileValue(value, lowerFilterText)) //TODO ~ ramonv ~ upgrade filtering value
+                string[] filterWords = filterText.Split(' ');
+                foreach(CompileValue value in originalValues)
                 {
-                    newSet.Add(value);
+                    token.ThrowIfCancellationRequested();
+
+                    if (!FilterCompileValue(value, filterWords))
+                    {
+                        newSet.Add(value);
+                    }
                 }
             }
 

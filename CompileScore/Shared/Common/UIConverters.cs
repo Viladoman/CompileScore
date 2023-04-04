@@ -11,6 +11,11 @@ namespace CompileScore.Common
 {
     static public class UIHelpers
     {
+        public static bool ContainsNoCase(this string source, string toCheck)
+        {
+            return source?.IndexOf(toCheck, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
         public static T GetParentOfType<T>(this DependencyObject element) where T : DependencyObject
         {
             Type type = typeof(T);

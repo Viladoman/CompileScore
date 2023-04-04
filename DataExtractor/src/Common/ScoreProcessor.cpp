@@ -26,12 +26,7 @@ namespace CompileScore
 		const U64 strHash = Hash::AppendToCRC64(0ull, str.c_str(), str.length() );
 		if (strHash)
 		{
-			auto const& result = scoreData.strings.insert(TCompileStrings::value_type(strHash, str));
-			if (result.second)
-			{
-				//Convert to lower case to improve search performance later
-				StringUtils::ToLower(result.first->second);
-			}
+			scoreData.strings.insert(TCompileStrings::value_type(strHash, str));
 		}
 		return strHash;
 	}

@@ -91,26 +91,33 @@ namespace CompileScore.Overview
                 ++index;
             }
         }
-        private static bool FilterUnitValue(UnitValue value, string filterText)
+
+        private static bool FilterUnitValue(UnitValue value, string[] filterWords)
         {
-            //TODO ~ ramonv ~ Improve this filter to be more advanced
-            return value.Name.Contains(filterText);
+            bool result = true;
+            foreach (string word in filterWords)
+            {
+                result = result && value.Name.ContainsNoCase(word);
+            }
+            return result;
         }
 
         private async System.Threading.Tasks.Task FilterEntriesAsync(string filterText, System.Threading.CancellationToken token)
         {
-            string lowerFilterText = filterText.ToLower(); //TODO ~ ramonv ~ upgrade filtering value
-
             List<UnitValue> originalValues = CompilerData.Instance.GetUnits();
             HashSet<UnitValue> newSet = new HashSet<UnitValue>(originalValues.Count);
 
-            foreach (UnitValue value in originalValues)
+            if (filterText.Length > 0)
             {
-                token.ThrowIfCancellationRequested();
-
-                if (!FilterUnitValue(value, lowerFilterText)) //TODO ~ ramonv ~ upgrade filtering value
+                string[] filterWords = filterText.Split(' ');
+                foreach (UnitValue value in originalValues)
                 {
-                    newSet.Add(value);
+                    token.ThrowIfCancellationRequested();
+
+                    if (!FilterUnitValue(value, filterWords))
+                    {
+                        newSet.Add(value);
+                    }
                 }
             }
 
