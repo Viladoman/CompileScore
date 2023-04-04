@@ -132,17 +132,7 @@ namespace CompileScore
             var menuCommand = sender as OleMenuCommand;
             if (menuCommand != null)
             {
-                if ( EditorUtils.GetElementUnderActiveCursor() != null)
-                {
-                    menuCommand.Text = "Show Max Timeline";
-                }
-                else
-                {
-                    menuCommand.Text = "Show Timeline";
-                }
-
-                bool canTrigger = CompilerData.Instance.GetUnits().Count > 0;
-                menuCommand.Visible = menuCommand.Enabled = canTrigger;
+                menuCommand.Visible = menuCommand.Enabled = CompilerData.Instance.GetUnits().Count > 0;
             }
         }
         private static void Query_CanShowIncluders(object sender, EventArgs args)
