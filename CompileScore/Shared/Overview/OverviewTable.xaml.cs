@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.Shell;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -29,6 +30,9 @@ namespace CompileScore.Overview
         }
 
         private ICollectionView dataView;
+
+        private System.Threading.CancellationTokenSource TokenSource = new System.Threading.CancellationTokenSource();
+        private HashSet<UnitValue> FilterSet = new HashSet<UnitValue>();
 
         private int originalColumns = 0;
 
@@ -87,17 +91,61 @@ namespace CompileScore.Overview
                 ++index;
             }
         }
-
-        private static bool FilterCompileValue(UnitValue value, string filterText)
+        private static bool FilterUnitValue(UnitValue value, string filterText)
         {
+            //TODO ~ ramonv ~ Improve this filter to be more advanced
             return value.Name.Contains(filterText);
         }
 
-        private void UpdateFilterFunction()
+        private async System.Threading.Tasks.Task FilterEntriesAsync(string filterText, System.Threading.CancellationToken token)
         {
-            string filterText = searchTextBox.Text.ToLower();
-            this.dataView.Filter = d => FilterCompileValue(((UnitProxyValue)d).Unit, filterText);
+            string lowerFilterText = filterText.ToLower(); //TODO ~ ramonv ~ upgrade filtering value
+
+            List<UnitValue> originalValues = CompilerData.Instance.GetUnits();
+            HashSet<UnitValue> newSet = new HashSet<UnitValue>(originalValues.Count);
+
+            foreach (UnitValue value in originalValues)
+            {
+                token.ThrowIfCancellationRequested();
+
+                if (!FilterUnitValue(value, lowerFilterText)) //TODO ~ ramonv ~ upgrade filtering value
+                {
+                    newSet.Add(value);
+                }
+            }
+
+            token.ThrowIfCancellationRequested();
+
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            //swap hashes and filter in dataview
+            FilterSet = newSet;
+            if (dataView != null)
+            {
+                dataView.Refresh();
+            }
         }
+
+        public async System.Threading.Tasks.Task SearchAsync(string filterText)
+        {
+            var newTokenSource = new System.Threading.CancellationTokenSource();
+            var oldTokenSource = System.Threading.Interlocked.Exchange(ref TokenSource, newTokenSource);
+
+            if (!oldTokenSource.IsCancellationRequested)
+            {
+                oldTokenSource.Cancel();
+            }
+
+            try
+            {
+                await ThreadUtils.ForkAsync(() => FilterEntriesAsync(filterText, newTokenSource.Token));
+            }
+            catch (System.OperationCanceledException)
+            {
+                //Search got cancelled
+            }
+        }
+
         private async System.Threading.Tasks.Task PopulateProxyDataAsync(List<UnitProxyValue> data)
         {
             foreach (UnitProxyValue val in data)
@@ -128,14 +176,13 @@ namespace CompileScore.Overview
             ThreadUtils.Fork(async delegate { await PopulateProxyDataAsync(proxy); });
 
             this.dataView = CollectionViewSource.GetDefaultView(proxy);
-            UpdateFilterFunction();
+            dataView.Filter = d => !FilterSet.Contains(((UnitProxyValue)d).Unit);
             compileDataGrid.ItemsSource = this.dataView;
         }
 
         private void SearchTextChangedEventHandler(object sender, TextChangedEventArgs args)
         {
-            UpdateFilterFunction();
-            this.dataView.Refresh();
+            _ = SearchAsync(searchTextBox.Text);
         }
 
         private void DataGridRow_DoubleClick(object sender, MouseButtonEventArgs e)
