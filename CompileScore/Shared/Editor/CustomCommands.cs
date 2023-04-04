@@ -21,10 +21,10 @@ namespace CompileScore
 
         public const int CommandId_Build          = 256;
         public const int CommandId_Rebuild        = 257;
-        public const int CommandId_BuildProject   = 266;
-        public const int CommandId_RebuildProject = 267;
-		public const int CommandId_StartTrace     = 268;
-		public const int CommandId_StopTrace      = 269;
+        public const int CommandId_BuildProject   = 267;
+        public const int CommandId_RebuildProject = 268;
+		public const int CommandId_StartTrace     = 269;
+		public const int CommandId_StopTrace      = 270;
 
 		public const int CommandId_Generate       = 259;
 		public const int CommandId_Clean          = 258;
@@ -35,6 +35,7 @@ namespace CompileScore
         public const int CommandId_About          = 264;
 
         public const int CommandId_ShowTimeline   = 265;
+        public const int CommandId_ShowIncluders  = 266;
 
         public static readonly Guid CommandSet_Custom = new Guid("f76ad68f-41c2-4f8d-945e-427b0d092da1");
 
@@ -58,6 +59,12 @@ namespace CompileScore
             {
                 var menuItem = new OleMenuCommand(Execute_ShowTimeline, new CommandID(CommandSet_Custom, CommandId_ShowTimeline));
                 menuItem.BeforeQueryStatus += Query_CanShowTimeline;
+                commandService.AddCommand(menuItem);
+            }
+
+            {
+                var menuItem = new OleMenuCommand(Execute_ShowIncluders, new CommandID(CommandSet_Custom, CommandId_ShowIncluders));
+                menuItem.BeforeQueryStatus += Query_CanShowIncluders;
                 commandService.AddCommand(menuItem);
             }
 
@@ -120,10 +127,33 @@ namespace CompileScore
 
 		private static void Query_CanShowTimeline(object sender, EventArgs args)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var menuCommand = sender as OleMenuCommand;
             if (menuCommand != null)
             {
-                menuCommand.Visible = menuCommand.Enabled = CompilerData.Instance.GetUnits().Count > 0;
+                if ( EditorUtils.GetElementUnderActiveCursor() != null)
+                {
+                    menuCommand.Text = "Show Max Timeline";
+                }
+                else
+                {
+                    menuCommand.Text = "Show Timeline";
+                }
+
+                bool canTrigger = CompilerData.Instance.GetUnits().Count > 0;
+                menuCommand.Visible = menuCommand.Enabled = canTrigger;
+            }
+        }
+        private static void Query_CanShowIncluders(object sender, EventArgs args)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var menuCommand = sender as OleMenuCommand;
+            if (menuCommand != null)
+            {
+                bool canTrigger = CompilerData.Instance.GetUnits().Count > 0 && EditorUtils.GetElementUnderActiveCursor() != null;
+                menuCommand.Visible = menuCommand.Enabled = canTrigger;
             }
         }
 
@@ -177,7 +207,27 @@ namespace CompileScore
         private static void Execute_ShowTimeline(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            EditorUtils.ShowActiveTimeline();
+
+            CompileValue value = EditorUtils.GetElementUnderActiveCursor();
+            if ( value != null )
+            {
+                Timeline.CompilerTimeline.Instance.DisplayTimeline(value.MaxUnit, value);
+            }
+            else
+            {
+                EditorUtils.ShowActiveTimeline();
+            }
+        }
+
+        private static void Execute_ShowIncluders(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            CompileValue value = EditorUtils.GetElementUnderActiveCursor();
+            if (value != null)
+            {
+                Includers.CompilerIncluders.Instance.DisplayIncluders(value);
+            }
         }
 
         private static void Execute_Build(object sender, EventArgs e)

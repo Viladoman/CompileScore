@@ -43,21 +43,21 @@
               <CommandFlag>DynamicVisibility</CommandFlag>
           If you do not want an image next to your command, remove the Icon node /> -->
       <Button guid="guidCompileScorePackageCmdSet" id="OverviewWindowCommandId" priority="0x0100" type="Button">
-        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreWindowsGroup" />
         <Icon guid="guidImages" id="icon" />
         <Strings>
           <ButtonText>Compile Score</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidCompileScorePackageCmdSet" id="cmdidTimelineWindowCommand" priority="0x0100" type="Button">
-        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreWindowsGroup" />
         <Icon guid="guidImages1" id="icon" />
         <Strings>
           <ButtonText>Compile Score Timeline</ButtonText>
         </Strings>
       </Button>
 	  <Button guid="guidCompileScorePackageCmdSet" id="cmdidIncludersWindowCommand" priority="0x0100" type="Button">
-		<Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
+		<Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreWindowsGroup" />
 		<Icon guid="guidImages1" id="icon" />
 		<Strings>
 			<ButtonText>Compile Score Includers</ButtonText>
@@ -79,10 +79,18 @@
       </Button>
 
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdidShowTimeline" priority="0x0100" type="Button">
-        <Parent guid="guidCompileScorePackageCmdSet1" id="EditorContextMenuGroup" />
-        <Icon guid="guidImages" id="icon" />
+        <Parent guid="guidCompileScorePackageCmdSet1" id="EditorContextMenuGroupMain" />
+        <Icon guid="guidImages1" id="icon" />
         <Strings>
           <ButtonText>Show Timeline</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdidShowIncluders" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="EditorContextMenuGroupMain" />
+        <Icon guid="guidImages1" id="icon" />
+        <Strings>
+          <ButtonText>Show Includers</ButtonText>
         </Strings>
       </Button>
 
@@ -178,8 +186,14 @@
       <Bitmap guid="guidImages1" href="TimelineWindowCommand.png" usedList="icon" />
     </Bitmaps>
     <Groups>
+      <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreWindowsGroup" priority="0x0600">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreWindowsMenu" />
+      </Group>
       <Group guid="guidCompileScorePackageCmdSet1" id="EditorContextMenuGroup" priority="0x0600">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN" />
+      </Group>
+      <Group guid="guidCompileScorePackageCmdSet1" id="EditorContextMenuGroupMain" priority="0x0600">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="EditorContextMenu" />
       </Group>
       <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreGroup" priority="0x0600">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_TOOL_MAINMENU" />
@@ -204,8 +218,20 @@
       </Group>
     </Groups>
     <Menus>
+      <Menu guid="guidCompileScorePackageCmdSet1" id="CompileScoreWindowsMenu" type="Menu" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
+        <Strings>
+          <ButtonText>Compile Score</ButtonText>
+        </Strings>
+      </Menu>
       <Menu guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenu" type="Menu" priority="0x0600">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreGroup" />
+        <Strings>
+          <ButtonText>Compile Score</ButtonText>
+        </Strings>
+      </Menu>
+      <Menu guid="guidCompileScorePackageCmdSet1" id="EditorContextMenu" type="Menu" priority="0x0600">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="EditorContextMenuGroup" />
         <Strings>
           <ButtonText>Compile Score</ButtonText>
         </Strings>
@@ -238,6 +264,8 @@
     </GuidSymbol>
   
     <GuidSymbol value="{f76ad68f-41c2-4f8d-945e-427b0d092da1}" name="guidCompileScorePackageCmdSet1">
+      <IDSymbol value="4126" name="CompileScoreWindowsGroup" />
+      <IDSymbol value="4127" name="CompileScoreWindowsMenu" />
       <IDSymbol value="4128" name="CompileScoreGroup" />
       <IDSymbol value="4129" name="CompileScoreMenu" />
       <IDSymbol value="4130" name="CompileScoreMenuGroupBuild" />
@@ -246,7 +274,9 @@
       <IDSymbol value="4133" name="CompileScoreMenuGroupHelp" />
       <IDSymbol value="4134" name="CompileScoreBuild" />
       <IDSymbol value="4135" name="EditorContextMenuGroup" />
-      <IDSymbol value="4136" name="CompileScoreBuildProject" />
+      <IDSymbol value="4136" name="EditorContextMenu" />
+      <IDSymbol value="4137" name="EditorContextMenuGroupMain" />
+      <IDSymbol value="4138" name="CompileScoreBuildProject" />
       <IDSymbol value="256" name="cmdidBuild" />
       <IDSymbol value="257" name="cmdidRebuild" />
       <IDSymbol value="258" name="cmdIdClean" />
@@ -257,10 +287,11 @@
       <IDSymbol value="263" name="cmdidReport" />
       <IDSymbol value="264" name="cmdidAbout" />
       <IDSymbol value="265" name="cmdidShowTimeline" />
-      <IDSymbol value="266" name="cmdIdBuildProject" />
-      <IDSymbol value="267" name="cmdIdRebuildProject" />
-      <IDSymbol value="268" name="cmdIdStartTrace" />
-      <IDSymbol value="269" name="cmdIdStopTrace" />
+      <IDSymbol value="266" name="cmdidShowIncluders" />
+      <IDSymbol value="267" name="cmdIdBuildProject" />
+      <IDSymbol value="268" name="cmdIdRebuildProject" />
+      <IDSymbol value="269" name="cmdIdStartTrace" />
+      <IDSymbol value="270" name="cmdIdStopTrace" />
 	</GuidSymbol>
  
   </Symbols>

@@ -4,9 +4,12 @@ using EnvDTE80;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.TextManager.Interop;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Configuration;
+using System.Text.RegularExpressions;
 
 namespace CompileScore
 {
@@ -57,7 +60,7 @@ namespace CompileScore
 
             return window;
         }
-        
+
         static private IEnumerable<ProjectItem> EnumerateProjectItems(ProjectItems items)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -132,7 +135,7 @@ namespace CompileScore
             }
             else
             {
-                MessageWindow.Display(new MessageContent("Unable to find the file: "+filename));
+                MessageWindow.Display(new MessageContent("Unable to find the file: " + filename));
             }
         }
 
@@ -162,7 +165,7 @@ namespace CompileScore
             string fullPath = CompilerData.Instance.Folders.GetValuePath(value);
             if (fullPath != null && File.Exists(fullPath))
             {
-                var applicationObject = EditorUtils.ServiceProvider.GetService(typeof(DTE)) as EnvDTE80.DTE2;
+                var applicationObject = ServiceProvider.GetService(typeof(DTE)) as EnvDTE80.DTE2;
                 Assumes.Present(applicationObject);
                 applicationObject.ItemOperations.OpenFile(fullPath);
             }
@@ -176,9 +179,78 @@ namespace CompileScore
         static public Document GetActiveDocument()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var applicationObject = EditorUtils.ServiceProvider.GetService(typeof(DTE)) as EnvDTE80.DTE2;
+            var applicationObject = ServiceProvider.GetService(typeof(DTE)) as EnvDTE80.DTE2;
             Assumes.Present(applicationObject);
             return applicationObject.ActiveDocument;
+        }
+
+        static public IVsTextView GetActiveView()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var textManager = ServiceProvider.GetService(typeof(SVsTextManager)) as IVsTextManager2;
+            if (textManager == null) return null;
+
+            IVsTextView view;
+            textManager.GetActiveView2(1, null, (uint)_VIEWFRAMETYPE.vftCodeWindow, out view);
+            return view;
+        }
+
+        static public CompileValue GetElementUnderActiveCursor()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            Document doc = GetActiveDocument();
+            IVsTextView view = GetActiveView();
+            if (doc == null || view == null)
+                return null;
+
+            view.GetCaretPos(out int line, out int col);
+
+#if ALLOW_INTELLISENSE
+            //Intellisense search disabled to avoid stalls due to VS code parsing
+            const string LANGUAGE_VISUAL_C = "{B5E9BD32-6D3E-4B5D-925E-8A43B79820B4}"; 
+            ProjectItem projItem = doc == null ? null : doc.ProjectItem;
+            FileCodeModel model = projItem == null ? null : projItem.FileCodeModel;
+            CodeElements elements = model == null ? null : model.CodeElements;
+
+            //Try to get the info from visual studio internal understand of the file
+            if (elements != null && model.Language == LANGUAGE_VISUAL_C)
+            {
+                int modelLine = line+1;
+                foreach (CodeElement element in elements)
+                {
+                    if (modelLine >= element.StartPoint.Line && modelLine <= element.EndPoint.Line)
+                    {
+                        if (element.Kind == vsCMElement.vsCMElementIncludeStmt)
+                        {
+                            string fileName = GetFileNameSafe(element.Name).ToLower();
+                            return fileName != null ? CompilerData.Instance.GetValueByName(CompilerData.CompileCategory.Include, fileName) : null;
+                        }
+                        //TODO ~ ramonv ~ add more elements
+                    }
+                }
+
+                return null;
+            }
+#endif
+            //if we don't have a model perform a silly regex check
+            view.GetBuffer(out IVsTextLines textBuffer);
+            if ( textBuffer != null)
+            {
+                textBuffer.GetLineText(line,0,line+1,0,out string text);
+                MatchCollection matches = Regex.Matches(text, IncludeRegex);
+                foreach (Match match in matches)
+                {
+                    if (match.Success)
+                    {
+                        string fileName = GetFileNameSafe(match.Groups[1].Value).ToLower();
+                        return fileName != null ? CompilerData.Instance.GetValueByName(CompilerData.CompileCategory.Include, fileName) : null;
+                    }
+                }
+            }
+
+            return null;
         }
 
         static public void ShowActiveTimeline()
