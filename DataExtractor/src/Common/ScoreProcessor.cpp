@@ -173,6 +173,37 @@ namespace CompileScore
 		}
 	}
 
+	void PopTimelineStackEvent(ScoreData& scoreData, const CompileUnit& unit, fastl::vector<CompileEvent*>& eventStack, fastl::vector<U32>& dataIdStack, const CompileCategory gatherLimit, const ExportParams::Includers includersMode)
+	{
+		//Check what happened with the children and fixup any remaining parent data
+		CompileEvent* thisEvent = eventStack.back();
+		const U32 thisIndex = dataIdStack.back();
+		if (thisIndex != Utils::kInvalidIndex && thisEvent->category < gatherLimit)
+		{
+			// Finalize post computation when closing this event ( self duration calculations )
+			TCompileDatas& global = scoreData.globals[ToUnderlying(thisEvent->category)];
+			CompileData& thisCompileData = global[thisIndex];
+
+			if (thisEvent->selfDuration >= thisCompileData.selfMaximum)
+			{
+				thisCompileData.selfMaximum = thisEvent->selfDuration;
+				thisCompileData.selfMaxId = unit.unitId;
+			}
+
+			thisCompileData.selfAccumulated += thisEvent->selfDuration;
+		}
+
+		eventStack.pop_back();
+		dataIdStack.pop_back();
+
+		CompileEvent* parent = eventStack.empty() ? nullptr : eventStack.back();
+		if (parent != nullptr && thisEvent->category == parent->category) {
+			parent->selfDuration -= thisEvent->duration;
+		}
+
+		ProcessParent(scoreData, *thisEvent, parent, unit, includersMode);
+	}
+
 
 	// -----------------------------------------------------------------------------------------------------------
 	void ProcessTimelineTrack(ScoreData& scoreData, CompileUnit& unit, TCompileEvents& events, const CompileCategory gatherLimit, const ExportParams::Includers includersMode )
@@ -186,31 +217,7 @@ namespace CompileScore
 			//update stack 
 			while (!eventStack.empty() && (element.start >= eventStack.back()->start + eventStack.back()->duration))
 			{
-				//Check what happened with the children and fixup any remaining parent data
-				CompileEvent* thisEvent = eventStack.back();
-				const U32 thisIndex = dataIdStack.back();
-				if ( thisIndex != Utils::kInvalidIndex && element.category < gatherLimit)
-				{
-					// Finalize post computation when closing this event ( self duration calculations )
-					TCompileDatas& global = scoreData.globals[ToUnderlying(thisEvent->category)];
-					CompileData& thisCompileData = global[thisIndex];
-
-					if (thisEvent->selfDuration >= thisCompileData.selfMaximum)
-					{
-						thisCompileData.selfMaximum = thisEvent->selfDuration;
-						thisCompileData.selfMaxId = unit.unitId;
-					}
-
-					thisCompileData.selfAccumulated += thisEvent->selfDuration;
-				}
-
-				eventStack.pop_back();
-				dataIdStack.pop_back();
-
-				CompileEvent* parent = eventStack.empty() ? nullptr : eventStack.back();
-				if (parent != nullptr && thisEvent->category == parent->category) {
-					parent->selfDuration -= thisEvent->duration;
-				}
+				PopTimelineStackEvent(scoreData, unit, eventStack, dataIdStack, gatherLimit, includersMode);
 			}
 			CompileEvent* parent = eventStack.empty() ? nullptr : eventStack.back();
 			eventStack.push_back( &element );
@@ -230,8 +237,6 @@ namespace CompileScore
 					compileData.maxId = unit.unitId;
 				}
 
-				ProcessParent( scoreData, element, parent, unit, includersMode );
-
 				++compileData.count;
 			}
 			else
@@ -246,6 +251,12 @@ namespace CompileScore
 					unit.values[ToUnderlying(element.category)] += element.duration;
 				}
 			}
+		}
+
+		//Pop the remaining stack
+		while (!eventStack.empty())
+		{
+			PopTimelineStackEvent(scoreData, unit, eventStack, dataIdStack, gatherLimit, includersMode);
 		}
 	}
 
