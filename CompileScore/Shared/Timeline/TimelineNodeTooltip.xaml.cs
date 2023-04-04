@@ -27,7 +27,17 @@ namespace CompileScore.Timeline
             if (node != null)
             {
                 headerText.Text = Common.UIConverters.ToSentenceCase(node.Category.ToString());
-                durationText.Text = Mode == Timeline.Mode.Includers? (node.Duration/CompileScore.Includers.CompilerIncluders.durationMultiplier).ToString() : Common.UIConverters.GetTimeStr(node.Duration);
+
+                if (Mode == Timeline.Mode.Includers)
+                {
+                    durationText.Text = (node.Duration/CompileScore.Includers.CompilerIncluders.durationMultiplier).ToString();
+                    durationText.Visibility = node.Category == CompilerData.CompileCategory.Include? Visibility.Visible : Visibility.Collapsed;
+                }
+                else
+                {
+                    durationText.Text = Common.UIConverters.GetTimeStr(node.Duration);
+                    durationText.Visibility = Visibility.Visible;
+                }
 
                 if (node.Value is CompileValue)
                 {
