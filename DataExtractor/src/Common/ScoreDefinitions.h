@@ -28,7 +28,7 @@ enum class CompileCategory : CompileCategoryType
     FrontEnd,
     BackEnd,
     ExecuteCompiler,
-    Other,
+    Other,   //TODO ~ ramonv ~ this should not be part of the display section as it is just leftovers 
     //Display End
 
     RunPass,

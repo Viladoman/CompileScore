@@ -97,13 +97,17 @@ namespace Clang
 		constexpr static Json::Token tagDebugGlobalVariable   = Utils::CreateLiteralToken("DebugGlobalVariable");
 		constexpr static Json::Token tagPerFunctionPasses     = Utils::CreateLiteralToken("PerFunctionPasses");
 		constexpr static Json::Token tagPerModulePasses       = Utils::CreateLiteralToken("PerModulePasses");
-
+		/*
+		constexpr static Json::Token tagCFGSimplification     = Utils::CreateLiteralToken("SimplifyCFGPass");
+		constexpr static Json::Token tagFunctionAnalysis      = Utils::CreateLiteralToken("PassManager<");
+		constexpr static Json::Token tagDevirtualization      = Utils::CreateLiteralToken("DevirtSCCRepeatedPass");
+		constexpr static Json::Token tagModuleToFunction      = Utils::CreateLiteralToken("ModuleToFunctionPassAdaptor");
+		constexpr static Json::Token tagGSCCToFunction        = Utils::CreateLiteralToken("CGSCCToFunctionPassAdaptor");
+		*/
 		//Invalid Tags
 		constexpr static Json::Token tagInvalidA              = Utils::CreateLiteralToken("process_name");
 		constexpr static Json::Token tagInvalidB              = Utils::CreateLiteralToken("thread_name");
 		constexpr static Json::Token prefixInvalidA           = Utils::CreateLiteralToken("Total");
-
-		//TODO ~ ramonv ~ look for new tags in updated clang builds 
 
 		if (token.type == Json::Token::Type::String)
 		{ 
@@ -126,6 +130,15 @@ namespace Clang
 			if (Utils::EqualTokens(token,tagBackend))               return CompileCategory::BackEnd; 
 			if (Utils::EqualTokens(token,tagTotal))                 return CompileCategory::ExecuteCompiler; 
 			
+			/* 
+			//TODO ~ ramonv ~ give them new tags ( requires version upgrade )
+			if (Utils::EqualTokens(token, tagCFGSimplification))    return CompileCategory::Other;
+			if (Utils::StartsWithToken(token, tagFunctionAnalysis)) return CompileCategory::Other;
+			if (Utils::EqualTokens(token, tagModuleToFunction))     return CompileCategory::Other;
+			if (Utils::EqualTokens(token, tagDevirtualization))     return CompileCategory::Other;
+			if (Utils::EqualTokens(token, tagGSCCToFunction))       return CompileCategory::Other;
+			*/
+
 			if (Utils::EqualTokens(token,tagInvalidA) || 
 				Utils::EqualTokens(token,tagInvalidB) || 
 				Utils::StartsWithToken(token,prefixInvalidA)) 
