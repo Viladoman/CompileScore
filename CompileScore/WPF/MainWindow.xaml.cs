@@ -70,7 +70,6 @@ namespace CompileScore
             OpenFileDialog openFileDialog = new OpenFileDialog();
 
             openFileDialog.Filter = "Compile Score files (*.scor)|*.scor";
-            openFileDialog.InitialDirectory = @"C:\";
             openFileDialog.Title = "Please select a Compile Score file to inspect.";
 
             if (openFileDialog.ShowDialog() == true)
