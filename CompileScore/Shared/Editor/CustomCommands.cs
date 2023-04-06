@@ -1,10 +1,12 @@
 ﻿using System;
+using System.IO;
 using System.ComponentModel.Design;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.Win32;
 using Task = System.Threading.Tasks.Task;
 
 namespace CompileScore
@@ -29,9 +31,10 @@ namespace CompileScore
 		public const int CommandId_Generate       = 259;
 		public const int CommandId_Clean          = 258;
 
-        public const int CommandId_LoadDefault    = 260;
-        public const int CommandId_Settings       = 261;
-        public const int CommandId_Documentation  = 262;
+        public const int CommandId_Open           = 260;
+        public const int CommandId_LoadDefault    = 261;
+        public const int CommandId_Settings       = 262;
+        public const int CommandId_Documentation  = 263;
         public const int CommandId_About          = 264;
 
         public const int CommandId_ShowTimeline   = 265;
@@ -71,6 +74,8 @@ namespace CompileScore
             commandService.AddCommand(new MenuCommand(Execute_Settings,      new CommandID(CommandSet_Custom, CommandId_Settings)));
             commandService.AddCommand(new MenuCommand(Execute_Documentation, new CommandID(CommandSet_Custom, CommandId_Documentation)));
             commandService.AddCommand(new MenuCommand(Execute_About,         new CommandID(CommandSet_Custom, CommandId_About)));
+
+            commandService.AddCommand(new MenuCommand(Execute_OpenScore, new CommandID(CommandSet_Custom, CommandId_Open)));
 
             {
                 var menuItem = new OleMenuCommand(Execute_LoadDefault, new CommandID(CommandSet_Custom, CommandId_LoadDefault));
@@ -295,6 +300,26 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             Profiler.Instance.TriggerOperation(Profiler.BuildOperation.CleanClang);
+        }
+
+        private static void Execute_OpenScore(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Compile Score files (*.scor)|*.scor";
+            openFileDialog.InitialDirectory = @"C:\";
+            openFileDialog.Title = "Please select a Compile Score file to inspect.";
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string filename = openFileDialog.FileName;
+                if (Path.GetExtension(filename) == ".scor")
+                {
+                    CompilerData.Instance.ForceLoadFromFilename(filename);
+                    EditorUtils.FocusOverviewWindow();
+                }
+            }
         }
 
         private static void Execute_LoadDefault(object sender, EventArgs e)

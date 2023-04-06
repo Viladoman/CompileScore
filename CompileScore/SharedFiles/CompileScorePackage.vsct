@@ -64,14 +64,14 @@
 		</Strings>
 	  </Button>
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdidBuild" priority="0x0100" type="Button">
-        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupBuild" />
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuActionsGroup" />
         <Icon guid="guidImages" id="icon" />
         <Strings>
           <ButtonText>Build Solution and Profile</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdidRebuild" priority="0x0100" type="Button">
-        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupBuild" />
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuActionsGroup" />
         <Icon guid="guidImages" id="icon" />
         <Strings>
           <ButtonText>Rebuild Solution and Profile</ButtonText>
@@ -94,33 +94,40 @@
         </Strings>
       </Button>
 
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdOpen" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupFiles" />
+        <Strings>
+          <ButtonText>Open Score File</ButtonText>
+        </Strings>
+      </Button>
+
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdLoadDefault" priority="0x0100" type="Button">
-        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupFiles" />
         <Strings>
           <ButtonText>Load Default Score</ButtonText>
         </Strings>
       </Button>
 
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdGenerate" priority="0x0100" type="Button">
-        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuActionsGroup" />
         <Strings>
           <ButtonText>Clang Full Score Generation</ButtonText>
         </Strings>
       </Button>
 	  <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdClean" priority="0x0100" type="Button">
-        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuActionsGroup" />
         <Strings>
           <ButtonText>Clang Clean Folder Traces</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdStartTrace" priority="0x0100" type="Button">
-	    <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
+	    <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuActionsGroup" />
 	    <Strings>
 		  <ButtonText>Start Trace</ButtonText>
 	    </Strings>
       </Button>
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdStopTrace" priority="0x0100" type="Button">
-	    <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" />
+	    <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuActionsGroup" />
 	    <Strings>
 		  <ButtonText>Stop Trace</ButtonText>
 	    </Strings>
@@ -198,10 +205,10 @@
       <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreGroup" priority="0x0600">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_TOOL_MAINMENU" />
       </Group>
-      <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupBuild" priority="0x0600">
+      <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupActions" priority="0x0600">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenu" />
       </Group>
-      <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupScript" priority="0x0600">
+      <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupFiles" priority="0x0600">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenu" />
       </Group>
       <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupOptions" priority="0x0600">
@@ -210,6 +217,11 @@
       <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupHelp" priority="0x0600">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenu" />
       </Group>
+
+      <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuActionsGroup" priority="0x0600">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuActionsMenu" />
+      </Group>
+
       <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreBuild" priority="0x0600">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_BUILD" />
       </Group>
@@ -236,6 +248,14 @@
           <ButtonText>Compile Score</ButtonText>
         </Strings>
       </Menu>
+
+      <Menu guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuActionsMenu" type="Menu" priority="0x0600">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupActions" />
+        <Strings>
+          <ButtonText>Actions</ButtonText>
+        </Strings>
+      </Menu>
+      
     </Menus>
 
   </Commands>
@@ -264,12 +284,14 @@
     </GuidSymbol>
   
     <GuidSymbol value="{f76ad68f-41c2-4f8d-945e-427b0d092da1}" name="guidCompileScorePackageCmdSet1">
+      <IDSymbol value="4124" name="CompileScoreMenuActionsGroup" />
+      <IDSymbol value="4125" name="CompileScoreMenuActionsMenu" />
       <IDSymbol value="4126" name="CompileScoreWindowsGroup" />
       <IDSymbol value="4127" name="CompileScoreWindowsMenu" />
       <IDSymbol value="4128" name="CompileScoreGroup" />
       <IDSymbol value="4129" name="CompileScoreMenu" />
-      <IDSymbol value="4130" name="CompileScoreMenuGroupBuild" />
-      <IDSymbol value="4131" name="CompileScoreMenuGroupScript" />      
+      <IDSymbol value="4130" name="CompileScoreMenuGroupActions" />
+      <IDSymbol value="4131" name="CompileScoreMenuGroupFiles" />      
       <IDSymbol value="4132" name="CompileScoreMenuGroupOptions" />
       <IDSymbol value="4133" name="CompileScoreMenuGroupHelp" />
       <IDSymbol value="4134" name="CompileScoreBuild" />
@@ -281,10 +303,10 @@
       <IDSymbol value="257" name="cmdidRebuild" />
       <IDSymbol value="258" name="cmdIdClean" />
       <IDSymbol value="259" name="cmdIdGenerate" />
-      <IDSymbol value="260" name="cmdIdLoadDefault" />
-      <IDSymbol value="261" name="cmdidOptions" />
-      <IDSymbol value="262" name="cmdidDocumentation" />
-      <IDSymbol value="263" name="cmdidReport" />
+      <IDSymbol value="260" name="cmdIdOpen" />
+      <IDSymbol value="261" name="cmdIdLoadDefault" />
+      <IDSymbol value="262" name="cmdidOptions" />
+      <IDSymbol value="263" name="cmdidDocumentation" />
       <IDSymbol value="264" name="cmdidAbout" />
       <IDSymbol value="265" name="cmdidShowTimeline" />
       <IDSymbol value="266" name="cmdidShowIncluders" />

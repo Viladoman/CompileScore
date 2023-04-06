@@ -62,7 +62,7 @@ namespace CompileScore.Overview
 
             if (CompilerData.Instance.Source == CompilerData.DataSource.Forced && EditorContext.Environment == EditorContext.ExecutionEnvironment.VisualStudio)
             {
-                inspectionTxt.Text = "Generated ";
+                inspectionTxt.Text = "Inspecting Custom ";
                 defaultButton.Visibility = Visibility.Visible;
             }
             else
