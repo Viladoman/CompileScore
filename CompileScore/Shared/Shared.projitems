@@ -9,6 +9,8 @@
     <Import_RootNamespace>Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Editor\Adornment\TextEditorAdornment.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Editor\Adornment\TextEditorAdornmentProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Editor\ColorTheme.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\CompileFolders.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\CompilerData.cs" />
