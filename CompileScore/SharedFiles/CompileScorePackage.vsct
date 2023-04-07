@@ -42,7 +42,7 @@
               <CommandFlag>DefaultInvisible</CommandFlag>
               <CommandFlag>DynamicVisibility</CommandFlag>
           If you do not want an image next to your command, remove the Icon node /> -->
-      <Button guid="guidCompileScorePackageCmdSet" id="OverviewWindowCommandId" priority="0x0100" type="Button">
+      <Button guid="guidCompileScorePackageCmdSet" id="cmdIdOverviewWindowCommand" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreWindowsGroup" />
         <Icon guid="guidImages" id="icon" />
         <Strings>
@@ -63,7 +63,30 @@
 			<ButtonText>Compile Score Includers</ButtonText>
 		</Strings>
 	  </Button>
-      <Button guid="guidCompileScorePackageCmdSet1" id="cmdidBuild" priority="0x0100" type="Button">
+
+	  <Button guid="guidCompileScorePackageCmdSet" id="cmdIdOverviewWindowCommand" priority="0x0100" type="Button">
+	  	<Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuWindowsGroup" />
+	  	<Icon guid="guidImages" id="icon" />
+	  	<Strings>
+	  		<ButtonText>Compile Score</ButtonText>
+	  	</Strings>
+	  </Button>
+	  <Button guid="guidCompileScorePackageCmdSet" id="cmdidTimelineWindowCommand" priority="0x0100" type="Button">
+	  	<Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuWindowsGroup" />
+	  	<Icon guid="guidImages1" id="icon" />
+	  	<Strings>
+	  		<ButtonText>Compile Score Timeline</ButtonText>
+	  	</Strings>
+	  </Button>
+	  <Button guid="guidCompileScorePackageCmdSet" id="cmdidIncludersWindowCommand" priority="0x0100" type="Button">
+	  	<Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuWindowsGroup" />
+	  	<Icon guid="guidImages1" id="icon" />
+	  	<Strings>
+	  		<ButtonText>Compile Score Includers</ButtonText>
+	  	</Strings>
+	  </Button>
+
+	  <Button guid="guidCompileScorePackageCmdSet1" id="cmdidBuild" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuActionsGroup" />
         <Icon guid="guidImages" id="icon" />
         <Strings>
@@ -132,7 +155,7 @@
 		  <ButtonText>Stop Trace</ButtonText>
 	    </Strings>
       </Button>
-
+		
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdidBuild" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreBuild" />
         <Icon guid="guidImages" id="icon" />
@@ -221,6 +244,10 @@
       <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuActionsGroup" priority="0x0600">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuActionsMenu" />
       </Group>
+		
+	  <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuWindowsGroup" priority="0x0600">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuWindowsMenu" />
+      </Group>
 
       <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreBuild" priority="0x0600">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_BUILD" />
@@ -255,7 +282,13 @@
           <ButtonText>Actions</ButtonText>
         </Strings>
       </Menu>
-      
+      <Menu guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuWindowsMenu" type="Menu" priority="0x0600">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupActions" />
+        <Strings>
+          <ButtonText>Windows</ButtonText>
+        </Strings>
+      </Menu>
+		
     </Menus>
 
   </Commands>
@@ -270,7 +303,7 @@
 
     <!-- This is the guid used to group the menu commands together -->
     <GuidSymbol name="guidCompileScorePackageCmdSet" value="{e5262ec1-fb68-442d-92f7-0b4a66774209}">
-      <IDSymbol name="OverviewWindowCommandId" value="0x0100" />
+      <IDSymbol value="256" name="cmdIdOverviewWindowCommand" />
       <IDSymbol value="257" name="cmdidTimelineWindowCommand" />
       <IDSymbol value="258" name="cmdidIncludersWindowCommand" />
     </GuidSymbol>
@@ -284,6 +317,8 @@
     </GuidSymbol>
   
     <GuidSymbol value="{f76ad68f-41c2-4f8d-945e-427b0d092da1}" name="guidCompileScorePackageCmdSet1">
+      <IDSymbol value="4122" name="CompileScoreMenuWindowsGroup" />
+      <IDSymbol value="4123" name="CompileScoreMenuWindowsMenu" />
       <IDSymbol value="4124" name="CompileScoreMenuActionsGroup" />
       <IDSymbol value="4125" name="CompileScoreMenuActionsMenu" />
       <IDSymbol value="4126" name="CompileScoreWindowsGroup" />

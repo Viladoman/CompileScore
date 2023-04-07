@@ -16,7 +16,7 @@ namespace CompileScore
     /// </summary>
     internal sealed class CustomCommands
     {
-        public const int CommandId_OverviewWindow = 0x0100;
+        public const int CommandId_OverviewWindow = 256;
         public const int CommandId_TimelineWindow = 257;
         public const int CommandId_IncludersWindow = 258;
         public static readonly Guid CommandSet_Windows = new Guid("e5262ec1-fb68-442d-92f7-0b4a66774209");
