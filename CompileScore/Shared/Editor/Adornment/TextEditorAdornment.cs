@@ -8,7 +8,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace CompileScore
 {
@@ -19,7 +18,7 @@ namespace CompileScore
         private readonly IAdornmentLayer adornmentLayer;
         private readonly IWpfTextView view;
 
-        private readonly Button button;
+        private Button Element { set; get; }
         private readonly string fullPath;
 
 
@@ -58,7 +57,7 @@ namespace CompileScore
             view.LayoutChanged += OnSizeChanged;
         }
 
-        private UIElement CreateButton()
+        private void CreateButton()
         {
             Button baseButton = new Button();
             baseButton.Width = AdornmentSize;
@@ -69,12 +68,14 @@ namespace CompileScore
             baseButton.Cursor = System.Windows.Input.Cursors.Arrow;
             baseButton.Click += Adornment_OnClick;
 
-            button = baseButton;
+            //TODO ~ ramonv ~ setup tooltip in a similar way as the timeline tooltip here
+
+            Element = baseButton;
         }
 
         private void RefreshButtonIcon()
         {
-            if ( button != null )
+            if (Element != null )
             {
                 Image icon = new Image
                 {
@@ -88,7 +89,7 @@ namespace CompileScore
                     Width = AdornmentSize,
                     Height = AdornmentSize,
                 };
-                button.Content = icon;
+                Element.Content = icon;
             }
         }
 
@@ -118,11 +119,11 @@ namespace CompileScore
         {
             adornmentLayer.RemoveAllAdornments();
 
-            if ( button != null )
+            if (Element != null )
             {
-                Canvas.SetLeft(button, view.ViewportRight - AdornmentSize);
-                Canvas.SetTop(button, view.ViewportBottom - AdornmentSize);
-                adornmentLayer.AddAdornment(AdornmentPositioningBehavior.ViewportRelative, null, null, button, null);
+                Canvas.SetLeft(Element, view.ViewportRight - AdornmentSize);
+                Canvas.SetTop(Element, view.ViewportBottom - AdornmentSize);
+                adornmentLayer.AddAdornment(AdornmentPositioningBehavior.ViewportRelative, null, null, Element, null);
             }    
         }
     }
