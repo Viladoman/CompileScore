@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Shell;
 using System;
 using System.IO;
 using System.Reflection;
@@ -7,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace CompileScore
 {
@@ -17,7 +19,7 @@ namespace CompileScore
         private readonly IAdornmentLayer adornmentLayer;
         private readonly IWpfTextView view;
 
-        private readonly UIElement adorment;
+        private readonly Button button;
         private readonly string fullPath;
 
 
@@ -29,6 +31,7 @@ namespace CompileScore
             }
 
             this.view = view;
+            adornmentLayer = view.GetAdornmentLayer("TextEditorAdornment");
 
             fullPath = null;
             ITextDocument document = null;
@@ -43,33 +46,84 @@ namespace CompileScore
             //TODO ~ create the proper UIElement
 
             //TODO ~ create an array of static icons for each severity
-            adorment = new Image
-            {
-                // Get the image path from within the packaged extension
-                Source = new BitmapImage(
-                    new Uri(
-                        Path.Combine(
-                            Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                            "Resources",
-                            "IconDetail.png"))),
-                Width = AdornmentSize,
-                Height = AdornmentSize,
-            };
 
-            
 
-            adornmentLayer = view.GetAdornmentLayer("TextEditorAdornment");
+            //adorment.Tooltip = new ToolTip { Content = new Timeline.TimelineNodeTooltip(), Padding = new Thickness(0) }; ;
+
+            //Tooltip needs to be custom...
+
+            CreateButton();
+            RefreshButtonIcon();
 
             view.LayoutChanged += OnSizeChanged;
         }
 
+        private UIElement CreateButton()
+        {
+            Button baseButton = new Button();
+            baseButton.Width = AdornmentSize;
+            baseButton.Height = AdornmentSize;
+            baseButton.BorderThickness = new Thickness(0);
+            baseButton.Padding = new Thickness(0);
+            baseButton.Background = Brushes.Transparent;
+            baseButton.Cursor = System.Windows.Input.Cursors.Arrow;
+            baseButton.Click += Adornment_OnClick;
+
+            button = baseButton;
+        }
+
+        private void RefreshButtonIcon()
+        {
+            if ( button != null )
+            {
+                Image icon = new Image
+                {
+                    // Get the image path from within the packaged extension
+                    Source = new BitmapImage(
+                     new Uri(
+                         Path.Combine(
+                             Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                             "Resources",
+                             "IconDetail.png"))),
+                    Width = AdornmentSize,
+                    Height = AdornmentSize,
+                };
+                button.Content = icon;
+            }
+        }
+
+        private void Adornment_OnClick(object sender, object evt)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            //CompileValue value = GetValueFromRowItem(row);
+            //if (value == null) return;
+
+            System.Windows.Forms.ContextMenuStrip contextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
+
+            contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Placeholder A", (a, b) => Timeline.CompilerTimeline.Instance.FocusTimelineWindow()));
+            contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Placeholder B", (a, b) => Timeline.CompilerTimeline.Instance.FocusTimelineWindow()));
+
+            //TODO ~ add more options 
+
+            contextMenuStrip.Show(System.Windows.Forms.Control.MousePosition, System.Windows.Forms.ToolStripDropDownDirection.AboveLeft);
+        }
+
         private void OnSizeChanged(object sender, EventArgs e)
+        {
+            RefreshButtonPresence();
+        }
+
+        private void RefreshButtonPresence()
         {
             adornmentLayer.RemoveAllAdornments();
 
-            Canvas.SetLeft(adorment, view.ViewportRight - AdornmentSize);
-            Canvas.SetTop(adorment, view.ViewportBottom - AdornmentSize);
-            adornmentLayer.AddAdornment(AdornmentPositioningBehavior.ViewportRelative, null, null, adorment, null);
+            if ( button != null )
+            {
+                Canvas.SetLeft(button, view.ViewportRight - AdornmentSize);
+                Canvas.SetTop(button, view.ViewportBottom - AdornmentSize);
+                adornmentLayer.AddAdornment(AdornmentPositioningBehavior.ViewportRelative, null, null, button, null);
+            }    
         }
     }
 }
