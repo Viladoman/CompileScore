@@ -47,8 +47,8 @@ namespace CompileScore
                 detailsBorder.Visibility = Visibility.Visible;
                 detailsPanel.Visibility = Visibility.Visible;
 
-                detailsText.Text = "Duration: "  + Common.UIConverters.GetTimeStr(value.ValuesList[(int)CompilerData.CompileCategory.ExecuteCompiler])
-                                 + " Includes: " + Common.UIConverters.GetTimeStr(value.ValuesList[(int)CompilerData.CompileCategory.Include])
+                detailsText.Text = "Duration: " + Common.UIConverters.GetTimeStr(value.ValuesList[(int)CompilerData.CompileCategory.ExecuteCompiler])
+                                 + " Includes: " + Common.UIConverters.GetTimeStr(value.ValuesList[(int)CompilerData.CompileCategory.Include]);
             }
             else
             {
