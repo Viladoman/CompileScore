@@ -8,12 +8,14 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace CompileScore
 {
     internal sealed class TextEditorAdornment
     {
-        private const float AdornmentSize = 18;
+        //private const float AdornmentSize = 18;
+        private const float AdornmentSize = 15;
 
         private readonly IAdornmentLayer adornmentLayer;
         private readonly IWpfTextView view;
@@ -21,6 +23,9 @@ namespace CompileScore
         private Button Element { set; get; }
         private readonly string fullPath;
 
+        private object Reference { set; get; }
+        private DispatcherTimer tooltipTimer = new DispatcherTimer() { Interval = new TimeSpan(4000000) };
+        private ToolTip tooltip = new ToolTip { Content = new TextEditorAdornmentTooltip(), Padding = new Thickness(0) };
 
         public TextEditorAdornment(IWpfTextView view)
         {
@@ -39,22 +44,20 @@ namespace CompileScore
                 fullPath = document.FilePath;
             }
 
-            //TODO ~ ramonv ~ build something that can match the best similar path ( find all instances with the same name and then tries to match as many folders as possible )
-            //TODO ~ blend this together with the show timeline code
-
-            //TODO ~ create the proper UIElement
-
-            //TODO ~ create an array of static icons for each severity
-
-
-            //adorment.Tooltip = new ToolTip { Content = new Timeline.TimelineNodeTooltip(), Padding = new Thickness(0) }; ;
-
-            //Tooltip needs to be custom...
-
+            RefreshReference();
             CreateButton();
             RefreshButtonIcon();
 
             view.LayoutChanged += OnSizeChanged;
+            CompilerData.Instance.ScoreDataChanged += OnDataChanged;
+            CompilerData.Instance.AdornmentModeChanged += OnEnabledChanged;
+
+            tooltipTimer.Tick += ShowTooltip;
+        }
+
+        private void RefreshReference()
+        {
+            Reference = EditorUtils.SeekObjectFromFullPath(fullPath);
         }
 
         private void CreateButton()
@@ -66,26 +69,51 @@ namespace CompileScore
             baseButton.Padding = new Thickness(0);
             baseButton.Background = Brushes.Transparent;
             baseButton.Cursor = System.Windows.Input.Cursors.Arrow;
-            baseButton.Click += Adornment_OnClick;
 
-            //TODO ~ ramonv ~ setup tooltip in a similar way as the timeline tooltip here
+            baseButton.Click += Adornment_OnClick;
+            baseButton.MouseEnter += OnMouseEnter;
+            baseButton.MouseLeave += OnMouseLeave;
 
             Element = baseButton;
+        }
+
+        private void OnMouseEnter(object sender, object evt)
+        {
+            if(Element != null)
+            {
+                tooltipTimer.Start();
+            }
+        }
+
+        private void OnMouseLeave(object sender, object evt)
+        {
+            HideTooltip();
+        }
+
+        private void ShowTooltip(Object a, object b)
+        {
+            tooltipTimer.Stop();
+            (tooltip.Content as TextEditorAdornmentTooltip).Reference = Reference;
+            tooltip.Placement = System.Windows.Controls.Primitives.PlacementMode.Mouse;
+            tooltip.PlacementTarget = Element;
+            tooltip.IsOpen = true;
+        }
+
+        private void HideTooltip()
+        {
+            tooltipTimer.Stop();
+            tooltip.IsOpen = false;
         }
 
         private void RefreshButtonIcon()
         {
             if (Element != null )
             {
+                //TODO ~ ramonv ~ create an array of static icons for each severity
+
                 Image icon = new Image
                 {
-                    // Get the image path from within the packaged extension
-                    Source = new BitmapImage(
-                     new Uri(
-                         Path.Combine(
-                             Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                             "Resources",
-                             "IconDetail.png"))),
+                    Source = new BitmapImage(new Uri(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),"Resources","IconDetail.png"))),
                     Width = AdornmentSize,
                     Height = AdornmentSize,
                 };
@@ -97,22 +125,76 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            //CompileValue value = GetValueFromRowItem(row);
-            //if (value == null) return;
+            UnitValue unit = Reference as UnitValue;
+            CompileValue value = Reference as CompileValue;
 
-            System.Windows.Forms.ContextMenuStrip contextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
+            if (unit == null && value == null)
+                return;
 
-            contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Placeholder A", (a, b) => Timeline.CompilerTimeline.Instance.FocusTimelineWindow()));
-            contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Placeholder B", (a, b) => Timeline.CompilerTimeline.Instance.FocusTimelineWindow()));
+            HideTooltip();
 
-            //TODO ~ add more options 
+            if ( unit != null )
+            {
+                Timeline.CompilerTimeline.Instance.DisplayTimeline(unit);
+            }
+            
+            if ( value != null )
+            {
+                System.Windows.Forms.ContextMenuStrip contextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Locate Max Timeline", (a, b) => Timeline.CompilerTimeline.Instance.DisplayTimeline(value.MaxUnit, value)));
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Locate Max Self Timeline", (a, b) => Timeline.CompilerTimeline.Instance.DisplayTimeline(value.SelfMaxUnit, value)));
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Includers Graph", (a, b) => Includers.CompilerIncluders.Instance.DisplayIncluders(value)));
+                contextMenuStrip.Show(System.Windows.Forms.Control.MousePosition, System.Windows.Forms.ToolStripDropDownDirection.AboveLeft);
+            }
 
-            contextMenuStrip.Show(System.Windows.Forms.Control.MousePosition, System.Windows.Forms.ToolStripDropDownDirection.AboveLeft);
         }
 
         private void OnSizeChanged(object sender, EventArgs e)
         {
             RefreshButtonPresence();
+        }
+
+        private void OnDataChanged()
+        {
+            RefreshReference();
+            RefreshEnabled();
+            RefreshButtonIcon();
+            RefreshButtonPresence();
+            
+            if (tooltip.IsOpen)
+            {
+                (tooltip.Content as TextEditorAdornmentTooltip).Reference = Reference;
+            }
+        }
+
+        private void OnEnabledChanged()
+        {
+            RefreshEnabled();
+            RefreshButtonIcon();
+            RefreshButtonPresence();
+        }
+        
+        bool RefreshEnabled()
+        {
+            bool isEnabled = Element != null;
+            GeneralSettingsPageGrid settings = CompilerData.Instance.GetGeneralSettings();
+            bool newValue = settings != null && settings.OptionTextEditorAdornment != GeneralSettingsPageGrid.AdornmentMode.Disabled && Reference != null;
+
+            if (isEnabled != newValue)
+            {
+                if ( newValue )
+                {
+                    CreateButton();
+                }
+                else
+                {
+                    Element = null;
+                    HideTooltip();
+                }
+                return true;
+            }
+
+            return false;
         }
 
         private void RefreshButtonPresence()

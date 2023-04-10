@@ -11,6 +11,9 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Editor\Adornment\TextEditorAdornment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Editor\Adornment\TextEditorAdornmentProvider.cs" />
+	<Compile Include="$(MSBuildThisFileDirectory)Editor\Adornment\TextEditorAdornmentTooltip.xaml.cs">
+      <DependentUpon>TextEditorAdornmentTooltip.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Editor\ColorTheme.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\CompileFolders.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\CompilerData.cs" />
@@ -134,6 +137,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)Timeline\TimelineWindowControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+	<Page Include="$(MSBuildThisFileDirectory)Editor\Adornment\TextEditorAdornmentTooltip.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

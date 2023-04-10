@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Configuration;
 using System.Text.RegularExpressions;
+using System.Windows.Controls;
 
 namespace CompileScore
 {
@@ -253,6 +254,39 @@ namespace CompileScore
             return null;
         }
 
+        static public object SeekObjectFromFullPath(string rawPath)
+        {
+            string path = rawPath.ToLower();
+            string filename = Path.GetFileName(path);
+
+            var compilerData = CompilerData.Instance;
+            var unit = compilerData.Folders.GetUnitByPath(path);
+            if (unit == null)
+            {
+                //TODO ~ ramonv ~ improve searches with partial folders 
+                unit = compilerData.GetUnitByName(filename); //fallback to just match by name 
+            }
+            if ( unit != null )
+            {
+                return unit;
+            }
+
+            var value = compilerData.Folders.GetValueByPath(CompilerData.CompileCategory.Include, path);
+            if (value == null)
+            {
+                //TODO ~ ramonv ~ improve searches with partial folders 
+                value = compilerData.GetValueByName(CompilerData.CompileCategory.Include, filename); //fallback to just match by name 
+            }
+            if (value != null)
+            {
+                return value;
+            }
+
+            //TODO ~ ramonv ~ improve searches for units without extension
+
+            return null;
+        }
+
         static public void ShowActiveTimeline()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -264,34 +298,22 @@ namespace CompileScore
                 return;
             }
 
-            string path = doc.FullName.ToLower();
-            string filename = Path.GetFileName(path);
+            object found = SeekObjectFromFullPath(doc.FullName);
 
-            var compilerData = CompilerData.Instance;
-
-            var unit = compilerData.Folders.GetUnitByPath(path);
-            if (unit == null)
-            { 
-                unit = compilerData.GetUnitByName(filename); //fallback to just match by name 
-            }
-            if (unit != null) 
-            {   
-                Timeline.CompilerTimeline.Instance.DisplayTimeline(unit);
-                return;
-            }
-
-            var value = compilerData.Folders.GetValueByPath(CompilerData.CompileCategory.Include, path);
-            if (value == null)
+            if (found is UnitValue)
             {
-                value = compilerData.GetValueByName(CompilerData.CompileCategory.Include, filename); //fallback to just match by name 
+                Timeline.CompilerTimeline.Instance.DisplayTimeline((UnitValue)found);
             }
-            if (value != null)
+            else if ( found is CompileValue)
             {
+                CompileValue value = (CompileValue)found;
                 Timeline.CompilerTimeline.Instance.DisplayTimeline(value.MaxUnit, value);
-                return;
             }
-            
-            MessageWindow.Display(new MessageContent("Unable to find the compile score timeline for "+ filename));
+            else
+            {
+                MessageWindow.Display(new MessageContent("Unable to find the compile score timeline for "+ doc.FullName));
+            }
+
         }
     }
 }

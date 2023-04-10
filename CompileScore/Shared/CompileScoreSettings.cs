@@ -15,6 +15,12 @@ namespace CompileScore
             Full,
         }
 
+        public enum AdornmentMode
+        {
+            Disabled,
+            Enabled,
+        }
+
         public enum SeverityCriteria
         {
             //This names need to match the function names of CompileValue
@@ -28,6 +34,7 @@ namespace CompileScore
         private SeverityCriteria optionSeverityCriteria = SeverityCriteria.Max;
         private bool optionNormalizedSeverity = true;
         private HighlightMode optionHighlightMode = HighlightMode.Full;
+        private AdornmentMode optionAdornmentMode = AdornmentMode.Enabled;
         private List<uint> optionValueSeverities = new List<uint> { 250u, 1000u, 25000u, 100000u };
         private List<float> optionNormalizedSeverities = new List<float> { 50.0f, 75.0f, 90.0f, 98.0f };
 
@@ -47,6 +54,15 @@ namespace CompileScore
         [DisplayName("Tooltip")]
         [Description("If true, a tooltip will show up when hovering with the mouse")]
         public bool OptionTooltipEnabled { set; get; } = true;
+
+        [Category("Display")]
+        [DisplayName("Text Editor Adornment")]
+        [Description("Select the mode for the Text Editor Adornment on the lower right of the window")]
+        public AdornmentMode OptionTextEditorAdornment
+        {
+            get { return optionAdornmentMode; }
+            set { bool hasChanged = optionAdornmentMode != value; optionAdornmentMode = value; if (hasChanged) { CompilerData.Instance.OnAdornmentModeChanged(); } }
+        }
 
         [Category("Tags")]
         [DisplayName("Severity Criteria")]

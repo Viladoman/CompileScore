@@ -202,6 +202,7 @@ namespace CompileScore
         //events
         public event Notify ScoreDataChanged;
         public event Notify HighlightModeChanged;
+        public event Notify AdornmentModeChanged;
 
         private CompilerData() { }
 
@@ -228,6 +229,7 @@ namespace CompileScore
             {
                 OnSolutionSettingsChanged();
                 OnHighlightModeChanged();
+                OnAdornmentModeChanged();
             }
         }
 
@@ -858,6 +860,11 @@ namespace CompileScore
         public void OnHighlightModeChanged()
         {
             HighlightModeChanged?.Invoke();
+        }
+
+        public void OnAdornmentModeChanged()
+        {
+            AdornmentModeChanged?.Invoke();
         }
     }
 }

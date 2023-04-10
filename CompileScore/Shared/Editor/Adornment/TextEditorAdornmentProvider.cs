@@ -19,9 +19,7 @@ namespace CompileScore
 
         public void TextViewCreated(IWpfTextView textView)
         {
-            //TODO ~ ramonv ~ disable until it is ready 
-            // The adorment will get wired to the text view events
-            //new TextEditorAdornment(textView);
+           new TextEditorAdornment(textView);
         }
     }
 }
