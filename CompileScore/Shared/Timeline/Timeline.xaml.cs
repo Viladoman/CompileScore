@@ -211,11 +211,19 @@ namespace CompileScore.Timeline
 
         public void FocusNode(CompileValue value)
         {
-            FocusPending = FindNodeByValue(value);
-            FocusNode(FocusPending);
+            if (FocusNodeInternal(value))
+            {
+                RefreshAll();
+            }
         }
 
-        private void FocusNode(TimelineNode node)
+        private bool FocusNodeInternal(CompileValue value)
+        {
+            FocusPending = FindNodeByValue(value);
+            return FocusNodeInternal(FocusPending);
+        }
+
+        private bool FocusNodeInternal(TimelineNode node)
         {
             if (node != null && Root != null)
             {
@@ -233,7 +241,9 @@ namespace CompileScore.Timeline
                 scrollViewer.ScrollToVerticalOffset(verticalOffset);
 
                 RefreshZoomSlider();
+                return true;
             }
+            return false;
         }
 
         public void SetMode(Mode newMode)
@@ -405,7 +415,7 @@ namespace CompileScore.Timeline
             ((Rectangle)scrollViewer.Template.FindName("Corner", scrollViewer)).Fill = scrollViewer.Background;
 
             SetupCanvas();
-            FocusNode(FocusPending == null? Root : FocusPending);
+            FocusNodeInternal(FocusPending == null? Root : FocusPending);
             FocusPending = null;
             RefreshAll();
         }
@@ -484,7 +494,7 @@ namespace CompileScore.Timeline
             if (Root != null && e.ChangedButton == MouseButton.Left)
             {
                 Point p = e.GetPosition(canvas);
-                FocusNode(GetNodeAtPosition(Root, PixelToTime(p.X), PixelToDepth(p.Y)));
+                FocusNodeInternal(GetNodeAtPosition(Root, PixelToTime(p.X), PixelToDepth(p.Y)));
             }
         }
 
@@ -815,7 +825,7 @@ namespace CompileScore.Timeline
         {
             if (Root != null && !string.IsNullOrEmpty(name))
             {
-                FocusNode(FindNodeByNameRecursive(Root, name));
+                FocusNodeInternal(FindNodeByNameRecursive(Root, name));
             }
         } 
         
