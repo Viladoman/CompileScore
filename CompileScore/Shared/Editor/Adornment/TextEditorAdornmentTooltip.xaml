@@ -17,7 +17,6 @@
 
     <Grid Margin="10">
         <StackPanel>
-            <TextBlock x:Name="headerText"  FontWeight="Bold" FontSize="14" Margin="0,0,0,5"/>
             <TextBlock x:Name="descriptionText"/>
             <Border x:Name="detailsBorder" BorderBrush="Silver" BorderThickness="0,1,0,0" Margin="0,8" />
             <WrapPanel x:Name="detailsPanel">

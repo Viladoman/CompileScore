@@ -22,8 +22,7 @@ namespace CompileScore
             if ( node is CompileValue )
             {
                 CompileValue value = (CompileValue)node;
-                headerText.Text = value.Name;
-
+                
                 int unitCount = CompilerData.Instance.GetUnits().Count;
                 float unitImpactPercent = unitCount > 0 ? ((float)value.Count * 100) / CompilerData.Instance.GetUnits().Count : 0;
                 descriptionText.Text = "Edit Impact (Units): " + value.Count + " (" + unitImpactPercent.ToString("n2") + "%)";
@@ -39,16 +38,13 @@ namespace CompileScore
             else if ( node is UnitValue )
             {
                 UnitValue value = (UnitValue)node;
-                headerText.Text = value.Name;
 
                 descriptionText.Visibility = Visibility.Collapsed;
+                detailsBorder.Visibility = Visibility.Collapsed;
 
-                //description : Impact edit
-                detailsBorder.Visibility = Visibility.Visible;
                 detailsPanel.Visibility = Visibility.Visible;
-
                 detailsText.Text = "Duration: " + Common.UIConverters.GetTimeStr(value.ValuesList[(int)CompilerData.CompileCategory.ExecuteCompiler])
-                                 + " Includes: " + Common.UIConverters.GetTimeStr(value.ValuesList[(int)CompilerData.CompileCategory.Include]);
+                                 + " (Includes: " + Common.UIConverters.GetTimeStr(value.ValuesList[(int)CompilerData.CompileCategory.Include]) + ")";
             }
             else
             {

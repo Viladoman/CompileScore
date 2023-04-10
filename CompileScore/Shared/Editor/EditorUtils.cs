@@ -282,7 +282,16 @@ namespace CompileScore
                 return value;
             }
 
-            //TODO ~ ramonv ~ improve searches for units without extension
+            //Clang can export the unit files without extension ( as a last resort try to find the entry without the extension )
+            string extension = Path.GetExtension(path);
+            if (extension == ".cpp" || extension == ".c" || extension == ".cxx")
+            {
+                unit = compilerData.GetUnitByName(Path.GetFileNameWithoutExtension(path)); 
+                if (unit != null )
+                {
+                    return unit;
+                }
+            }
 
             return null;
         }
