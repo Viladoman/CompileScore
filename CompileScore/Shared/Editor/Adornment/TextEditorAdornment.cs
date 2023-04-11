@@ -45,7 +45,7 @@ namespace CompileScore
             }
 
             RefreshReference();
-            CreateButton();
+            RefreshEnabled();
             RefreshButtonIcon();
 
             view.LayoutChanged += OnSizeChanged;
@@ -176,13 +176,19 @@ namespace CompileScore
         
         bool RefreshEnabled()
         {
-            bool isEnabled = Element != null;
+            bool wasVisible = Element != null;
             GeneralSettingsPageGrid settings = CompilerData.Instance.GetGeneralSettings();
-            bool newValue = settings != null && settings.OptionTextEditorAdornment != GeneralSettingsPageGrid.AdornmentMode.Disabled && Reference != null;
+            bool isEnabled = settings != null && settings.OptionTextEditorAdornment != GeneralSettingsPageGrid.AdornmentMode.Disabled;
 
-            if (isEnabled != newValue)
+            if (isEnabled)
             {
-                if ( newValue )
+                CompilerData.Instance.Hydrate(CompilerData.HydrateFlag.Main);
+            }
+
+            bool shouldBeVisible = isEnabled && Reference != null;
+            if (wasVisible != shouldBeVisible)
+            {
+                if ( shouldBeVisible )
                 {
                     CreateButton();
                 }
