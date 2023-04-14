@@ -188,7 +188,7 @@
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdidOptions" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupOptions" />
         <Strings>
-          <ButtonText>Options</ButtonText>
+          <ButtonText>Solution Configuration</ButtonText>
         </Strings>
       </Button>
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdidDocumentation" priority="0x0100" type="Button">
