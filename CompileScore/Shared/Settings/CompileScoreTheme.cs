@@ -65,7 +65,7 @@ namespace CompileScore
                 {
                     case SeverityTheme.RPG: Array.Copy(kRPGColors, SeverityColors, 5); break;
                     case SeverityTheme.Fire: Array.Copy(kFireColors, SeverityColors, 5); break;
-                    case SeverityTheme.Fire: Array.Copy(kAquaColors, SeverityColors, 5); break;
+                    case SeverityTheme.Aqua: Array.Copy(kAquaColors, SeverityColors, 5); break;
                     case SeverityTheme.Custom: break;
                 }
 
