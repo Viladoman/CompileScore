@@ -4,7 +4,6 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.ComponentModel;
 
 namespace CompileScore
 {
@@ -34,7 +33,7 @@ namespace CompileScore
 		public ulong SelfAccumulated { get; }
 		public uint Average { get { return (uint)(Accumulated / Count); }  }
         public uint Count { get; }
-        public uint Severity { set; get; }
+        public float Severity { set; get; }
         public UnitValue MaxUnit { get; }
         public UnitValue SelfMaxUnit { get; }
     }
@@ -766,7 +765,7 @@ namespace CompileScore
             normalizedThresholds.Clear();
             inputList.Sort();
 
-            //Get the theshold values based on the normalized serveirties percentages
+            //Get the threshold values based on the normalized serveirties percentages
             List<float> normalizedSeverites = GetGeneralSettings().GetOptionNormalizedSeverities();
 
             for (int i = 0; i < numSeverities; ++i)
@@ -809,19 +808,22 @@ namespace CompileScore
             }
         }
 
-        private uint ComputeSeverity(List<uint> thresholds, uint value)
+        private float ComputeSeverity(List<uint> thresholds, uint value)
         {
-            int ret = thresholds.Count;
+            uint prevThreshold = 0;
             for (int i=0;i<thresholds.Count;++i)
             {
                 if ( value < thresholds[i] )
                 {
-                    ret = i;
-                    break;
+                    float range = thresholds[i] - prevThreshold;
+                    float ratio = Math.Max(0, Math.Min((float)0.99, range > 0 ? (value - prevThreshold) / range : 0) );
+                    return Math.Min(1 + i + ratio, thresholds.Count);
                 }
+
+                prevThreshold = thresholds[i];
             }
 
-            return Convert.ToUInt32(ret+1);
+            return thresholds.Count;
         }
 
         private void OnFileWatchedChanged()

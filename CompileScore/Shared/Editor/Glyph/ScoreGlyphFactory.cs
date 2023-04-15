@@ -16,7 +16,7 @@ namespace CompileScore.Glyph
                 return null;
             } 
 
-            var severityColor = Common.Colors.GetSeverityBrush(scoreTag.Value.Severity);
+            var severityColor = Common.Colors.GetSeverityBrush((uint)scoreTag.Value.Severity);
             severityColor.Opacity = System.Math.Max(0.25,severityColor.Opacity);
 
             var lineHeight = line.Height;
@@ -29,7 +29,7 @@ namespace CompileScore.Glyph
             grid.Children.Add(new Rectangle()
             {
                 Fill = severityColor,
-                Width = lineHeight / 3,
+                Width = Math.Max(0,(lineHeight / 4) * (scoreTag.Value.Severity - 1)),
                 Height = lineHeight,
                 HorizontalAlignment = HorizontalAlignment.Right
             });

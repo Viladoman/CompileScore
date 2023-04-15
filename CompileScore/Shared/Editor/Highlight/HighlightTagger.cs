@@ -29,7 +29,7 @@ namespace CompileScore
 
     public class HighlightTag : TextMarkerTag
     {
-        public HighlightTag(CompileValue value) : base("SeverityDefinition" + value.Severity)
+        public HighlightTag(CompileValue value) : base("SeverityDefinition" + (uint)value.Severity )
         {
             Value = value;
         }
