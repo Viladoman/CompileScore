@@ -10,11 +10,14 @@ namespace CompileScore.Glyph
         public UIElement GenerateGlyph(IWpfTextViewLine line, IGlyphTag tag)
         {
             ScoreGlyphTag scoreTag = tag as ScoreGlyphTag;
-            
-            if (scoreTag == null)
+                       
+            if (scoreTag == null || !scoreTag.IsVisible)
             {
                 return null;
             } 
+
+            var severityColor = Common.Colors.GetSeverityBrush(scoreTag.Value.Severity);
+            severityColor.Opacity = System.Math.Max(0.25,severityColor.Opacity);
 
             var lineHeight = line.Height;
             var grid = new System.Windows.Controls.Grid()
@@ -25,7 +28,7 @@ namespace CompileScore.Glyph
 
             grid.Children.Add(new Rectangle()
             {
-                Fill = Common.Colors.GetSeverityBrush(scoreTag.Value.Severity),
+                Fill = severityColor,
                 Width = lineHeight / 3,
                 Height = lineHeight,
                 HorizontalAlignment = HorizontalAlignment.Right

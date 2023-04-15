@@ -6,19 +6,38 @@ namespace CompileScore
 {
     internal class HighlightTagDefinitionBase : MarkerFormatDefinition
     {
+        static public IEditorFormatMapService EditorFormatMapService { set; get; } = null;
+
+        private uint Severity { get; }
+
         public HighlightTagDefinitionBase(uint severity)
         {
-            var color = Common.Colors.GetSeverityBrush(severity);
-            color.Opacity = 0.25;
-            this.Fill = color;
-            this.DisplayName = "CompileScore Severity " + severity;
-            this.ZOrder = 5;
+            Severity = severity;
+            DisplayName = "CompileScore Severity " + severity;
+            ZOrder = 5;
+
+            CompilerData.Instance.ThemeChanged += OnThemeChanged;
+            OnThemeChanged();
+        }
+
+        private void OnThemeChanged()
+        {
+            Fill = Common.Colors.GetSeverityBrush(Severity);
+
+            if (EditorFormatMapService != null)
+            {
+                IEditorFormatMap formatMap = EditorFormatMapService.GetEditorFormatMap(category: "text");
+                if (formatMap != null)
+                {
+                    formatMap.SetProperties("SeverityDefinition" + Severity, CreateResourceDictionaryFromDefinition());
+                }
+            }
         }
     }
 
     [Export(typeof(EditorFormatDefinition))]
     [Name("SeverityDefinition1")]
-    [UserVisible(true)]
+    [UserVisible(false)]
     internal class SeverityDefinition0 : HighlightTagDefinitionBase
     {
         public SeverityDefinition0() : base(1){}
@@ -26,7 +45,7 @@ namespace CompileScore
 
     [Export(typeof(EditorFormatDefinition))]
     [Name("SeverityDefinition2")]
-    [UserVisible(true)]
+    [UserVisible(false)]
     internal class SeverityDefinition1 : HighlightTagDefinitionBase
     {
         public SeverityDefinition1() : base(2){}
@@ -34,7 +53,7 @@ namespace CompileScore
 
     [Export(typeof(EditorFormatDefinition))]
     [Name("SeverityDefinition3")]
-    [UserVisible(true)]
+    [UserVisible(false)]
     internal class SeverityDefinition2 : HighlightTagDefinitionBase
     {
         public SeverityDefinition2() : base(3) { }
@@ -42,7 +61,7 @@ namespace CompileScore
 
     [Export(typeof(EditorFormatDefinition))]
     [Name("SeverityDefinition4")]
-    [UserVisible(true)]
+    [UserVisible(false)]
     internal class SeverityDefinition3 : HighlightTagDefinitionBase
     {
         public SeverityDefinition3() : base(4) { }
@@ -50,7 +69,7 @@ namespace CompileScore
 
     [Export(typeof(EditorFormatDefinition))]
     [Name("SeverityDefinition5")]
-    [UserVisible(true)]
+    [UserVisible(false)]
     internal class SeverityDefinition4 : HighlightTagDefinitionBase
     {
         public SeverityDefinition4() : base(5) { }

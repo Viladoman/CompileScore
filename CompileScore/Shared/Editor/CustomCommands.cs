@@ -11,9 +11,6 @@ using Task = System.Threading.Tasks.Task;
 
 namespace CompileScore
 {
-    /// <summary>
-    /// Command handler
-    /// </summary>
     internal sealed class CustomCommands
     {
         public const int CommandId_OverviewWindow = 256;

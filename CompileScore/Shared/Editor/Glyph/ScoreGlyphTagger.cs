@@ -1,23 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Shell;
+using CompileScore.Glyph;
 
 namespace CompileScore
 {
     public class ScoreGlyphTag : IGlyphTag
     {
-        public ScoreGlyphTag(CompileValue value)
+        public ScoreGlyphTag(CompileValue value, bool isVisible)
         {
             Value = value;
+            IsVisible = isVisible;
         }
 
         public CompileValue Value { get; }
+        public bool IsVisible { get; }
     }
 
     class ScoreGlyphTagger : ITagger<ScoreGlyphTag>
@@ -26,6 +28,7 @@ namespace CompileScore
         private readonly string _filename;
         private Dictionary<ITrackingSpan, CompileValue> _trackingSpans;
         private bool IsEnabled { set; get; } = false;
+        private bool IsVisible { set; get; } = false;
 
         public ScoreGlyphTagger(ITextView view, ITextBuffer sourceBuffer)
         {
@@ -34,6 +37,7 @@ namespace CompileScore
             _buffer = sourceBuffer;
             _filename = GetFileName(sourceBuffer);
 
+            CompilerData.Instance.ThemeChanged += RefreshTags;
             CompilerData.Instance.ScoreDataChanged += OnDataChanged;
             CompilerData.Instance.HighlightModeChanged += OnEnabledChanged;
             DocumentLifetimeManager.DocumentSavedTrigger += OnDocumentSaved;
@@ -53,11 +57,15 @@ namespace CompileScore
 
         private bool RefreshEnable()
         {
+            CompilerData.Instance.GetThemeSettings(); //Force theme load ( keep this line as it needs to accessed in order to set all the data )
             GeneralSettingsPageGrid settings = CompilerData.Instance.GetGeneralSettings();
-            bool newValue = settings != null ? settings.OptionHighlightMode != GeneralSettingsPageGrid.HighlightMode.Disabled : false;
-            if (IsEnabled != newValue)
+            bool newValue = settings != null && settings.OptionHighlightMode != GeneralSettingsPageGrid.HighlightMode.Disabled;
+            bool shouldBeVisible = settings != null && (settings.OptionHighlightMode == GeneralSettingsPageGrid.HighlightMode.Full || settings.OptionHighlightMode == GeneralSettingsPageGrid.HighlightMode.Simple);
+
+            if (IsEnabled != newValue || IsVisible != shouldBeVisible)
             {
                 IsEnabled = newValue;
+                IsVisible = shouldBeVisible;
                 return true;
             }
             return false;
@@ -144,7 +152,7 @@ namespace CompileScore
                 if (spans.Any(sp => spanInCurrentSnapshot.IntersectsWith(sp)))
                 {
                     var snapshotSpan = new SnapshotSpan(currentSnapshot, spanInCurrentSnapshot);
-                    res.Add(new TagSpan<ScoreGlyphTag>(snapshotSpan, new ScoreGlyphTag(item.Value)));
+                    res.Add(new TagSpan<ScoreGlyphTag>(snapshotSpan, new ScoreGlyphTag(item.Value, IsVisible)));
                 }
             }
 

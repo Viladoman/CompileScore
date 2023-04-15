@@ -71,20 +71,23 @@ namespace CompileScore
 
     public class CompileScorePackage 
     {
-        private GeneralSettingsPageGrid settings = new GeneralSettingsPageGrid();
-        public GeneralSettingsPageGrid GetGeneralSettings() { return settings; }
+        private GeneralSettingsPageGrid generalSettings = new GeneralSettingsPageGrid();
+        private ThemeSettingsPageGrid   themeSettings   = new ThemeSettingsPageGrid();
+
+        public GeneralSettingsPageGrid GetGeneralSettings() { return generalSettings; }
+        public ThemeSettingsPageGrid GetThemeSettings() { return themeSettings; }
 
         public Window FindToolWindow(Type toolWindowType, int id, bool create)
         {
             
-            if (toolWindowType == typeof(CompileScore.Timeline.TimelineWindow))
+            if (toolWindowType == typeof(Timeline.TimelineWindow))
             {
-                return new CompileScore.Timeline.TimelineWindow();
+                return new Timeline.TimelineWindow();
             }
 
-            if (toolWindowType == typeof(CompileScore.Includers.IncludersWindow))
+            if (toolWindowType == typeof(Includers.IncludersWindow))
             {
-                return new CompileScore.Includers.IncludersWindow();
+                return new Includers.IncludersWindow();
             }
             
             //TODO ~ ramonv ~ fix here window management
@@ -132,4 +135,11 @@ namespace CompileScore
         public List<float> GetOptionNormalizedSeverities() { return fakeSeveritiesNormalized; }
 
     };
+
+    public class ThemeSettingsPageGrid
+    {
+        static public Color[] SeverityColors { set; get; }
+
+    }
+
 }

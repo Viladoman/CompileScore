@@ -3,7 +3,6 @@ using Microsoft.VisualStudio.Shell;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -12,9 +11,6 @@ using System.Windows.Media;
 
 namespace CompileScore.Overview
 {
-    /// <summary>
-    /// Interaction logic for OverviewTable.xaml
-    /// </summary>
     public partial class OverviewTable : UserControl
     {
         private class UnitProxyValue

@@ -10,9 +10,6 @@ using System.Windows.Media;
 
 namespace CompileScore.Overview
 {
-    /// <summary>
-    /// Interaction logic for CompileDataTable.xaml
-    /// </summary>
     public partial class CompileDataTable : UserControl
     {
         private class IncludeViewerProxy

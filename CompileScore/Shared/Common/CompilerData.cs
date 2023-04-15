@@ -203,6 +203,7 @@ namespace CompileScore
         public event Notify ScoreDataChanged;
         public event Notify HighlightModeChanged;
         public event Notify AdornmentModeChanged;
+        public event Notify ThemeChanged;
 
         private CompilerData() { }
 
@@ -236,6 +237,11 @@ namespace CompileScore
         public GeneralSettingsPageGrid GetGeneralSettings()
         {
             return Package == null ? null : Package.GetGeneralSettings();
+        }
+        
+        public ThemeSettingsPageGrid GetThemeSettings()
+        {
+            return Package == null ? null : Package.GetThemeSettings();
         }
 
         public string GetSettingsScoreLocation()
@@ -865,6 +871,11 @@ namespace CompileScore
         public void OnAdornmentModeChanged()
         {
             AdornmentModeChanged?.Invoke();
+        }
+
+        public void OnThemeChanged()
+        {
+            ThemeChanged?.Invoke();
         }
     }
 }

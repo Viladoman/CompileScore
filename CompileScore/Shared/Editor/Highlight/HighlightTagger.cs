@@ -70,7 +70,7 @@ namespace CompileScore
         private bool RefreshEnable()
         {
             GeneralSettingsPageGrid settings = CompilerData.Instance.GetGeneralSettings();
-            bool newValue = settings != null? settings.OptionHighlightMode == GeneralSettingsPageGrid.HighlightMode.Full : false; 
+            bool newValue = settings != null && ( settings.OptionHighlightMode == GeneralSettingsPageGrid.HighlightMode.Full || settings.OptionHighlightMode == GeneralSettingsPageGrid.HighlightMode.TextOnly ); 
             if (IsEnabled != newValue)
             {
                 IsEnabled = newValue;

@@ -11,6 +11,7 @@ namespace CompileScore
     [ProvideAutoLoad(UIContextGuids80.NoSolution, PackageAutoLoadFlags.BackgroundLoad)]
     [Guid(CompileScorePackage.PackageGuidString)]
     [ProvideOptionPage(typeof(GeneralSettingsPageGrid), "Compile Score", "General", 0, 0, true)]
+    [ProvideOptionPage(typeof(ThemeSettingsPageGrid),   "Compile Score", "Theme", 0, 0, true)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(CompileScore.Overview.OverviewWindow))]
     [ProvideToolWindow(typeof(CompileScore.Timeline.TimelineWindow))]
@@ -25,6 +26,7 @@ namespace CompileScore
 #region Package Members
 
         public GeneralSettingsPageGrid GetGeneralSettings() { return (GeneralSettingsPageGrid)GetDialogPage(typeof(GeneralSettingsPageGrid)); }
+        public ThemeSettingsPageGrid GetThemeSettings() { return (ThemeSettingsPageGrid)GetDialogPage(typeof(ThemeSettingsPageGrid)); }
 
         /// <summary>
         /// Initialization of the package; this method is called right after the package is sited, so this is the place

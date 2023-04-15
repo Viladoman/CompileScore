@@ -18,9 +18,6 @@ namespace CompileScore
         public bool ShowOptions { set; get; } = false;
     }
 
-    /// <summary>
-    /// Interaction logic for ParseMessageControl.xaml
-    /// </summary>
     public partial class MessageControl : UserControl
     {
         private Window ParentWindow { set; get; }

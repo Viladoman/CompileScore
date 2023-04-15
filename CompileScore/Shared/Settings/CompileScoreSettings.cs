@@ -13,6 +13,7 @@ namespace CompileScore
             Disabled,
             Simple, 
             Full,
+            TextOnly,
         }
 
         public enum AdornmentMode

@@ -11,7 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Editor\Adornment\TextEditorAdornment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Editor\Adornment\TextEditorAdornmentProvider.cs" />
-	<Compile Include="$(MSBuildThisFileDirectory)Editor\Adornment\TextEditorAdornmentTooltip.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Editor\Adornment\TextEditorAdornmentTooltip.xaml.cs">
       <DependentUpon>TextEditorAdornmentTooltip.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Editor\ColorTheme.cs" />
@@ -30,7 +30,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\UIConverters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Editor\WindowProxy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompileScorePackage.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CompileScoreSettings.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\CompileScoreSettings.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Editor\CustomCommands.cs" />
@@ -71,6 +71,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Settings\AboutWindow.xaml.cs">
       <DependentUpon>AboutWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Settings\CompileScoreTheme.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\SettingsControl.xaml.cs">
       <DependentUpon>SettingsControl.xaml</DependentUpon>
     </Compile>
@@ -140,7 +141,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-	<Page Include="$(MSBuildThisFileDirectory)Editor\Adornment\TextEditorAdornmentTooltip.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Editor\Adornment\TextEditorAdornmentTooltip.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
