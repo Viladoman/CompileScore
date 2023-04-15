@@ -20,7 +20,7 @@ namespace CompileScore
         private readonly IAdornmentLayer adornmentLayer;
         private readonly IWpfTextView view;
 
-        private Button Element { set; get; }
+        private Grid Element { set; get; }
         private readonly string fullPath;
 
         private object Reference { set; get; }
@@ -29,6 +29,8 @@ namespace CompileScore
 
         public TextEditorAdornment(IWpfTextView view)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (view == null)
             {
                 throw new ArgumentNullException("view");
@@ -60,21 +62,22 @@ namespace CompileScore
             Reference = EditorUtils.SeekObjectFromFullPath(fullPath);
         }
 
-        private void CreateButton()
+        private void CreateUI()
         {
-            Button baseButton = new Button();
-            baseButton.Width = AdornmentSize;
-            baseButton.Height = AdornmentSize;
-            baseButton.BorderThickness = new Thickness(0);
-            baseButton.Padding = new Thickness(0);
-            baseButton.Background = Brushes.Transparent;
-            baseButton.Cursor = System.Windows.Input.Cursors.Arrow;
+            ThreadHelper.ThrowIfNotOnUIThread();
 
-            baseButton.Click += Adornment_OnClick;
-            baseButton.MouseEnter += OnMouseEnter;
-            baseButton.MouseLeave += OnMouseLeave;
+            Grid grid = new Grid();
 
-            Element = baseButton;
+            grid.Width = AdornmentSize;
+            grid.Height = AdornmentSize;
+            grid.Background = Brushes.Transparent;
+            grid.Cursor = System.Windows.Input.Cursors.Arrow;
+
+            grid.PreviewMouseLeftButtonDown += (sender, e) => { ThreadHelper.ThrowIfNotOnUIThread(); e.Handled = true; Adornment_OnClick(sender,e); };
+            grid.MouseEnter += OnMouseEnter;
+            grid.MouseLeave += OnMouseLeave;
+
+            Element = grid;
         }
 
         private void OnMouseEnter(object sender, object evt)
@@ -117,7 +120,9 @@ namespace CompileScore
                     Width = AdornmentSize,
                     Height = AdornmentSize,
                 };
-                Element.Content = icon;
+
+                Element.Children.Clear();
+                Element.Children.Add(icon); 
             }
         }
 
@@ -156,6 +161,8 @@ namespace CompileScore
 
         private void OnDataChanged()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             RefreshReference();
             RefreshEnabled();
             RefreshButtonIcon();
@@ -169,6 +176,8 @@ namespace CompileScore
 
         private void OnEnabledChanged()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             RefreshEnabled();
             RefreshButtonIcon();
             RefreshButtonPresence();
@@ -176,6 +185,8 @@ namespace CompileScore
         
         bool RefreshEnabled()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             bool wasVisible = Element != null;
             GeneralSettingsPageGrid settings = CompilerData.Instance.GetGeneralSettings();
             bool isEnabled = settings != null && settings.OptionTextEditorAdornment != GeneralSettingsPageGrid.AdornmentMode.Disabled;
@@ -190,7 +201,7 @@ namespace CompileScore
             {
                 if ( shouldBeVisible )
                 {
-                    CreateButton();
+                    CreateUI();
                 }
                 else
                 {
