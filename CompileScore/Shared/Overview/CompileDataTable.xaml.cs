@@ -36,6 +36,7 @@ namespace CompileScore.Overview
             InitializeComponent();
 
             compileDataGrid.MouseRightButtonDown += DataGridRow_ContextMenu;
+            compileDataGrid.ClipboardCopyMode = DataGridClipboardCopyMode.ExcludeHeader;
 
             SetCategory(category);
             OnDataChanged();
