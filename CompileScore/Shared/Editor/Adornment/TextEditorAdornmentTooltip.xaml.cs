@@ -24,8 +24,8 @@ namespace CompileScore
                 CompileValue value = (CompileValue)node;
                 
                 int unitCount = CompilerData.Instance.GetUnits().Count;
-                float unitImpactPercent = unitCount > 0 ? ((float)value.Count * 100) / CompilerData.Instance.GetUnits().Count : 0;
-                descriptionText.Text = "Edit Impact (Units): " + value.Count + " (" + unitImpactPercent.ToString("n2") + "%)";
+                float unitImpactPercent = unitCount > 0 ? ((float)value.Count * 100) / unitCount : 0;
+                descriptionText.Text = "Edit Impact (Units): " + value.Count + " (" + unitImpactPercent.ToString("n2") + "%)"; //TODO ~ Ramonv ~ placeholder while the data is not ready
 
                 detailsBorder.Visibility = Visibility.Visible;
                 detailsPanel.Visibility = Visibility.Visible;

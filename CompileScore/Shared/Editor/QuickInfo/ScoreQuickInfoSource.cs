@@ -80,6 +80,9 @@ namespace CompileScore
                                     new ImageElement(value.Severity > 4 ? _severityOnIcon : _severityOffIcon)
                                 );
 
+                                int unitCount = CompilerData.Instance.GetUnits().Count;
+                                float unitImpactPercent = unitCount > 0 ? ((float)value.Count * 100) / unitCount : 0; //TODO ~ Ramonv ~ placeholder while the data is not ready
+
                                 //Found tooltip
                                 var fullElm = new ContainerElement(
                                     ContainerElementStyle.Stacked,
@@ -95,7 +98,10 @@ namespace CompileScore
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " Average: "),
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.UIConverters.GetTimeStr(value.Average)),
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " Count: "),
-                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, $"{value.Count}")
+                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, $"{value.Count}"),
+                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " ("),
+                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, unitImpactPercent.ToString("n2")),
+                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, "%)")
                                     ));
 
                                 return Task.FromResult(new QuickInfoItem(trackingSpan, fullElm));
