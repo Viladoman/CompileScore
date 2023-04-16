@@ -31,6 +31,14 @@ namespace CompileScore.Glyph
 
             grid.Children.Add(new Rectangle()
             {
+                Fill = System.Windows.Media.Brushes.Transparent,
+                Width = lineHeight,
+                Height = lineHeight,
+                HorizontalAlignment = HorizontalAlignment.Right
+            });
+
+            grid.Children.Add(new Rectangle()
+            {
                 Fill = severityColor,
                 Width = Math.Max(0, (lineHeight / 4) * (scoreTag.Value.Severity - 1)),
                 Height = lineHeight,
