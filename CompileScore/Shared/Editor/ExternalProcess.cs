@@ -8,35 +8,17 @@ namespace CompileScore
     {
         public static int ExecuteSync(string toolPath, string arguments)
         {
-            var process = StartProcess(toolPath, arguments);
-
-            if (process == null)
-            {
-                return -1;
-            }
-
-            WaitForExit(process);
-
-            return process.ExitCode;
+            return RunProcess(toolPath, arguments);
         }
 
-        public static async Task<int> ExecuteAsync(string toolPath, string arguments)
+        public static Task<int> ExecuteAsync(string toolPath, string arguments)
         {
-            var process = StartProcess(toolPath, arguments);
-
-            if (process == null)
-            {
-                return -1;
-            }
-
-            await Task.Run(() => WaitForExit(process));
-
-            return process.ExitCode;
+			return Task.Run(() => RunProcess(toolPath, arguments));
         }
 
-        private static Process StartProcess(string toolPath, string arguments)
+        private static int RunProcess(string toolPath, string arguments)
         {
-            var process = new Process();
+            Process process = new Process();
 
             process.StartInfo.FileName = toolPath;
             process.StartInfo.Arguments = arguments;
@@ -46,36 +28,38 @@ namespace CompileScore
             process.StartInfo.CreateNoWindow = true;
             process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 
+			process.ErrorDataReceived += (sender, errorLine) =>
+            {
+                if (errorLine.Data != null)
+                {
+                    OutputLine(errorLine.Data);
+                }
+            };
+            process.OutputDataReceived += (sender, outputLine) =>
+            {
+                if (outputLine.Data != null)
+                {
+                    OutputLine(outputLine.Data);
+                }
+            };
+
             try
             {
                 process.Start();
+                process.BeginErrorReadLine();
+                process.BeginOutputReadLine();
+                process.WaitForExit();
             }
             catch (Exception error)
             {
                 OutputLine(error.Message);
-                return null;
+                return -1;
             }
 
-            return process;
-        }
+            int exitCode = process.ExitCode;
+            process.Close();
 
-        private static void WaitForExit(Process process)
-        {
-            //Handle output
-            while (!process.StandardOutput.EndOfStream || !process.StandardError.EndOfStream)
-            {
-                if (!process.StandardOutput.EndOfStream)
-                {
-                    OutputLine(process.StandardOutput.ReadLine());
-                }
-
-                if (!process.StandardError.EndOfStream)
-                {
-                    OutputLine(process.StandardError.ReadLine());
-                }
-            }
-
-            process.WaitForExit();
+            return exitCode;
         }
 
         private static void OutputLine(string str)
