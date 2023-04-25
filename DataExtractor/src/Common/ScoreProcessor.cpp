@@ -10,6 +10,8 @@
 
 namespace CompileScore
 { 
+	typedef fastl::unordered_set<U64> TUniqueElementsSet;
+
 	namespace Utils
 	{ 
 		// -----------------------------------------------------------------------------------------------------------
@@ -18,6 +20,12 @@ namespace CompileScore
 		// -----------------------------------------------------------------------------------------------------------
 		template <typename T> inline constexpr T Min(const T a, const T b) { return a < b? a : b; }
 		template <typename T> inline constexpr T Max(const T a, const T b) { return a < b? b : a; }
+
+		// -----------------------------------------------------------------------------------------------------------
+		U64 GetUniqueElementHash(const CompileCategory category, const U32 index)
+		{
+			return (((U64)category) << 32) | index;
+		}
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
@@ -199,9 +207,8 @@ namespace CompileScore
 		ProcessParent(scoreData, *thisEvent, parent, unit, includersMode);
 	}
 
-
 	// -----------------------------------------------------------------------------------------------------------
-	void ProcessTimelineTrack(ScoreData& scoreData, CompileUnit& unit, TCompileEvents& events, const CompileCategory gatherLimit, const ExportParams::Includers includersMode )
+	void ProcessTimelineTrack(ScoreData& scoreData, CompileUnit& unit, TCompileEvents& events, TUniqueElementsSet& uniqueElements, const CompileCategory gatherLimit, const ExportParams::Includers includersMode )
 	{ 
 		fastl::vector<CompileEvent*> eventStack;
 		fastl::vector<U32>           dataIdStack;
@@ -233,6 +240,13 @@ namespace CompileScore
 				}
 
 				++compileData.count;
+
+				const auto insertionResult = uniqueElements.emplace(Utils::GetUniqueElementHash(element.category, globalIndex));
+				if (insertionResult.second)
+				{
+					++compileData.unitCount;
+					++compileData.unitAccumulated += unit.values[ToUnderlying(CompileCategory::ExecuteCompiler)];
+				}
 			}
 			else
 			{
@@ -270,9 +284,11 @@ namespace CompileScore
 		unit.nameHash = timeline.nameHash;
 		unit.context = context;
 		
+		TUniqueElementsSet uniqueElements;
+
 		for (TCompileEvents& track : timeline.tracks)
 		{ 
-			ProcessTimelineTrack(scoreData,unit,track,gatherLimit,includersMode);
+			ProcessTimelineTrack(scoreData, unit, track, uniqueElements, gatherLimit, includersMode);
 		}
 
 		IO::ScoreBinarizer* binarizer = Context::Get<IO::ScoreBinarizer>(); 

@@ -45,6 +45,7 @@ namespace CompileScore.Timeline
                     detailsBorder.Visibility = Visibility.Visible;
                     detailsPanel.Visibility = Visibility.Visible;
 
+                    //TODO ~ extend this ... super important as this is the main view
                     CompileValue val = (node.Value as CompileValue);
                     descriptionText.Text = val.Name;
                     detailsText.Text = "Max: "   + Common.UIConverters.GetTimeStr(val.Max)

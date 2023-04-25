@@ -11,6 +11,7 @@
     
     <UserControl.Resources>
         <common:UITimeConverter     x:Key="uiTimeConverter"/>
+        <common:UITimeConverterZero x:Key="uiTimeConverterZero"/>
         <Style TargetType="Label">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}"/>
         </Style>

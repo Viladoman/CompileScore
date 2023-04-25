@@ -35,6 +35,7 @@ namespace fastl
 		void clear() { m_data.clear(); }
 
 		template< class... Args > pair<iterator, bool> emplace( Args&&... args );
+		pair<iterator, bool> insert( TKey& key );
 
 		void erase( iterator it ) { m_data.erase( it ); }
 		size_type erase( const TKey& key );
@@ -60,6 +61,18 @@ namespace fastl
 			return pair<iterator, bool>( entryIt, true );
 		}
 		return pair<iterator, bool>( entryIt, false );
+	}
+
+	//------------------------------------------------------------------------------------------
+	template<typename TKey> pair<typename set<TKey>::iterator, bool> set<TKey>::insert( TKey& key )
+	{
+		iterator entryIt = fastl::lower_bound(begin(), end(), key, [=](value_type& a, const value_type& b) {return a < b; });
+		if (entryIt == end() || *entryIt != key)
+		{
+			entryIt = m_data.insert(entryIt, key);
+			return pair<iterator, bool>(entryIt, true);
+		}
+		return pair<iterator, bool>(entryIt, false);
 	}
 
 	//------------------------------------------------------------------------------------------

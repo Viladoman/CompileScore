@@ -7,7 +7,7 @@
 
 #include "ScoreDefinitions.h"
 
-constexpr U32 SCORE_VERSION = 9;
+constexpr U32 SCORE_VERSION = 10;
 constexpr U32 TIMELINE_FILE_NUM_DIGITS = 4;
 
 static_assert(TIMELINE_FILE_NUM_DIGITS > 0);
@@ -395,7 +395,16 @@ namespace IO
         // -----------------------------------------------------------------------------------------------------------
         void BinarizeUnit(FILE* stream, const TCompileStrings& strings, const CompileUnit& unit)
         { 
+            //Name
             BinarizeStringPath(stream, strings, unit.nameHash);
+
+            //Context
+            BinarizeU64(stream, unit.context.startTime[0]);
+            BinarizeU64(stream, unit.context.startTime[1]);
+            BinarizeU32(stream, unit.context.threadId[0]);
+            BinarizeU32(stream, unit.context.threadId[1]);
+
+            //values
             for (U32 value : unit.values)
             { 
                 BinarizeU32(stream, value);
@@ -427,6 +436,8 @@ namespace IO
 				BinarizeU32(stream, data.count);
 				BinarizeU32(stream, data.maxId);
                 BinarizeU32(stream, data.selfMaxId);
+                BinarizeU64(stream, data.unitAccumulated);
+                BinarizeU32(stream, data.unitCount);
             }
         }
 
@@ -445,6 +456,8 @@ namespace IO
                 BinarizeU32(stream, data.count);
                 BinarizeU32(stream, data.maxId);
                 BinarizeU32(stream, data.selfMaxId);
+                BinarizeU64(stream, data.unitAccumulated);
+                BinarizeU32(stream, data.unitCount);
             }
         }
 

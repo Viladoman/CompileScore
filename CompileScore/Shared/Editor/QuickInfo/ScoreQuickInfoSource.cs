@@ -81,7 +81,7 @@ namespace CompileScore
                                 );
 
                                 int unitCount = CompilerData.Instance.GetUnits().Count;
-                                float unitImpactPercent = unitCount > 0 ? ((float)value.Count * 100) / unitCount : 0; //TODO ~ Ramonv ~ placeholder while the data is not ready
+                                float unitImpactPercent = unitCount > 0 ? ((float)value.UnitCount * 100) / unitCount : 0; 
 
                                 //Found tooltip
                                 var fullElm = new ContainerElement(
@@ -97,7 +97,7 @@ namespace CompileScore
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.UIConverters.GetTimeStr(value.Min)),
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " Average: "),
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.UIConverters.GetTimeStr(value.Average)),
-                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " Count: "),
+                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " Units: "),
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, $"{value.Count}"),
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " ("),
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, unitImpactPercent.ToString("n2")),

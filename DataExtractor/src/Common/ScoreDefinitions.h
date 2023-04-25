@@ -80,35 +80,41 @@ struct CompileData
         : nameHash(0ull)
         , accumulated(0ull)
         , selfAccumulated(0ull)
+        , unitAccumulated(0ull)
         , minimum(0xffffffff)
         , maximum(0u)
         , selfMaximum(0u)
         , maxId(InvalidCompileId)
         , selfMaxId(InvalidCompileId)
         , count(0u)
+        , unitCount(0u)
     {}
 
     CompileData(const U64 _nameHash)
         : nameHash(_nameHash)
         , accumulated(0ull)
         , selfAccumulated(0ull)
+        , unitAccumulated(0ull)
         , minimum(0xffffffff)
         , maximum(0u)
         , selfMaximum(0u)
         , maxId(InvalidCompileId)
         , selfMaxId(InvalidCompileId)
         , count(0u)
+        , unitCount(0u)
     {}
 
     U64 nameHash; 
     U64 accumulated; 
     U64 selfAccumulated;
+    U64 unitAccumulated;
     U32 minimum; 
     U32 maximum; 
     U32 selfMaximum; // Without children's time
     U32 maxId; //filled by the ScoreProcessor
     U32 selfMaxId;
     U32 count;
+    U32 unitCount;
 };
 
 struct CompileEvent

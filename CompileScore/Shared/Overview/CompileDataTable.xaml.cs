@@ -50,16 +50,17 @@ namespace CompileScore.Overview
             string prefix = category == CompilerData.CompileCategory.Include ? "Value." : "";
 
             //Create columns
-            CreateDataGridColumn("Name",              prefix + "Name",             300);
-            CreateDataGridColumn("Count",             prefix + "Count",            75);
-            CreateDataGridColumn("Accumulated",       prefix + "Accumulated",      140, "uiTimeConverter");
-            CreateDataGridColumn("Accumulated Self",  prefix + "SelfAccumulated",  140, "uiTimeConverter");
-            CreateDataGridColumn("Max",               prefix + "Max",              80,  "uiTimeConverter");
-            CreateDataGridColumn("Max Self",          prefix + "SelfMax",          80,  "uiTimeConverter");
-            CreateDataGridColumn("Min",               prefix + "Min",              80,  "uiTimeConverter");
-            CreateDataGridColumn("Avg",               prefix + "Average",          80,  "uiTimeConverter");
-            CreateDataGridColumn("Max location",      prefix + "MaxUnit.Name",     170);
-            CreateDataGridColumn("Max Self location", prefix + "SelfMaxUnit.Name", 170);
+            CreateDataGridColumn("Name",               prefix + "Name",             300);
+            CreateDataGridColumn("Units",              prefix + "UnitCount",        75);
+            CreateDataGridColumn("Accumulated",        prefix + "Accumulated",      140, "uiTimeConverter");
+            CreateDataGridColumn("Accumulated Self",   prefix + "SelfAccumulated",  140, "uiTimeConverter");
+            CreateDataGridColumn("Accumulated Unit",   prefix + "UnitAccumulated",  140, "uiTimeConverterZero");
+            CreateDataGridColumn("Max",                prefix + "Max",              80,  "uiTimeConverter");
+            CreateDataGridColumn("Max Self",           prefix + "SelfMax",          80,  "uiTimeConverter");
+            CreateDataGridColumn("Min",                prefix + "Min",              80,  "uiTimeConverter");
+            CreateDataGridColumn("Avg",                prefix + "Average",          80,  "uiTimeConverter");
+            CreateDataGridColumn("Max location",       prefix + "MaxUnit.Name",     170);
+            CreateDataGridColumn("Max Self location",  prefix + "SelfMaxUnit.Name", 170);
 
             if (category == CompilerData.CompileCategory.Include)
             {

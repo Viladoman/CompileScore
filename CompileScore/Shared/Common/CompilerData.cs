@@ -11,15 +11,17 @@ namespace CompileScore
 
     public class CompileValue
     {
-        public CompileValue(string name, ulong accumulated, ulong selfAccumulated, uint min, uint max, uint selfMax, uint count, UnitValue maxUnit, UnitValue selfMaxUnit)
+        public CompileValue(string name, ulong accumulated, ulong selfAccumulated, ulong unitAccumulated, uint min, uint max, uint selfMax, uint count, uint unitCount, UnitValue maxUnit, UnitValue selfMaxUnit)
         {
             Name = name;
             Accumulated = accumulated;
             SelfAccumulated = selfAccumulated;
+            UnitAccumulated = unitAccumulated;
             Min = min;
             Max = max;
             SelfMax = selfMax;
             Count = count;
+            UnitCount = unitCount;
             MaxUnit = maxUnit;
             SelfMaxUnit = selfMaxUnit;
             Severity = 0;
@@ -31,8 +33,10 @@ namespace CompileScore
         public uint SelfMax { get; }
 		public ulong Accumulated { get; }
 		public ulong SelfAccumulated { get; }
+        public ulong UnitAccumulated { get; }
 		public uint Average { get { return (uint)(Accumulated / Count); }  }
         public uint Count { get; }
+        public uint UnitCount { get; }
         public float Severity { set; get; }
         public UnitValue MaxUnit { get; }
         public UnitValue SelfMaxUnit { get; }
@@ -63,14 +67,19 @@ namespace CompileScore
     {
         private uint[] values = new uint[(int)CompilerData.CompileThresholds.Display];
 
-        public UnitValue(string name, uint index)
+        public UnitValue(string name, uint index, uint[] threads, ulong[] startTimes)
         {
             Name = name;
             Index = index;
+            Threads = threads;
+            StartTimes = startTimes;
         }
 
         public string Name { get; }
         public uint Index { get; }
+
+        public uint[] Threads { get; }
+        public ulong[] StartTimes { get; }
 
         public List<uint> ValuesList { get { return values.ToList(); } }
 
@@ -104,7 +113,7 @@ namespace CompileScore
         public static CompilerData Instance { get { return lazy.Value; } }
 
         public const uint VERSION_MIN = 9;
-        public const uint VERSION = 9;
+        public const uint VERSION = 10;
 
         //Keep this in sync with the data exporter
         public enum CompileCategory
@@ -430,10 +439,22 @@ namespace CompileScore
             }
         }
 
-        private static void ReadCompileUnit(BinaryReader reader, List<UnitValue> list, uint index)
+        private static void ReadCompileUnit(BinaryReader reader, uint version, List<UnitValue> list, uint index)
         {
             var name = reader.ReadString();
-            var compileData = new UnitValue(name, index);
+
+            //read context
+            uint[] threads = { 0, 0 };
+            ulong[] startTimes = { 0, 0 };
+            if ( version >= 10 )
+            {
+                startTimes[0] = reader.ReadUInt64();
+                startTimes[1] = reader.ReadUInt64();
+                threads[0] = reader.ReadUInt32();
+                threads[1] = reader.ReadUInt32();
+            }
+
+            var compileData = new UnitValue(name, index, threads, startTimes);
 
             for (CompileCategory category = 0; (int)category < (int)CompileThresholds.Display; ++category)
             {
@@ -443,7 +464,7 @@ namespace CompileScore
             list.Add(compileData);
         }
 
-        private static void ReadCompileValue(BinaryReader reader, List<CompileValue> list, List<UnitValue> units)
+        private static void ReadCompileValue(BinaryReader reader, uint version, List<CompileValue> list, List<UnitValue> units)
         {
             var name = reader.ReadString();
             ulong acc = reader.ReadUInt64();
@@ -455,7 +476,10 @@ namespace CompileScore
             UnitValue maxUnit = GetUnitByIndex(reader.ReadUInt32(), units);
             UnitValue selfMaxUnit = GetUnitByIndex(reader.ReadUInt32(), units);
 
-            var compileData = new CompileValue(name, acc, selfAcc, min, max, selfMax,count, maxUnit, selfMaxUnit);
+            ulong unitAcc = (version >= 10) ? reader.ReadUInt64() : 0;
+            uint unitCount = (version >= 10) ? reader.ReadUInt32() : count;
+
+            var compileData = new CompileValue(name, acc, selfAcc, unitAcc, min, max, selfMax, count, unitCount, maxUnit, selfMaxUnit);
             list.Add(compileData);
         }
 
@@ -566,7 +590,7 @@ namespace CompileScore
                         chunk.Units = new List<UnitValue>((int)unitsLength);
                         for (uint i = 0; i < unitsLength; ++i)
                         {
-                            ReadCompileUnit(reader, chunk.Units, i);
+                            ReadCompileUnit(reader, version, chunk.Units, i);
                         }
 
                         //Read Main Datasets
@@ -576,7 +600,7 @@ namespace CompileScore
                             var thislist = new List<CompileValue>((int)dataLength);
                             for (uint k = 0; k < dataLength; ++k)
                             {
-                                ReadCompileValue(reader, thislist, chunk.Units);
+                                ReadCompileValue(reader, version, thislist, chunk.Units);
                             }
                             chunk.Datasets[i].collection = new List<CompileValue>(thislist);
                         }
@@ -617,7 +641,7 @@ namespace CompileScore
                             var thislist = new List<CompileValue>((int)dataLength);
                             for (uint k = 0; k < dataLength; ++k)
                             {
-                                ReadCompileValue(reader, thislist, Units);
+                                ReadCompileValue(reader, version, thislist, Units);
                             }
                             chunk.Datasets[i].collection = new List<CompileValue>(thislist);
                         }

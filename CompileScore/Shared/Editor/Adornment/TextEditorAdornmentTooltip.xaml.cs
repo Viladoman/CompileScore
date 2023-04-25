@@ -24,8 +24,15 @@ namespace CompileScore
                 CompileValue value = (CompileValue)node;
                 
                 int unitCount = CompilerData.Instance.GetUnits().Count;
-                float unitImpactPercent = unitCount > 0 ? ((float)value.Count * 100) / unitCount : 0;
-                descriptionText.Text = "Edit Impact (Units): " + value.Count + " (" + unitImpactPercent.ToString("n2") + "%)"; //TODO ~ Ramonv ~ placeholder while the data is not ready
+                float unitImpactPercent = unitCount > 0 ? ((float)value.UnitCount * 100) / unitCount : 0;
+                descriptionText.Text = "Edit Impact (Units): " + value.Count + " (" + unitImpactPercent.ToString("n2") + "%)"; 
+
+                UnitTotal total = CompilerData.Instance.GetTotal(CompilerData.CompileCategory.ExecuteCompiler);
+                if (total != null && CompilerData.Instance.GetSession().Version >= 10)
+                {
+                    float timeImpactPercent = total.Total > 0 ? ((float)value.UnitAccumulated * 100) / total.Total : 0;  
+                    descriptionText.Text += "\nEdit Impact (Time): " + Common.UIConverters.GetTimeStr(value.UnitAccumulated) + " (" + timeImpactPercent.ToString("n2") + "%)";
+                }
 
                 detailsBorder.Visibility = Visibility.Visible;
                 detailsPanel.Visibility = Visibility.Visible;
