@@ -11,8 +11,8 @@
     <Product>CompileScore</Product>
     <Description>Compile Score viewer</Description>
     <Copyright>Copyright © 2020 - Ramon Viladomat</Copyright>
-    <AssemblyVersion>1.8.3.0</AssemblyVersion>
-    <FileVersion>1.8.3.0</FileVersion>
+    <AssemblyVersion>1.9.0.0</AssemblyVersion>
+    <FileVersion>1.9.0.0</FileVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
