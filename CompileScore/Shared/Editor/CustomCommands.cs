@@ -37,6 +37,8 @@ namespace CompileScore
         public const int CommandId_ShowTimeline   = 265;
         public const int CommandId_ShowIncluders  = 266;
 
+        public const int CommandId_ToggleTextHighlight = 271;
+
         public static readonly Guid CommandSet_Custom = new Guid("f76ad68f-41c2-4f8d-945e-427b0d092da1");
 
         private static IServiceProvider ServiceProvider { set; get; }
@@ -55,6 +57,8 @@ namespace CompileScore
             commandService.AddCommand(new MenuCommand(Execute_OverviewWindow,   new CommandID(CommandSet_Windows, CommandId_OverviewWindow)));
             commandService.AddCommand(new MenuCommand(Execute_TimelineWindow,   new CommandID(CommandSet_Windows, CommandId_TimelineWindow)));
             commandService.AddCommand(new MenuCommand(Execute_IncludersWindow,  new CommandID(CommandSet_Windows, CommandId_IncludersWindow)));
+
+            commandService.AddCommand(new MenuCommand(Execute_ToggleTextHighlight,  new CommandID(CommandSet_Custom, CommandId_ToggleTextHighlight)));
 
             {
                 var menuItem = new OleMenuCommand(Execute_ShowTimeline, new CommandID(CommandSet_Custom, CommandId_ShowTimeline));
@@ -341,6 +345,11 @@ namespace CompileScore
             ThreadHelper.ThrowIfNotOnUIThread();
             AboutWindow dlg = new AboutWindow();
             dlg.ShowDialog();
+        }
+
+        private static void Execute_ToggleTextHighlight(object sender, EventArgs e)
+        {
+            CompilerData.Instance.CustomTextHighlightEnabled = !CompilerData.Instance.CustomTextHighlightEnabled;
         }
     }
 }

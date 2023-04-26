@@ -198,7 +198,7 @@ namespace CompileScore
             public List<UnitTotal> Totals { set; get; } = new List<UnitTotal>();
             public List<UnitValue> Units { set; get; } = new List<UnitValue>();
             public CompileDataset[] Datasets { set; get; } = new CompileDataset[(int)CompileThresholds.Gather].Select(h => new CompileDataset()).ToArray();
-            public CompileFolders Folders { set; get; }  = new CompileFolders();
+            public CompileFolders Folders { set; get; } = new CompileFolders();
         }
 
         private class GlobalsChunk
@@ -206,6 +206,9 @@ namespace CompileScore
             public uint LoadingBatch { set; get; } = 0;
             public CompileDataset[] Datasets { set; get; } = new CompileDataset[(int)CompileThresholds.Gather].Select(h => new CompileDataset()).ToArray();
         }
+
+        private bool _customTextHighlightEnabled = true;
+        public bool CustomTextHighlightEnabled { set { _customTextHighlightEnabled = value; OnHighlightModeChanged();  } get { return _customTextHighlightEnabled; } }
 
         //events
         public event Notify ScoreDataChanged;

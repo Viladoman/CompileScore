@@ -86,6 +86,13 @@
 	  	</Strings>
 	  </Button>
 
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdToggleTextHighlight" priority="0x0100" type="Button">
+	  	<Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuViewHelpersGroup" />
+	  	<Strings>
+	  		<ButtonText>Toggle Text Highlight</ButtonText>
+	  	</Strings>
+	  </Button>	
+			
 	  <Button guid="guidCompileScorePackageCmdSet1" id="cmdidBuild" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuActionsGroup" />
         <Icon guid="guidImages" id="icon" />
@@ -218,7 +225,7 @@
     <Groups>
       <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreWindowsGroup" priority="0x0600">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreWindowsMenu" />
-      </Group>
+      </Group>	
       <Group guid="guidCompileScorePackageCmdSet1" id="EditorContextMenuGroup" priority="0x0600">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN" />
       </Group>
@@ -248,7 +255,10 @@
 	  <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuWindowsGroup" priority="0x0600">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuWindowsMenu" />
       </Group>
-
+	   <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuViewHelpersGroup" priority="0x0600">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuWindowsMenu" />
+      </Group>	
+			
       <Group guid="guidCompileScorePackageCmdSet1" id="CompileScoreBuild" priority="0x0600">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_BUILD" />
       </Group>
@@ -285,7 +295,7 @@
       <Menu guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuWindowsMenu" type="Menu" priority="0x0600">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupActions" />
         <Strings>
-          <ButtonText>Windows</ButtonText>
+          <ButtonText>View</ButtonText>
         </Strings>
       </Menu>
 		
@@ -334,6 +344,7 @@
       <IDSymbol value="4136" name="EditorContextMenu" />
       <IDSymbol value="4137" name="EditorContextMenuGroupMain" />
       <IDSymbol value="4138" name="CompileScoreBuildProject" />
+	  <IDSymbol value="4139" name="CompileScoreMenuViewHelpersGroup" />
       <IDSymbol value="256" name="cmdidBuild" />
       <IDSymbol value="257" name="cmdidRebuild" />
       <IDSymbol value="258" name="cmdIdClean" />
@@ -349,6 +360,7 @@
       <IDSymbol value="268" name="cmdIdRebuildProject" />
       <IDSymbol value="269" name="cmdIdStartTrace" />
       <IDSymbol value="270" name="cmdIdStopTrace" />
+      <IDSymbol value="271" name="cmdIdToggleTextHighlight" />
 	</GuidSymbol>
  
   </Symbols>

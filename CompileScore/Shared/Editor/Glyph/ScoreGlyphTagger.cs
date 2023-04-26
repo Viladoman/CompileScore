@@ -59,8 +59,8 @@ namespace CompileScore
         {
             CompilerData.Instance.GetThemeSettings(); //Force theme load ( keep this line as it needs to accessed in order to set all the data )
             GeneralSettingsPageGrid settings = CompilerData.Instance.GetGeneralSettings();
-            bool newValue = settings != null && settings.OptionHighlightMode != GeneralSettingsPageGrid.HighlightMode.Disabled;
-            bool shouldBeVisible = settings != null && (settings.OptionHighlightMode == GeneralSettingsPageGrid.HighlightMode.Full || settings.OptionHighlightMode == GeneralSettingsPageGrid.HighlightMode.Simple);
+            bool newValue = settings != null && settings.OptionHighlightMode != GeneralSettingsPageGrid.HighlightMode.Disabled && CompilerData.Instance.CustomTextHighlightEnabled;
+            bool shouldBeVisible = newValue && (settings.OptionHighlightMode == GeneralSettingsPageGrid.HighlightMode.Full || settings.OptionHighlightMode == GeneralSettingsPageGrid.HighlightMode.Simple);
 
             if (IsEnabled != newValue || IsVisible != shouldBeVisible)
             {
