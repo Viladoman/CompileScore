@@ -256,12 +256,12 @@ namespace CompileScore.Overview
             if (Category == CompilerData.CompileCategory.Include)
             {
                 contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open File", (a, b) => EditorUtils.OpenFile(value)));
-                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetText(CompilerData.Instance.Folders.GetValuePathSafe(value))));
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetDataObject(CompilerData.Instance.Folders.GetValuePathSafe(value))));
             }
 
             if (value.Name.Length > 0)
             {
-                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Name", (a, b) => Clipboard.SetText(value.Name)));
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Name", (a, b) => Clipboard.SetDataObject(value.Name)));
             }
 
             //TODO ~ add more options 
