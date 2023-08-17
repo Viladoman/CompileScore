@@ -65,6 +65,7 @@ For more information check the [Score Generation Page](https://github.com/Vilado
 - [Configurations and Options](https://github.com/Viladoman/CompileScore/wiki/Configurations)
 - [Score Generaton And Data Extractor](https://github.com/Viladoman/CompileScore/wiki/Score-Generation)
 - [Text Highlight Customization](https://github.com/Viladoman/CompileScore/wiki/Text-Highlight-Customization)
+- Article: [How to use Compile Score](https://blog.s-schoener.com/2023-08-17-compile-score/) by Sebastian Schöner
 
 ## Building the Project 
 The [Release workflow action](https://github.com/Viladoman/CompileScore/blob/master/.github/workflows/Release.yml) contains a step by step process for building the Data Extractor, the VISX and the Standalone App. 
