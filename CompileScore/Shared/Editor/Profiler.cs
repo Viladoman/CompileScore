@@ -86,7 +86,7 @@ namespace CompileScore
             ThreadHelper.ThrowIfNotOnUIThread();
 
             SpecificBuildProjectName = specificProject;
-            SpecificBuildProject = GetProjectNodeFromName(SpecificBuildProjectName);
+            SpecificBuildProject = GetProjectNodeFromUniqueName(SpecificBuildProjectName);
             Operation = operation;
             SetGeneratorProperties();
 
@@ -167,45 +167,17 @@ namespace CompileScore
             return projects;
         }
 
-        private string GetProjectUniqueName(Projects projects, string name)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            foreach (Project project in projects)
-            {
-                if (project.Kind == ProjectKinds.vsProjectKindSolutionFolder)
-                {
-                    var innerProjects = GetSolutionFolderProjects(project);
-                    foreach (var innerProject in innerProjects)
-                    {
-                        if (innerProject.Name == name)
-                        {
-                            return innerProject.UniqueName;
-                        }
-                    }
-                }
-                else if (project.Name == name)
-                {
-                    return project.UniqueName;
-                }
-            }
-
-            return null;
-        }
-
-        private IVsHierarchy GetProjectNodeFromName(string name)
+        private IVsHierarchy GetProjectNodeFromUniqueName(string uniqueName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
             IVsSolution solutionService = (IVsSolution)ServiceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
 
-            if (name == null || applicationObject == null || solutionService == null) return null;
-
-            string uniqueProjName = GetProjectUniqueName(applicationObject.Solution.Projects,name);
+            if (uniqueName == null || applicationObject == null || solutionService == null) return null;
 
             IVsHierarchy projectHierarchy = null;
-            solutionService.GetProjectOfUniqueName(uniqueProjName, out projectHierarchy);
+            solutionService.GetProjectOfUniqueName(uniqueName, out projectHierarchy);
             return projectHierarchy;
         }
 

@@ -245,14 +245,21 @@ namespace CompileScore
             DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
             Assumes.Present(applicationObject);
 
-            var selectedItems = applicationObject.ToolWindows.SolutionExplorer.SelectedItems as UIHierarchyItem[];
-            if (selectedItems == null || selectedItems.Length == 0)
+            var selectedItems = applicationObject.SelectedItems;
+            if (selectedItems == null || selectedItems.Count == 0)
             {
                 OutputLog.Error("Unable to retrieve the selected item");
                 return null;
             }
 
-            return selectedItems[0].Name;
+            var project = selectedItems.Item(1).Project;
+            if (project == null)
+            {
+                OutputLog.Error("Selected item is not a project");
+                return null;
+            }
+
+            return project.UniqueName;
         }
 
         private static void Execute_BuildProject(object sender, EventArgs e)
