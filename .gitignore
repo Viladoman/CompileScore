@@ -18,6 +18,9 @@
 *.vcxproj.user
 *.csproj.user
 
+# Symlinks
+llvm-project
+
 # Shared
 CompileScore/.vs/
 
@@ -40,6 +43,10 @@ DataExtractor/bin/*
 DataExtractor/.vs/*
 DataExtractor/packages/*
 
+Parser/tmp/*
+Parser/bin/*
+Parser/.vs/*
+
 TestProjects/NMake/tmp/*
 TestProjects/NMake/bin/*
 TestProjects/NMake/.vs/*
@@ -51,3 +58,4 @@ TestProjects/CMake/.vs/*
 TestProjects/Regular/tmp/*
 TestProjects/Regular/bin/*
 TestProjects/Regular/.vs/*
+
