@@ -12,6 +12,7 @@ jobs:
     env:
       extractorDir: ./DataExtractor
       extractorSolutionName: ScoreDataExtractor.sln
+      parserSolution: ./Parser/CompileScoreParser.sln
       appsDir: ./CompileScore
       appsSolutionName: CompileScore.sln
 
@@ -19,17 +20,24 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
+    - name: Checkout LLVM library
+      uses: actions/checkout@v4
+      with:
+        repository: Viladoman/ClangArtifacts
+        sparse-checkout: llvm-project
+        path: External
+
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1
      
     - uses: nuget/setup-nuget@v1
       with:
         nuget-version: '5.x'
-    
+        
     - name: NuGet restore Score Data Extractor
       working-directory: ${{env.extractorDir}}
       run: nuget restore ${{ env.extractorSolutionName }}
-    
+        
     - name: Build Score Data Extractor
       working-directory: ${{env.extractorDir}}
       run: msbuild /m /p:Configuration=Release /p:Platform=x64 ${{ env.extractorSolutionName }}
@@ -47,6 +55,9 @@ jobs:
         asset_path: ${{env.extractorDir}}/bin/x64/Release/CompileScoreExtractor.zip
         asset_name: CompileScoreExtractor.zip
         asset_content_type: application/zip
+
+    - name: Build Parser
+      run: msbuild /m /p:Configuration=Release /p:Platform=x64 ${{ env.parserSolution }}
 
     - name: NuGet restore Compile Score 
       working-directory: ${{env.appsDir}}

@@ -3,9 +3,11 @@
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Parser.cpp" />
+    <ClCompile Include="src\IO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ParserDefinitions.h" />
     <ClInclude Include="src\Parser.h" />
+    <ClInclude Include="src\IO.h" />
   </ItemGroup>
 </Project>

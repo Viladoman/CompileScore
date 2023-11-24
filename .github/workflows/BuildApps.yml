@@ -11,10 +11,10 @@ jobs:
     runs-on: windows-latest
     
     env:
-      extractorDir: ./DataExtractor
-      extractorSolutionName: ScoreDataExtractor.sln
+      extractorSolution: ./DataExtractor/ScoreDataExtractor.sln
+      parserSolution: ./Parser/CompileScoreParser.sln
       appsDir: ./CompileScore
-      appsSolutionName: CompileScore.sln
+      appsSolution: CompileScore.sln
     
     strategy:
       matrix:
@@ -24,20 +24,28 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
+    - name: Checkout LLVM library
+      uses: actions/checkout@v4
+      with:
+        repository: Viladoman/ClangArtifacts
+        sparse-checkout: llvm-project
+        path: External
+
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1
      
     - uses: nuget/setup-nuget@v1
       with:
         nuget-version: '5.x'
-    
-    - name: NuGet restore ${{ env.extractorSolutionName }}
-      working-directory: ${{env.extractorDir}}
-      run: nuget restore ${{ env.extractorSolutionName }}
-    
+       
+    - name: NuGet restore Score Data Extractor
+      run: nuget restore ${{ env.extractorSolution }}
+       
     - name: Build Score Data Extractor
-      working-directory: ${{env.extractorDir}}
-      run: msbuild /m /p:Configuration=Release /p:Platform=x64 ${{ env.extractorSolutionName }}
+      run: msbuild /m /p:Configuration=Release /p:Platform=x64 ${{ env.extractorSolution }}
+        
+    - name: Build Parser
+      run: msbuild /m /p:Configuration=Release /p:Platform=x64 ${{ env.parserSolution }}
         
     - name: NuGet restore ${{ env.appsSolutionName }}
       working-directory: ${{env.appsDir}}

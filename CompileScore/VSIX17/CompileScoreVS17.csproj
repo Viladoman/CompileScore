@@ -35,7 +35,7 @@
     <DefineConstants>TRACE;DEBUG;VS17</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DeployExtension>False</DeployExtension>
+    <DeployExtension>True</DeployExtension>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -44,7 +44,7 @@
     <DefineConstants>TRACE;VS17</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DeployExtension>False</DeployExtension>
+    <DeployExtension>True</DeployExtension>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -83,6 +83,10 @@
     </Content>
     <Content Include="..\..\DataExtractor\bin\x64\Release\ScoreDataExtractor.exe">
       <Link>External\ScoreExtractor\ScoreDataExtractor.exe</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+	<Content Include="..\..\Parser\bin\x64\Release\CompileScoreParser.exe">
+      <Link>External\Parser\CompileScoreParser.exe</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <Content Include="..\SharedFiles\IconDetail.png">

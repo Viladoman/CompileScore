@@ -71,6 +71,10 @@
       <Link>External\ScoreExtractor\ScoreDataExtractor.exe</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+	<Content Include="..\..\Parser\bin\x64\Release\CompileScoreParser.exe">
+      <Link>External\Parser\CompileScoreParser.exe</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="..\SharedFiles\OverviewWindowCommand.png">
       <Link>Resources\OverviewWindowCommand.png</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
