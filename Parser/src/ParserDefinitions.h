@@ -48,7 +48,7 @@ namespace CompileScore
         enum Enumeration
         {
             MethodCall,
-            MemberAccess,
+            FieldAccess,
 
             Count
         };
