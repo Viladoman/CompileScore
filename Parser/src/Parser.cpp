@@ -14,6 +14,7 @@
 
 #include <unordered_map>
 
+#include "IO.h"
 #include "ParserDefinitions.h"
 
 //#pragma optimize("",off) //TODO ~ Ramonv ~ remove 
@@ -413,23 +414,16 @@ namespace CommandLine
     llvm::cl::OptionCategory g_commandLineCategory("CompileScore Parser Options");
 
     //commands
-    //llvm::cl::opt<std::string>  g_outputFilename("output", llvm::cl::desc("Specify output filename"), llvm::cl::value_desc("filename"), llvm::cl::cat(g_commandLineCategory));
-    //llvm::cl::opt<unsigned int> g_locationRow("locationRow", llvm::cl::desc("Specify input filename row to inspect"), llvm::cl::value_desc("number"), llvm::cl::cat(g_commandLineCategory));
-    //llvm::cl::opt<unsigned int> g_locationCol("locationCol", llvm::cl::desc("Specify input filename column to inspect"), llvm::cl::value_desc("number"), llvm::cl::cat(g_commandLineCategory));
+    llvm::cl::opt<std::string>  g_outputFilename("output", llvm::cl::desc("Specify output filename"),       llvm::cl::value_desc("filename"), llvm::cl::cat(g_commandLineCategory));
+    llvm::cl::opt<bool>         g_printResults("print",    llvm::cl::desc("Prints the findings on stdout"), llvm::cl::value_desc("flag"),     llvm::cl::cat(g_commandLineCategory));
 
     //aliases
-    //llvm::cl::alias g_shortOutputFilenameOption("o", llvm::cl::desc("Alias for -output"), llvm::cl::aliasopt(g_outputFilename));
-    //llvm::cl::alias g_shortLocationRowOption("r", llvm::cl::desc("Alias for -locationRow"), llvm::cl::aliasopt(g_locationRow));
-    //llvm::cl::alias g_shortLocationColOption("c", llvm::cl::desc("Alias for -locationCol"), llvm::cl::aliasopt(g_locationCol));
+    llvm::cl::alias g_shortOutputFilenameOption("o", llvm::cl::desc("Alias for -output"), llvm::cl::aliasopt(g_outputFilename));
 
-
-    // CommonOptionsParser declares HelpMessage with a description of the common
+     // CommonOptionsParser declares HelpMessage with a description of the common
     // command-line options related to the compilation database and input files.
     // It's nice to have this help message in all tools.
-    //static llvm::cl::extrahelp CommonHelp(clang::tooling::CommonOptionsParser::HelpMessage);
-
-    // A help message for this specific tool can be added afterwards.
-    //static llvm::cl::extrahelp MoreHelp("\nMore help text...\n");
+    static llvm::cl::extrahelp CommonHelp(clang::tooling::CommonOptionsParser::HelpMessage);
 }
 
 namespace Parser
@@ -446,8 +440,13 @@ namespace Parser
         clang::tooling::ClangTool tool(optionsParser->getCompilations(), optionsParser->getSourcePathList());
         tool.run(clang::tooling::newFrontendActionFactory<CompileScore::Action>().get());
 
-        //TODO ~ ramovn ~ process result and binarize it to the output
-
-        return true;
+        const char* outputFileName = CommandLine::g_outputFilename.size() == 0 ? "output.cspbin" : CommandLine::g_outputFilename.c_str();
+        
+        if (CommandLine::g_printResults)
+        {
+            IO::ToPrint(CompileScore::g_result);
+        }
+        
+        return IO::ToFile(CompileScore::g_result, outputFileName);
     }
 }

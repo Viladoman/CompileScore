@@ -93,6 +93,8 @@ namespace CompileScore
     // ----------------------------------------------------------------------------------------------------------
     struct StructureRequirement
     {
+        StructureRequirement(const void* ptr, const char* label, FileLocation definitonLoc) : clangPtr(ptr), name(label), defLocation(definitonLoc) {}
+
         const void*    clangPtr; //pointer used to make sure we point to the same 
 
         std::string    name;

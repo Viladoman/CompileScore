@@ -19,10 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\IO.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Parser.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\IO.h" />
     <ClInclude Include="src\Parser.h" />
     <ClInclude Include="src\ParserDefinitions.h" />
   </ItemGroup>

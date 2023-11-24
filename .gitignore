@@ -17,6 +17,7 @@
 *.scor.*
 *.vcxproj.user
 *.csproj.user
+*.cspbin
 
 # Symlinks
 llvm-project
