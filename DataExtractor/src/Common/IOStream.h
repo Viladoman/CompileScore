@@ -1,7 +1,7 @@
 #pragma once
 
 #define LOG_ALWAYS(...)   { IO::Log(IO::Verbosity::Always,__VA_ARGS__);             IO::Log(IO::Verbosity::Always,"\n");}
-#define LOG_ERROR(...)    { IO::Log(IO::Verbosity::Always,"[ERROR] "##__VA_ARGS__); IO::Log(IO::Verbosity::Always,"\n");}
+#define LOG_ERROR(...)    { IO::Log(IO::Verbosity::Always,"[ERROR] " __VA_ARGS__); IO::Log(IO::Verbosity::Always,"\n");}
 #define LOG_PROGRESS(...) { IO::Log(IO::Verbosity::Progress,__VA_ARGS__);           IO::Log(IO::Verbosity::Progress,"\n");}
 #define LOG_INFO(...)     { IO::Log(IO::Verbosity::Info,__VA_ARGS__);               IO::Log(IO::Verbosity::Info,"\n");}
 

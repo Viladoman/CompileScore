@@ -252,6 +252,8 @@ namespace CompileScore
             }
             else if (input->isPointerType() || input->isReferenceType())
             {
+                //TODO ~ ramonv ~ rename this to RefineType and do a ;reference; annotation + requirement of forward declaration
+                //Annotate this 
                 //TODO ~ ramovn ~ check if forward declared ( if so, where, if not... pointer to... )
 
                 // Or pointer to inner class 
@@ -264,6 +266,11 @@ namespace CompileScore
 
         void ProcessStructDeclaration(clang::CXXRecordDecl* declaration)
         {
+            if (!declaration->isCompleteDefinition())
+            {
+                return;
+            }
+
             //Check for bases
             for (const clang::CXXBaseSpecifier& base : declaration->bases())
             {

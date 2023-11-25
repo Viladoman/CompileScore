@@ -22,14 +22,21 @@
     <Compile Include="$(MSBuildThisFileDirectory)Editor\EditorContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Editor\EditorUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Editor\ExternalProcess.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Editor\Extractors\ExtractorBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Editor\Extractors\ExtractorCMake.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Editor\Extractors\ExtractorManual.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Editor\Extractors\ExtractorUnreal.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Editor\Extractors\ExtractorVisualStudio.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Editor\FileWatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Editor\MacroEvaluator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\OutputLog.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\ScoreColors.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\ThreadUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\UIConverters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)editor\Parser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Editor\WindowProxy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompileScorePackage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)settings\CompileScoreParserSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\CompileScoreSettings.cs">
       <SubType>Component</SubType>
     </Compile>

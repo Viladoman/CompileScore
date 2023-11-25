@@ -3,10 +3,12 @@ using System.IO;
 
 namespace CompileScore
 {
-    public class MacroEvaluator
+    public class IMacroEvaluator
     {
         public string Evaluate(string input) { return input; }
     }
+
+    public class MacroEvaluatorProfiler : IMacroEvaluator { }
 
     public class ScoreGeneratorSettings
     {

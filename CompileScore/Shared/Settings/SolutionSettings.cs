@@ -24,6 +24,12 @@ namespace CompileScore
         {
             return input.ScoreSource == SolutionSettings.ScoreOrigin.Custom;
         }
+
+        static public bool DisplayCMakeCommandsFile(SolutionSettings input)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            return EditorUtils.GetEditorMode() == EditorUtils.EditorMode.CMake;
+        }
     }
 
     public class ScoreGeneratorSettings
@@ -54,6 +60,35 @@ namespace CompileScore
         public bool CollapseTemplateArgs{ set; get; } = true;
     }
 
+    public class ParserSettings
+    {
+        [UIDescription(Label = "Automatic Extraction", Tooltip = "If true, it will try to extract the architecture, include paths, preprocessor macros... from the current solution.")]
+        public bool AutomaticExtraction { set; get; } = true;
+
+        [UIDescription(Label = "Explicit Commands File", FilterMethod = "DisplayCMakeCommandsFile", Tooltip = "File location for the build commands exported by CMAKE_EXPORT_COMPILE_COMMANDS=1 (This fields allows a limited set of $(SolutionDir) style macros)")]
+        public string CMakeCommandsFile { set; get; } = "";
+
+        [UIDescription(Label = "Extra Preprocessor Defintions", Tooltip = "Additional preprocessor definitions on top of the auto extracted form the project configuration. (This fields allows $(SolutionDir) style macros)")]
+        public string AdditionalPreprocessorDefinitions { set; get; } = "";
+
+        [UIDescription(Label = "Extra Include Dirs", Tooltip = "Additional include directories on top of the auto extracted form the project configuration. (This fields allows $(SolutionDir) style macros)")]
+        public string AdditionalIncludeDirs { set; get; } = "";
+
+        [UIDescription(Label = "Extra Force Includes", Tooltip = "Additional files to force include on top of the auto extracted form the project configuration. (This fields allows $(SolutionDir) style macros)")]
+        public string AdditionalForceIncludes { set; get; } = "";
+
+        [UIDescription(Label = "Extra Parser Args", Tooltip = "Additional command line arguments passed in to the clang parser. (This fields allows $(SolutionDir) style macros)")]
+        public string AdditionalCommandLine { set; get; } = "";
+
+        [UIDescription(Label = "Enable Warnings", Tooltip = "If true, the clang parser will output the warnings found.")]
+        public bool EnableWarnings { set; get; } = false;
+
+        [UIDescription(Label = "Parser Output Folder", Tooltip = "File location where the Clang Parser will output the layout results. This files are temporary. This field will default to the extension installation folder. (This fields allows $(SolutionDir) style macros)")]
+        public string ParserOutputFolder { set; get; } = "";
+
+    };
+
+
     public class SolutionSettings
     {
         public enum ScoreOrigin
@@ -70,6 +105,9 @@ namespace CompileScore
 
         [UIDescription(Label = "Generator")]
         public ScoreGeneratorSettings ScoreGenerator { set; get; } = new ScoreGeneratorSettings();
+
+        [UIDescription(Label = "Parser")]
+        public ParserSettings ParserSettings { set; get; } = new ParserSettings();
     }
 
     public class SettingsManager

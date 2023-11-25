@@ -56,6 +56,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="16.0.200" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.VisualStudio.VCProjectEngine">
+      <Version>16.7.30328.74</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.0.5232" />
   </ItemGroup>
   <ItemGroup>
@@ -71,7 +74,7 @@
       <Link>External\ScoreExtractor\ScoreDataExtractor.exe</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-	<Content Include="..\..\Parser\bin\x64\Release\CompileScoreParser.exe">
+    <Content Include="..\..\Parser\bin\x64\Release\CompileScoreParser.exe">
       <Link>External\Parser\CompileScoreParser.exe</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>

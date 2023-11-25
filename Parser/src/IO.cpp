@@ -5,7 +5,7 @@
 
 #include "ParserDefinitions.h"
 
-//#pragma optimize("",off) //TODO ~ Ramonv ~ remove 
+#pragma optimize("",off) //TODO ~ Ramonv ~ remove 
 
 namespace IO
 {

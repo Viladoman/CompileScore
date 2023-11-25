@@ -124,6 +124,16 @@
         </Strings>
       </Button>
 
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdTriggerParser" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="EditorContextMenuGroupMain" />
+        <Icon guid="guidImages1" id="icon" />
+        <Strings>
+          <ButtonText>Perform Requirement Analysis (Experimental)</ButtonText>
+        </Strings>
+      </Button>
+
+      
+
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdOpen" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuGroupFiles" />
         <Strings>
@@ -361,6 +371,7 @@
       <IDSymbol value="269" name="cmdIdStartTrace" />
       <IDSymbol value="270" name="cmdIdStopTrace" />
       <IDSymbol value="271" name="cmdIdToggleTextHighlight" />
+      <IDSymbol value="272" name="cmdIdTriggerParser" />
 	</GuidSymbol>
  
   </Symbols>

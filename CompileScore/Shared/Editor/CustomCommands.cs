@@ -37,6 +37,8 @@ namespace CompileScore
         public const int CommandId_ShowTimeline   = 265;
         public const int CommandId_ShowIncluders  = 266;
 
+        public const int CommandId_TriggerParser  = 272;
+
         public const int CommandId_ToggleTextHighlight = 271;
 
         public static readonly Guid CommandSet_Custom = new Guid("f76ad68f-41c2-4f8d-945e-427b0d092da1");
@@ -71,6 +73,8 @@ namespace CompileScore
                 menuItem.BeforeQueryStatus += Query_CanShowIncluders;
                 commandService.AddCommand(menuItem);
             }
+
+            commandService.AddCommand(new MenuCommand(Execute_TriggerParser, new CommandID(CommandSet_Custom, CommandId_TriggerParser)));
 
             commandService.AddCommand(new MenuCommand(Execute_Settings,      new CommandID(CommandSet_Custom, CommandId_Settings)));
             commandService.AddCommand(new MenuCommand(Execute_Documentation, new CommandID(CommandSet_Custom, CommandId_Documentation)));
@@ -224,6 +228,12 @@ namespace CompileScore
             {
                 Includers.CompilerIncluders.Instance.DisplayIncluders(value);
             }
+        }
+
+        private static void Execute_TriggerParser(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            _ = ParserProcessor.Instance.ParseAtCurrentLocationAsync();
         }
 
         private static void Execute_Build(object sender, EventArgs e)

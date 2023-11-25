@@ -262,7 +262,7 @@ namespace CompileScore
             var settings = SettingsManager.Instance.Settings;
             string rawPath = settings.ScoreSource == SolutionSettings.ScoreOrigin.Generator ? settings.ScoreGenerator.OutputPath : settings.ScoreLocation;
 
-            MacroEvaluator evaluator = new MacroEvaluator();
+            IMacroEvaluator evaluator = new MacroEvaluatorProfiler();
             return EditorUtils.NormalizePath(evaluator.Evaluate(rawPath));
         }
 

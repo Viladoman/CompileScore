@@ -50,7 +50,7 @@ namespace CompileScore
 
         public static Profiler Instance { get { return lazy.Value; } }
 
-        private MacroEvaluator Evaluator { set; get; } = new MacroEvaluator();
+        private IMacroEvaluator Evaluator { set; get; } = new MacroEvaluatorProfiler();
 
         private IServiceProvider ServiceProvider { set; get; }
         private BuildEvents BuildEvents { set; get; }
@@ -380,29 +380,9 @@ namespace CompileScore
             }
         }
 
-        public string GetExtensionInstallationDirectory()
-        {
-            try
-            {
-                var uri = new Uri(typeof(CompileScorePackage).Assembly.CodeBase, UriKind.Absolute);
-                return Path.GetDirectoryName(uri.LocalPath);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private string GetToolPath(string localPath)
-        {
-            string installDirectory = GetExtensionInstallationDirectory();
-            string ret = installDirectory == null? null : installDirectory + '\\' + localPath;
-            return File.Exists(ret) ? ret : null;
-        }
-
         private string GetScoreExtractorToolPath()
         {
-            return GetToolPath(@"External\ScoreExtractor\ScoreDataExtractor.exe");
+            return EditorUtils.GetToolPath(@"External\ScoreExtractor\ScoreDataExtractor.exe");
         }
 
         private string GetPlatformFlag()
@@ -429,7 +409,7 @@ namespace CompileScore
             string commandLine = GetPlatformFlag() + " -start" + extraArgs;
 
             OutputLog.Log("Calling ScoreDataExtractor with " + commandLine);
-            int exitCode = ExternalProcess.ExecuteSync(GetScoreExtractorToolPath(), commandLine);
+            int exitCode = ExternalProcess.Global.ExecuteSync(GetScoreExtractorToolPath(), commandLine);
 
             if (exitCode != 0)
             {
@@ -452,7 +432,7 @@ namespace CompileScore
             string commandLine = GetPlatformFlag() + " -cancel" + extraArgs;
 
             OutputLog.Log("Calling ScoreDataExtractor with " + commandLine);
-            int exitCode = ExternalProcess.ExecuteSync(GetScoreExtractorToolPath(), commandLine);
+            int exitCode = ExternalProcess.Global.ExecuteSync(GetScoreExtractorToolPath(), commandLine);
 
             if (exitCode != 0)
             {
@@ -497,7 +477,7 @@ namespace CompileScore
             CreateDirectory(Path.GetDirectoryName(outputPath));
 
             OutputLog.Log("Calling ScoreDataExtractor with " + commandLine);
-            int exitCode = ExternalProcess.ExecuteSync(GetScoreExtractorToolPath(), commandLine);
+            int exitCode = ExternalProcess.Global.ExecuteSync(GetScoreExtractorToolPath(), commandLine);
 
             if (exitCode != 0)
             {
@@ -535,7 +515,7 @@ namespace CompileScore
             string commandLine = "-clang -extract" + globalArgs + " -i " + quotesIn + inputPath + quotesIn + " -o " + quotesOut + outputPath + quotesOut;
 
             OutputLog.Log("Calling ScoreDataExtractor with " + commandLine);
-            int exitCode = await ExternalProcess.ExecuteAsync(GetScoreExtractorToolPath(), commandLine);
+            int exitCode = await ExternalProcess.Global.ExecuteAsync(GetScoreExtractorToolPath(), commandLine);
 
             if (exitCode != 0)
             {
@@ -563,7 +543,7 @@ namespace CompileScore
             string commandLine = "-clang -clean -i " + quotesIn + inputPath + quotesIn;
 
             OutputLog.Log("Calling ScoreDataExtractor with " + commandLine);
-            int exitCode = await ExternalProcess.ExecuteAsync(GetScoreExtractorToolPath(), commandLine);
+            int exitCode = await ExternalProcess.Global.ExecuteAsync(GetScoreExtractorToolPath(), commandLine);
 
             if (exitCode != 0)
             {

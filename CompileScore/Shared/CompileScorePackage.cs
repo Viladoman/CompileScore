@@ -12,6 +12,7 @@ namespace CompileScore
     [Guid(CompileScorePackage.PackageGuidString)]
     [ProvideOptionPage(typeof(GeneralSettingsPageGrid), "Compile Score", "General", 0, 0, true)]
     [ProvideOptionPage(typeof(ThemeSettingsPageGrid),   "Compile Score", "Theme", 0, 0, true)]
+    [ProvideOptionPage(typeof(ParserSettingsPageGrid),  "Compile Score", "Parser", 0, 0, true)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(CompileScore.Overview.OverviewWindow))]
     [ProvideToolWindow(typeof(CompileScore.Timeline.TimelineWindow))]
