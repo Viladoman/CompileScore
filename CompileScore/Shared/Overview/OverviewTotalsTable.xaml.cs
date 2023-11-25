@@ -25,8 +25,12 @@ namespace CompileScore.Overview
         public void OnDataChanged()
         {
             CompileSession session = CompilerData.Instance.GetSession();
+            UnitTotal compilerTotal = CompilerData.Instance.GetTotal(CompilerData.CompileCategory.ExecuteCompiler);
+            float parallelizationRatio = compilerTotal != null && session.FullDuration > 0 ? (float)compilerTotal.Total / (float)session.FullDuration : 0;
+            parallelizationRatio = Math.Max(parallelizationRatio, 1);
+
             buildTimeText.Text = Common.UIConverters.GetTimeStr(session.FullDuration,true);
-            threadsText.Text = session.NumThreads > 0 ? "Threads: " + session.NumThreads : "";
+            threadsText.Text = "Parallel Ratio: " + parallelizationRatio.ToString("n2") + "x";
 
             ObservableCollection<UnitTotal> totals = new ObservableCollection<UnitTotal>();
             foreach (CompilerData.CompileCategory category in Common.Order.CategoryDisplay)
