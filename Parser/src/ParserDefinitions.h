@@ -34,6 +34,7 @@ namespace CompileScore
         enum Enumeration
         {
             Instance,
+            Reference,
             Inheritance,
             MemberField,
             FunctionArgument,

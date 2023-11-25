@@ -69,17 +69,27 @@ namespace CompileScore
             return FileLocation(presumedLocation.getLine(), presumedLocation.getColumn());
         }
 
-        StructureRequirement& GetStructRequirement(File& file, const clang::RecordDecl* recordDecl, const clang::SourceManager& sourceManager)
+        StructureRequirement& GetStructRequirement(const clang::RecordDecl* recordDecl, const clang::SourceManager& sourceManager)
         {
+            const clang::NamedDecl* namedDecl = recordDecl;
+
+            //Join all template instances into the same type
+            const clang::ClassTemplateSpecializationDecl* templateInstance = clang::dyn_cast<clang::ClassTemplateSpecializationDecl>(recordDecl);
+            if (templateInstance)
+            {
+                namedDecl = templateInstance->getSpecializedTemplate();
+            }
+
+            File& file = Helpers::GetFile(Helpers::GetFileIndex(namedDecl->getLocation(), sourceManager));
             for (StructureRequirement& structure : file.structures)
             {
-                if (structure.clangPtr == recordDecl)
+                if (structure.clangPtr == namedDecl)
                 {
                     return structure;
                 }
             }
 
-            file.structures.emplace_back(recordDecl, recordDecl->getQualifiedNameAsString().c_str(), CreateFileLocation(recordDecl->getLocation(), sourceManager));
+            file.structures.emplace_back(namedDecl, namedDecl->getQualifiedNameAsString().c_str(), CreateFileLocation(namedDecl->getLocation(), sourceManager));
             return file.structures.back();
         }
 
@@ -146,7 +156,10 @@ namespace CompileScore
         {
             if (IsDeclaredInMainFile(declaration->getLocation()))
             {
-                ProcessStructDeclaration(declaration);
+                if (declaration->isCompleteDefinition())
+                {
+                    ProcessStructDeclaration(declaration);
+                }
             }
             return true;
         }
@@ -156,7 +169,7 @@ namespace CompileScore
             if (IsDeclaredInMainFile(declaration->getLocation()))
             {
                 const clang::ParmVarDecl* funcArg = clang::dyn_cast<clang::ParmVarDecl>(declaration);
-                ProcessInstance(declaration->getType(), declaration->getSourceRange().getBegin(), funcArg ? StructureSimpleRequirementType::FunctionArgument : StructureSimpleRequirementType::Instance);
+                RefineType(declaration->getType(), declaration->getSourceRange().getBegin(), funcArg ? StructureSimpleRequirementType::FunctionArgument : StructureSimpleRequirementType::Instance);
             }
             return true;
         }
@@ -165,7 +178,7 @@ namespace CompileScore
         {
             if (IsDeclaredInMainFile(declaration->getLocation()))
             {
-                ProcessInstance(declaration->getReturnType(), declaration->getReturnTypeSourceRange().getBegin(), StructureSimpleRequirementType::FunctionReturn);
+                RefineType(declaration->getReturnType(), declaration->getReturnTypeSourceRange().getBegin(), StructureSimpleRequirementType::FunctionReturn);
             }
             return true;
         }
@@ -206,8 +219,7 @@ namespace CompileScore
 
                     if (recordDecl && requirementType < StructureNamedRequirementType::Count)
                     {
-                        File& file = Helpers::GetFile(Helpers::GetFileIndex(recordDecl->getLocation(), m_sourceManager));
-                        StructureRequirement& structure = Helpers::GetStructRequirement(file, recordDecl, m_sourceManager);
+                        StructureRequirement& structure = Helpers::GetStructRequirement(recordDecl, m_sourceManager);
                         Helpers::AddCodeRequirement(structure.namedRequirements[requirementType], declaration, declaration->getQualifiedNameAsString().c_str(), declaration->getLocation(), expr->getBeginLoc(), m_sourceManager);
                     }
                 }
@@ -243,42 +255,12 @@ namespace CompileScore
             return m_sourceManager.getFileID(location) == m_mainFileId;
         }
 
-        bool ProcessType(clang::QualType& output, clang::QualType input)
-        {
-            if (input->isArrayType())
-            {
-                //Keep digging 
-                return ProcessType(output, input->getAsArrayTypeUnsafe()->getElementType());
-            }
-            else if (input->isPointerType() || input->isReferenceType())
-            {
-                //TODO ~ ramonv ~ rename this to RefineType and do a ;reference; annotation + requirement of forward declaration
-                //Annotate this 
-                //TODO ~ ramovn ~ check if forward declared ( if so, where, if not... pointer to... )
-
-                // Or pointer to inner class 
-                return false;
-            }
-
-            output = input;
-            return true;
-        }
-
         void ProcessStructDeclaration(clang::CXXRecordDecl* declaration)
         {
-            if (!declaration->isCompleteDefinition())
-            {
-                return;
-            }
-
             //Check for bases
             for (const clang::CXXBaseSpecifier& base : declaration->bases())
             {
-                clang::QualType baseType;
-                if (ProcessType(baseType, base.getType()))
-                {
-                    AddInstance(baseType->getAsCXXRecordDecl(), base.getBeginLoc(), StructureSimpleRequirementType::Inheritance);
-                }
+                RefineType(base.getType(), base.getBeginLoc(), StructureSimpleRequirementType::Inheritance);
             }
 
             //check for fields
@@ -286,35 +268,37 @@ namespace CompileScore
             for (clang::RecordDecl::field_iterator I = declaration->field_begin(), E = declaration->field_end(); I != E; ++I, ++fieldNo)
             {
                 const clang::FieldDecl& field = **I;
-
-                clang::QualType fieldType;
-                if (ProcessType(fieldType, field.getType()))
-                {
-                    AddInstance(fieldType->getAsTagDecl(), field.getBeginLoc(), StructureSimpleRequirementType::MemberField);
-                }
+                RefineType(field.getType(), field.getBeginLoc(), StructureSimpleRequirementType::MemberField);
             }
         }
 
-        void ProcessInstance(clang::QualType input, const clang::SourceLocation& location, StructureSimpleRequirementType::Enumeration requirement)
+        void RefineType(clang::QualType qualType, const clang::SourceLocation& location, StructureSimpleRequirementType::Enumeration requirement)
         {
-            clang::QualType finalType;
-            if (ProcessType(finalType, input))
+            if (qualType->isArrayType())
             {
-                AddInstance(finalType->getAsTagDecl(), location, requirement);
+                //Keep digging 
+                RefineType(qualType->getAsArrayTypeUnsafe()->getElementType(), location, requirement);
+                return;
             }
+            else if (qualType->isPointerType() || qualType->isReferenceType())
+            {
+                //doesn't matter the context, a pointer or reference will always be marked down as such
+                RefineType(qualType->getPointeeType(), location, StructureSimpleRequirementType::Reference);
+                return;
+            }
+
+            AddCleanType(qualType->getAsTagDecl(), location, requirement);
         }
 
-        void AddInstance(clang::TagDecl* declaration, const clang::SourceLocation& location, StructureSimpleRequirementType::Enumeration requirement)
+        void AddCleanType(clang::TagDecl* declaration, const clang::SourceLocation& location, StructureSimpleRequirementType::Enumeration requirement)
         {
             if (declaration && !IsDeclaredInMainFile(declaration->getLocation()))
             {
-                File& file = Helpers::GetFile(Helpers::GetFileIndex(declaration->getLocation(), m_sourceManager));
-
                 //this can be EnumDecl or CXXRecordDecl
-                //TODO~ ramonv go through the declaration and check if this is a templated type
                 const clang::EnumDecl* enumDecl = clang::dyn_cast<clang::EnumDecl>(declaration);
                 if (enumDecl)
                 {
+                    File& file = Helpers::GetFile(Helpers::GetFileIndex(declaration->getLocation(), m_sourceManager));
                     Helpers::AddCodeRequirement(file.global[GlobalRequirementType::EnumInstance], declaration, declaration->getQualifiedNameAsString().c_str(), declaration->getLocation(), location, m_sourceManager);
                     return;
                 }
@@ -322,7 +306,10 @@ namespace CompileScore
                 const clang::CXXRecordDecl* recordDecl = clang::dyn_cast<clang::CXXRecordDecl>(declaration);
                 if (recordDecl)
                 {
-                    StructureRequirement& structure = Helpers::GetStructRequirement(file, recordDecl, m_sourceManager);
+                    //TODO ~ Ramonv ~ check for forward declare structure ( annotate as global requirement )
+
+
+                    StructureRequirement& structure = Helpers::GetStructRequirement(recordDecl, m_sourceManager);
                     structure.simpleRequirements[requirement].emplace_back(Helpers::CreateFileLocation(location, m_sourceManager));
                     return;
                 }
@@ -347,8 +334,6 @@ namespace CompileScore
             {
                 visitor.TraverseDecl(Decl);
             }
-
-            //TODO ~ recollect results from the visitor if needed
         }
     };
 
@@ -402,16 +387,6 @@ namespace CompileScore
 
             return true;
         }
-
-        void EndSourceFileAction()
-        {
-            clang::CompilerInstance& ci = getCompilerInstance();
-            clang::Preprocessor& pp = ci.getPreprocessor();
-            PPIncludeTracer* includeTracer = static_cast<PPIncludeTracer*>(pp.getPPCallbacks());
-
-            // do whatever you want with the callback now
-            (void)includeTracer;
-        }
     };
 }
 
@@ -446,6 +421,8 @@ namespace Parser
 
         clang::tooling::ClangTool tool(optionsParser->getCompilations(), optionsParser->getSourcePathList());
         tool.run(clang::tooling::newFrontendActionFactory<CompileScore::Action>().get());
+
+        //TODO ~ ramonv ~ finalize result ( normalize paths - removing ../ and ./ from them )
 
         const char* outputFileName = CommandLine::g_outputFilename.size() == 0 ? "output.cspbin" : CommandLine::g_outputFilename.c_str();
         
