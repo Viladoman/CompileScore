@@ -161,10 +161,13 @@ namespace IO
         {
             switch (input)
             {
-            case CompileScore::GlobalRequirementType::MacroExpansion:   return "Macro Expansions";    
-            case CompileScore::GlobalRequirementType::FreeFunctionCall: return "Free Function Calls";
-            case CompileScore::GlobalRequirementType::EnumInstance:     return "Enum Instances";
-            case CompileScore::GlobalRequirementType::EnumConstant:     return "Enum Constants";
+            case CompileScore::GlobalRequirementType::MacroExpansion:     return "Macro Expansions";    
+            case CompileScore::GlobalRequirementType::FreeFunctionCall:   return "Free Function Calls";
+            case CompileScore::GlobalRequirementType::FreeVariable:       return "Free Variable";
+            case CompileScore::GlobalRequirementType::EnumInstance:       return "Enum Instances";
+            case CompileScore::GlobalRequirementType::EnumConstant:       return "Enum Constants";
+            case CompileScore::GlobalRequirementType::ForwardDeclaration: return "Forward Declaration";
+            case CompileScore::GlobalRequirementType::TypeDefinition:     return "Type Definition";
             default: return "???";
             }
         }

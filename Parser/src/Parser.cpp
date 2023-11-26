@@ -20,10 +20,7 @@
 //#pragma optimize("",off) //TODO ~ Ramonv ~ remove 
 
 //TODO List: 
-// - Typedef ( using: TypeAliasDecl / typedef: TypedefDecl )
-// - extern variables 
-// - template class typedefs
-// - enums and constexpr used in array definitions and such ( constexpr / consteval in general ) 
+// = Gather invalid vardecl that it could not figure out
 //
 // Test std::shared_ptr, std::unique_ptr...
 // Test new delete
@@ -172,110 +169,121 @@ namespace CompileScore
 
         bool VisitCXXRecordDecl(clang::CXXRecordDecl* declaration)
         {
-            if (IsDeclaredInMainFile(declaration->getLocation()))
-            {
-                if (declaration->isCompleteDefinition())
-                {
-                    ProcessStructDeclaration(declaration);
-                }
-            }
+            if (!IsDeclaredInMainFile(declaration->getLocation()))
+                return true;
+            
+            if (declaration->isCompleteDefinition())
+                return true;
+            
+            ProcessStructDeclaration(declaration);
             return true;
         }
 
         bool VisitVarDecl(clang::VarDecl* declaration)
         {
-            if (IsDeclaredInMainFile(declaration->getLocation()))
-            {
-                const clang::ParmVarDecl* funcArg = clang::dyn_cast<clang::ParmVarDecl>(declaration);
-                RefineType(declaration->getType(), declaration->getSourceRange().getBegin(), funcArg ? StructureSimpleRequirementType::FunctionArgument : StructureSimpleRequirementType::Instance);
-            }
+            if (!IsDeclaredInMainFile(declaration->getLocation()))
+                return true;
+
+            const clang::ParmVarDecl* funcArg = clang::dyn_cast<clang::ParmVarDecl>(declaration);
+            RefineType(declaration->getType(), declaration->getSourceRange().getBegin(), funcArg ? StructureSimpleRequirementType::FunctionArgument : StructureSimpleRequirementType::Instance);
             return true;
         }
 
         bool VisitFunctionDecl(clang::FunctionDecl* declaration)
         {
-            if (IsDeclaredInMainFile(declaration->getLocation()))
-            {
-                RefineType(declaration->getReturnType(), declaration->getReturnTypeSourceRange().getBegin(), StructureSimpleRequirementType::FunctionReturn);
-            }
+            if (!IsDeclaredInMainFile(declaration->getLocation()))
+                return true;
+            
+            RefineType(declaration->getReturnType(), declaration->getReturnTypeSourceRange().getBegin(), StructureSimpleRequirementType::FunctionReturn);
             return true;
         }
 
         bool VisitDeclRefExpr(clang::DeclRefExpr* expr)
         {
-            if (IsDeclaredInMainFile(expr->getLocation()))
+            if (!IsDeclaredInMainFile(expr->getLocation()))
+                return true;
+ 
+            clang::ValueDecl* valueDecl = expr->getDecl();
+            if (!valueDecl || IsDeclaredInMainFile(valueDecl->getLocation()))
+                return true;
+
+            //Check for enum constant
+            if (clang::EnumConstantDecl* enumConstantDecl = clang::dyn_cast<clang::EnumConstantDecl>(valueDecl))
             {
-                clang::EnumConstantDecl* declaration = clang::dyn_cast<clang::EnumConstantDecl>(expr->getDecl());
-                if (declaration && !IsDeclaredInMainFile(declaration->getLocation()))
-                {
-                    File& file = Helpers::GetFile(Helpers::GetFileIndex(declaration->getLocation(), m_sourceManager));
-                    Helpers::AddCodeRequirement(file.global[GlobalRequirementType::EnumConstant], declaration, declaration->getQualifiedNameAsString().c_str(), declaration->getLocation(), expr->getBeginLoc(), m_sourceManager);
-                }
+                File& file = Helpers::GetFile(Helpers::GetFileIndex(enumConstantDecl->getLocation(), m_sourceManager));
+                Helpers::AddCodeRequirement(file.global[GlobalRequirementType::EnumConstant], enumConstantDecl, enumConstantDecl->getQualifiedNameAsString().c_str(), enumConstantDecl->getLocation(), expr->getBeginLoc(), m_sourceManager);
             }
+            else if (clang::VarDecl* varDecl = clang::dyn_cast<clang::VarDecl>(valueDecl))
+            {
+                //check for global variable or similar
+                File& file = Helpers::GetFile(Helpers::GetFileIndex(varDecl->getLocation(), m_sourceManager));
+                Helpers::AddCodeRequirement(file.global[GlobalRequirementType::FreeVariable], varDecl, varDecl->getQualifiedNameAsString().c_str(), varDecl->getLocation(), expr->getBeginLoc(), m_sourceManager);
+            }
+
             return true;
         }
 
         bool VisitCXXNewExpr(clang::CXXNewExpr* expr)
         {
-            if (IsDeclaredInMainFile(expr->getBeginLoc()))
+            if (!IsDeclaredInMainFile(expr->getBeginLoc()))
+                return true;
+            
+            if (clang::CXXRecordDecl* declaration = expr->getAllocatedType()->getAsCXXRecordDecl())
             {
-                if (clang::CXXRecordDecl* declaration = expr->getAllocatedType()->getAsCXXRecordDecl())
-                {
-                    StructureRequirement& structure = Helpers::GetStructRequirement(declaration, m_sourceManager);
-                    structure.simpleRequirements[StructureSimpleRequirementType::Allocation].emplace_back(Helpers::CreateFileLocation(expr->getBeginLoc(),m_sourceManager));
-                }
+                StructureRequirement& structure = Helpers::GetStructRequirement(declaration, m_sourceManager);
+                structure.simpleRequirements[StructureSimpleRequirementType::Allocation].emplace_back(Helpers::CreateFileLocation(expr->getBeginLoc(),m_sourceManager));
             }
+
             return true;
         }
 
         bool VisitMemberExpr(clang::MemberExpr* expr)
         {
-            if (IsDeclaredInMainFile(expr->getBeginLoc()))
-            {
-                clang::ValueDecl* declaration = expr->getMemberDecl();
-                if (declaration && !IsDeclaredInMainFile(declaration->getLocation()))
-                {
-                    const clang::RecordDecl* recordDecl = nullptr;
-                    StructureNamedRequirementType::Enumeration requirementType = StructureNamedRequirementType::Count;
-                    if (const clang::CXXMethodDecl* methodDecl = clang::dyn_cast<clang::CXXMethodDecl>(declaration))
-                    {                        
-                        recordDecl = methodDecl->getParent();
-                        requirementType = StructureNamedRequirementType::MethodCall;
-                    }
-                    else if (const clang::FieldDecl* fieldDecl = clang::dyn_cast<clang::FieldDecl>(declaration))
-                    {
-                        recordDecl = fieldDecl->getParent();
-                        requirementType = StructureNamedRequirementType::FieldAccess;
-                    }
+            if (!IsDeclaredInMainFile(expr->getBeginLoc()))
+                return true;
+            
+            clang::ValueDecl* declaration = expr->getMemberDecl();
+            if (!declaration || IsDeclaredInMainFile(declaration->getLocation()))
+                return true;
 
-                    if (recordDecl && requirementType < StructureNamedRequirementType::Count)
-                    {
-                        StructureRequirement& structure = Helpers::GetStructRequirement(recordDecl, m_sourceManager);
-                        Helpers::AddCodeRequirement(structure.namedRequirements[requirementType], declaration, declaration->getQualifiedNameAsString().c_str(), declaration->getLocation(), expr->getBeginLoc(), m_sourceManager);
-                    }
-                }
+            const clang::RecordDecl* recordDecl = nullptr;
+            StructureNamedRequirementType::Enumeration requirementType = StructureNamedRequirementType::Count;
+            if (const clang::CXXMethodDecl* methodDecl = clang::dyn_cast<clang::CXXMethodDecl>(declaration))
+            {                        
+                recordDecl = methodDecl->getParent();
+                requirementType = StructureNamedRequirementType::MethodCall;
             }
+            else if (const clang::FieldDecl* fieldDecl = clang::dyn_cast<clang::FieldDecl>(declaration))
+            {
+                recordDecl = fieldDecl->getParent();
+                requirementType = StructureNamedRequirementType::FieldAccess;
+            }
+
+            if (recordDecl && requirementType < StructureNamedRequirementType::Count)
+            {
+                StructureRequirement& structure = Helpers::GetStructRequirement(recordDecl, m_sourceManager);
+                Helpers::AddCodeRequirement(structure.namedRequirements[requirementType], declaration, declaration->getQualifiedNameAsString().c_str(), declaration->getLocation(), expr->getBeginLoc(), m_sourceManager);
+            }
+
             return true;
         }
 
         bool VisitCallExpr(clang::CallExpr* expr)
         {
-            if (IsDeclaredInMainFile(expr->getBeginLoc()))
-            {
-                clang::NamedDecl* callee = clang::dyn_cast<clang::NamedDecl>(expr->getCalleeDecl());
+            if (!IsDeclaredInMainFile(expr->getBeginLoc()))
+                return true;
+            
+            clang::NamedDecl* callee = clang::dyn_cast<clang::NamedDecl>(expr->getCalleeDecl());
+            if (!callee || IsDeclaredInMainFile(callee->getLocation()))
+                return true;
 
-                //CXXMethodDecl handled by MemberExpr visitor ( avoid duplicate processing )
-                if (clang::dyn_cast<clang::CXXMethodDecl>(callee) != nullptr)
-                {
-                    return true;
-                }
+            //CXXMethodDecl handled by MemberExpr visitor ( avoid duplicate processing )
+            if (clang::dyn_cast<clang::CXXMethodDecl>(callee) != nullptr)
+                return true;
 
-                if (callee && !IsDeclaredInMainFile(callee->getLocation()))
-                {
-                    File& file = Helpers::GetFile(Helpers::GetFileIndex(callee->getLocation(), m_sourceManager));
-                    Helpers::AddCodeRequirement(file.global[GlobalRequirementType::FreeFunctionCall], callee, callee->getQualifiedNameAsString().c_str(), callee->getLocation(), expr->getBeginLoc(), m_sourceManager);
-                }
-            }
+            File& file = Helpers::GetFile(Helpers::GetFileIndex(callee->getLocation(), m_sourceManager));
+            Helpers::AddCodeRequirement(file.global[GlobalRequirementType::FreeFunctionCall], callee, callee->getQualifiedNameAsString().c_str(), callee->getLocation(), expr->getBeginLoc(), m_sourceManager);
+
             return true;
         }
 
@@ -323,27 +331,35 @@ namespace CompileScore
 
         void AddCleanType(clang::TagDecl* declaration, const clang::SourceLocation& location, StructureSimpleRequirementType::Enumeration requirement)
         {
-            if (declaration && !IsDeclaredInMainFile(declaration->getLocation()))
+            if (!declaration || IsDeclaredInMainFile(declaration->getLocation()))
+                return;
+
+            //this is an incomplete type ( forward declaration )
+            if (!declaration->isCompleteDefinition())
             {
-                //this can be EnumDecl or CXXRecordDecl
-                const clang::EnumDecl* enumDecl = clang::dyn_cast<clang::EnumDecl>(declaration);
-                if (enumDecl)
-                {
-                    File& file = Helpers::GetFile(Helpers::GetFileIndex(declaration->getLocation(), m_sourceManager));
-                    Helpers::AddCodeRequirement(file.global[GlobalRequirementType::EnumInstance], declaration, declaration->getQualifiedNameAsString().c_str(), declaration->getLocation(), location, m_sourceManager);
-                    return;
-                }
+                File& file = Helpers::GetFile(Helpers::GetFileIndex(declaration->getLocation(), m_sourceManager));
+                Helpers::AddCodeRequirement(file.global[GlobalRequirementType::ForwardDeclaration], declaration, declaration->getQualifiedNameAsString().c_str(), declaration->getLocation(), location, m_sourceManager);
+            }
+            else if (const clang::TypedefNameDecl* typedefDecl = clang::dyn_cast<clang::TypedefNameDecl>(declaration))
+            {
+                //this is a typedef or using
+                File& file = Helpers::GetFile(Helpers::GetFileIndex(declaration->getLocation(), m_sourceManager));
+                Helpers::AddCodeRequirement(file.global[GlobalRequirementType::TypeDefinition], declaration, declaration->getQualifiedNameAsString().c_str(), declaration->getLocation(), location, m_sourceManager);
 
-                const clang::CXXRecordDecl* recordDecl = clang::dyn_cast<clang::CXXRecordDecl>(declaration);
-                if (recordDecl)
-                {
-                    //TODO ~ Ramonv ~ check for forward declare structure ( annotate as global requirement )
-
-
-                    StructureRequirement& structure = Helpers::GetStructRequirement(recordDecl, m_sourceManager);
-                    structure.simpleRequirements[requirement].emplace_back(Helpers::CreateFileLocation(location, m_sourceManager));
-                    return;
-                }
+                //process the real type ( removing pointers, qualifiers and more typedefinitions )
+                RefineType( typedefDecl->getUnderlyingType(), location, requirement);
+            }
+            else if (const clang::EnumDecl* enumDecl = clang::dyn_cast<clang::EnumDecl>(declaration))
+            {
+                //This is an enumeration type            
+                File& file = Helpers::GetFile(Helpers::GetFileIndex(declaration->getLocation(), m_sourceManager));
+                Helpers::AddCodeRequirement(file.global[GlobalRequirementType::EnumInstance], declaration, declaration->getQualifiedNameAsString().c_str(), declaration->getLocation(), location, m_sourceManager);
+            }
+            else if (const clang::CXXRecordDecl* recordDecl = clang::dyn_cast<clang::CXXRecordDecl>(declaration))
+            {
+                //This is a custom type
+                StructureRequirement& structure = Helpers::GetStructRequirement(recordDecl, m_sourceManager);
+                structure.simpleRequirements[requirement].emplace_back(Helpers::CreateFileLocation(location, m_sourceManager));
             }
         }
 

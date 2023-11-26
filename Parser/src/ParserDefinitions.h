@@ -18,12 +18,13 @@ namespace CompileScore
         {
             MacroExpansion, 
             FreeFunctionCall, 
+            FreeVariable,
 
             EnumInstance, 
             EnumConstant,
 
-            //Type forward declare 
-            //typedef 
+            ForwardDeclaration,
+            TypeDefinition,
 
             Count
         };
