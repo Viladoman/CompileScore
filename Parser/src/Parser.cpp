@@ -17,7 +17,18 @@
 #include "IO.h"
 #include "ParserDefinitions.h"
 
-//#pragma optimize("",off) //TODO ~ Ramonv ~ remove 
+#pragma optimize("",off) //TODO ~ Ramonv ~ remove 
+
+//TODO List: 
+// - Typedef ( using: TypeAliasDecl / typedef: TypedefDecl )
+// - extern variables 
+// - template class typedefs
+// - enums and constexpr used in array definitions and such ( constexpr / consteval in general ) 
+//
+// Test std::shared_ptr, std::unique_ptr...
+// Test new delete
+// Test using, tempalted using and typedefs
+// Test constexpr functions on arrays
 
 namespace CompileScore
 {
@@ -26,9 +37,10 @@ namespace CompileScore
     TFilenameLookup g_filenameLookup;
     Result g_result;
 
-    // ----------------------------------------------------------------------------------------------------------
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     namespace Helpers
     {
+        // -----------------------------------------------------------------------------------------------------------
         int GetFileIndex(const clang::FileID fileId, const char* filename)
         {
             const size_t nextIndex = g_result.files.size();
@@ -40,6 +52,7 @@ namespace CompileScore
             return static_cast<int>(result.first->second);
         }
 
+        // -----------------------------------------------------------------------------------------------------------
         int GetFileIndex(clang::SourceLocation location, const clang::SourceManager& sourceManager)
         {
             if (!location.isValid())
@@ -58,17 +71,20 @@ namespace CompileScore
             return static_cast<int>(GetFileIndex(fileId, startLocation.getFilename()));
         }
 
+        // -----------------------------------------------------------------------------------------------------------
         File& GetFile(size_t fileIndex)
         {
             return fileIndex < 0 ? g_result.otherFile : g_result.files[fileIndex];
         }
 
+        // -----------------------------------------------------------------------------------------------------------
         FileLocation CreateFileLocation(clang::SourceLocation location, const clang::SourceManager& sourceManager)
         {
             const clang::PresumedLoc presumedLocation = sourceManager.getPresumedLoc(location);
             return FileLocation(presumedLocation.getLine(), presumedLocation.getColumn());
         }
 
+        // -----------------------------------------------------------------------------------------------------------
         StructureRequirement& GetStructRequirement(const clang::RecordDecl* recordDecl, const clang::SourceManager& sourceManager)
         {
             const clang::NamedDecl* namedDecl = recordDecl;
@@ -93,6 +109,7 @@ namespace CompileScore
             return file.structures.back();
         }
 
+        // -----------------------------------------------------------------------------------------------------------
         CodeRequirement& GetCodeRequirement(TRequirements& requirements, const void* clangPtr, const char* name, clang::SourceLocation defLocation, const clang::SourceManager& sourceManager)
         {
             for (CodeRequirement& entry : requirements)
@@ -107,12 +124,14 @@ namespace CompileScore
             return requirements.back();
         }
 
+        // -----------------------------------------------------------------------------------------------------------
         void AddCodeRequirement(TRequirements& requirements, const void* clangPtr, const char* name, clang::SourceLocation defLocation, clang::SourceLocation useLocation, const clang::SourceManager& sourceManager)
         {
             CodeRequirement& requirement = GetCodeRequirement(requirements, clangPtr, name, defLocation, sourceManager);
             requirement.useLocations.emplace_back(CreateFileLocation(useLocation, sourceManager));
         }
 
+        // -----------------------------------------------------------------------------------------------------------
         void AddIncludeLink(const clang::FileID includer, const clang::FileID includee, const clang::SourceManager& sourceManager)
         {
             if (!includer.isValid() || !includee.isValid())
@@ -140,9 +159,8 @@ namespace CompileScore
         }
     }
 
-    // ----------------------------------------------------------------------------------------------------------
-
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     class CollectSymbolUsage : public clang::RecursiveASTVisitor<CollectSymbolUsage>
     {
     public:
@@ -192,6 +210,19 @@ namespace CompileScore
                 {
                     File& file = Helpers::GetFile(Helpers::GetFileIndex(declaration->getLocation(), m_sourceManager));
                     Helpers::AddCodeRequirement(file.global[GlobalRequirementType::EnumConstant], declaration, declaration->getQualifiedNameAsString().c_str(), declaration->getLocation(), expr->getBeginLoc(), m_sourceManager);
+                }
+            }
+            return true;
+        }
+
+        bool VisitCXXNewExpr(clang::CXXNewExpr* expr)
+        {
+            if (IsDeclaredInMainFile(expr->getBeginLoc()))
+            {
+                if (clang::CXXRecordDecl* declaration = expr->getAllocatedType()->getAsCXXRecordDecl())
+                {
+                    StructureRequirement& structure = Helpers::GetStructRequirement(declaration, m_sourceManager);
+                    structure.simpleRequirements[StructureSimpleRequirementType::Allocation].emplace_back(Helpers::CreateFileLocation(expr->getBeginLoc(),m_sourceManager));
                 }
             }
             return true;
@@ -322,6 +353,8 @@ namespace CompileScore
         const clang::FileID         m_mainFileId;
     };
 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     class Consumer : public clang::ASTConsumer
     {
     public:
@@ -336,6 +369,8 @@ namespace CompileScore
             }
         }
     };
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     class PPIncludeTracer : public clang::PPCallbacks
     {
@@ -372,6 +407,8 @@ namespace CompileScore
         clang::FileID m_mainFileId;
     };
 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     class Action : public clang::SyntaxOnlyAction
     {
     public:
@@ -389,6 +426,8 @@ namespace CompileScore
         }
     };
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace CommandLine
 {
@@ -408,8 +447,11 @@ namespace CommandLine
     static llvm::cl::extrahelp CommonHelp(clang::tooling::CommonOptionsParser::HelpMessage);
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 namespace Parser
 {
+    // -----------------------------------------------------------------------------------------------------------
     bool Parse(int argc, const char** argv)
     {
         llvm::Expected<clang::tooling::CommonOptionsParser> optionsParser = clang::tooling::CommonOptionsParser::create(argc, argv, CommandLine::g_commandLineCategory);

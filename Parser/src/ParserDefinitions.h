@@ -35,6 +35,7 @@ namespace CompileScore
         {
             Instance,
             Reference,
+            Allocation,
             Inheritance,
             MemberField,
             FunctionArgument,
