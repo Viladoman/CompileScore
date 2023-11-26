@@ -11,7 +11,6 @@ namespace IO
     // Logging
 
     void Log(const char* format, ...);
-    void LogTime(const char* prefix, long miliseconds);
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // Export

@@ -27,24 +27,6 @@ namespace IO
         va_end(argptr);
     }
 
-    // -----------------------------------------------------------------------------------------------------------
-    void LogTime(const char* prefix, long miliseconds)
-    {
-        long seconds = miliseconds / 1000;
-        miliseconds = miliseconds - (seconds * 1000);
-
-        long minutes = seconds / 60;
-        seconds = seconds - (minutes * 60);
-
-        long hours = minutes / 60;
-        minutes = minutes - (hours * 60);
-
-        if (hours)        Log("%s%02uh %02um", prefix, hours, minutes);
-        else if (minutes) Log("%s%02um %02us", prefix, minutes, seconds);
-        else if (seconds) Log("%s%02us %02ums", prefix, seconds, miliseconds);
-        else              Log("%s%02ums", prefix, miliseconds);
-    }
-
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Binarize
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -71,6 +53,77 @@ namespace IO
 
             fwrite(str.c_str(), str.length(), 1, stream);
         }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeFileLocation(FILE* stream, CompileScore::FileLocation location)
+        {
+            Binarize(stream, static_cast<unsigned int>(location.row));
+            Binarize(stream, static_cast<unsigned int>(location.column));
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeFileLocations(FILE* stream, const CompileScore::TFileLocations& fileLocations)
+        {
+            Binarize(stream, static_cast<unsigned int>(fileLocations.size()));
+            for (const CompileScore::FileLocation location : fileLocations)
+            {
+                BinarizeFileLocation(stream, location);
+            }
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeRequirements(FILE* stream, const CompileScore::TRequirements& requirements)
+        {
+            Binarize(stream, static_cast<unsigned int>(requirements.size()));
+            for (const CompileScore::CodeRequirement& requirement : requirements)
+            {
+                BinarizeString(stream, requirement.name);
+                BinarizeFileLocation(stream, requirement.defLocation);
+                BinarizeFileLocations(stream, requirement.useLocations);
+            }
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeStructure(FILE* stream, const CompileScore::StructureRequirement& structure)
+        {
+            BinarizeString(stream, structure.name);
+            BinarizeFileLocation(stream, structure.defLocation);
+
+            for (int i = 0; i < CompileScore::StructureSimpleRequirementType::Count; ++i)
+            {
+                BinarizeFileLocations(stream, structure.simpleRequirements[i]);
+            }
+
+            for (int i = 0; i < CompileScore::StructureNamedRequirementType::Count; ++i)
+            {
+                BinarizeRequirements(stream, structure.namedRequirements[i]);
+            }
+
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeFile(FILE* stream, const CompileScore::File& file)
+        {
+            for (int i = 0; i < CompileScore::GlobalRequirementType::Count; ++i)
+            {
+                BinarizeRequirements(stream, file.global[i]);
+            }
+
+            for (const CompileScore::StructureRequirement& structure : file.structures)
+            {
+                BinarizeStructure(stream, structure);
+            }
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeFiles(FILE* stream, const CompileScore::TFiles& files)
+        {
+            Binarize(stream, static_cast<unsigned int>(files.size()));
+            for (const CompileScore::File& file : files)
+            {
+                BinarizeFile(stream, file);
+            }
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -79,6 +132,7 @@ namespace IO
 
     namespace PrintUtils
     {
+        // -----------------------------------------------------------------------------------------------------------
         bool IsFileEmpty(const CompileScore::File& file)
         {
             for (int i = 0; i < CompileScore::GlobalRequirementType::Count; ++i)
@@ -102,6 +156,7 @@ namespace IO
             return true;
         }
 
+        // -----------------------------------------------------------------------------------------------------------
         const char* GetGlobalRequirementName(CompileScore::GlobalRequirementType::Enumeration input)
         {
             switch (input)
@@ -114,12 +169,14 @@ namespace IO
             }
         }
 
+        // -----------------------------------------------------------------------------------------------------------
         const char* GetStructureSimpleRequirementName(CompileScore::StructureSimpleRequirementType::Enumeration input)
         {
             switch (input)
             {
             case CompileScore::StructureSimpleRequirementType::Instance:         return "Instances";
             case CompileScore::StructureSimpleRequirementType::Reference:        return "References";
+            case CompileScore::StructureSimpleRequirementType::Allocation:       return "Allocation";
             case CompileScore::StructureSimpleRequirementType::Inheritance:      return "Inheritances";
             case CompileScore::StructureSimpleRequirementType::MemberField:      return "Member Field";
             case CompileScore::StructureSimpleRequirementType::FunctionArgument: return "Function Arguments";
@@ -128,6 +185,7 @@ namespace IO
             }
         }
 
+        // -----------------------------------------------------------------------------------------------------------
         const char* GetStructureNamedRequirementName(CompileScore::StructureNamedRequirementType::Enumeration input)
         {
             switch (input)
@@ -138,6 +196,7 @@ namespace IO
             }
         }
 
+        // -----------------------------------------------------------------------------------------------------------
         void Print(const CompileScore::CodeRequirement& requirement, int tab)
         {        
             for (int i = 0; i < tab; ++i) Log("\t");
@@ -151,6 +210,7 @@ namespace IO
             Log("\n");
         }
 
+        // -----------------------------------------------------------------------------------------------------------
         void Print(const CompileScore::TRequirements& requirements, const char* label, int tab)
         {
             if (requirements.empty())
@@ -166,6 +226,7 @@ namespace IO
             }
         }
 
+        // -----------------------------------------------------------------------------------------------------------
         void Print(const CompileScore::StructureRequirement& structure, int tab)
         {
             for (int i = 0; i < tab; ++i) Log("\t");
@@ -193,6 +254,7 @@ namespace IO
             }
         }
 
+        // -----------------------------------------------------------------------------------------------------------
         void Print(const CompileScore::File& file, int tab = 0)
         {
             if (PrintUtils::IsFileEmpty(file))
@@ -214,6 +276,7 @@ namespace IO
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    // -----------------------------------------------------------------------------------------------------------
     bool ToFile(const CompileScore::Result& result, const char* filename)
     {
         FILE* stream;
@@ -231,6 +294,7 @@ namespace IO
         return true;
     }
 
+    // -----------------------------------------------------------------------------------------------------------
     void ToPrint(const CompileScore::Result& result)
     {
         Log("Dependency Requirements found: \n");
