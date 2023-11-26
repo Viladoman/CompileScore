@@ -2,5 +2,9 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\simpleTest.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\simpleHeader.h" />
   </ItemGroup>
 </Project>
