@@ -17,7 +17,7 @@
 #include "IO.h"
 #include "ParserDefinitions.h"
 
-#pragma optimize("",off) //TODO ~ Ramonv ~ remove 
+//#pragma optimize("",off) //TODO ~ Ramonv ~ remove 
 
 //TODO List: 
 // - Typedef ( using: TypeAliasDecl / typedef: TypedefDecl )

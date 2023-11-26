@@ -56,6 +56,10 @@ TestProjects/CMake/tmp/*
 TestProjects/CMake/bin/*
 TestProjects/CMake/.vs/*
 
+TestProjects/Parser/tmp/*
+TestProjects/Parser/bin/*
+TestProjects/Parser/.vs/*
+
 TestProjects/Regular/tmp/*
 TestProjects/Regular/bin/*
 TestProjects/Regular/.vs/*
