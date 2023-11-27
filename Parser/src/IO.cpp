@@ -104,11 +104,14 @@ namespace IO
         // -----------------------------------------------------------------------------------------------------------
         void BinarizeFile(FILE* stream, const CompileScore::File& file)
         {
+            BinarizeString(stream, file.name);
+
             for (int i = 0; i < CompileScore::GlobalRequirementType::Count; ++i)
             {
                 BinarizeRequirements(stream, file.global[i]);
             }
 
+            Binarize(stream, static_cast<unsigned int>(file.structures.size()));
             for (const CompileScore::StructureRequirement& structure : file.structures)
             {
                 BinarizeStructure(stream, structure);
@@ -291,7 +294,7 @@ namespace IO
 
         BinUtils::Binarize(stream, DATA_VERSION);
     
-        //TODO ~ ramonv ~ to be implemented
+        BinUtils::BinarizeFiles(stream, result.files);
 
         fclose(stream);
         return true;

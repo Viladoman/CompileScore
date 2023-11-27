@@ -17,15 +17,14 @@ namespace CompileScore
         //TODO ~ ramonv ~ add unbinarized data here
     }
 
-    public class Parser
+    public static class Parser
     {
         static public void LogClear() { ThreadHelper.ThrowIfNotOnUIThread(); OutputLog.Clear( OutputLog.PaneInstance.Parser); }
         static public void LogFocus() { ThreadHelper.ThrowIfNotOnUIThread(); OutputLog.Focus( OutputLog.PaneInstance.Parser); }
         static public void Log(string input) { ThreadHelper.ThrowIfNotOnUIThread(); OutputLog.Log(input, OutputLog.PaneInstance.Parser); }
         static public void LogError(string input) { ThreadHelper.ThrowIfNotOnUIThread(); OutputLog.Error(input, OutputLog.PaneInstance.Parser); }
 
-
-        public async Task<ParseResult> ParseClangAsync(ProjectProperties projProperties, string inputFilename, string outputDirectory)
+        public static async Task<string> ParseClangAsync(ProjectProperties projProperties, string inputFilename, string outputDirectory)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -119,11 +118,9 @@ namespace CompileScore
             }
 
             Log("Parsing completed! (" + GetTimeStr(watch) + ")");
-
-            //TODO ~ ramonv ~ process outputPath file 
-            return new ParseResult();
+            return outputPath;
         }
-        private string GetStandardFlag(ProjectProperties.StandardVersion standard)
+        private static string GetStandardFlag(ProjectProperties.StandardVersion standard)
         {
             switch (standard)
             {
@@ -142,12 +139,12 @@ namespace CompileScore
             }
         }
 
-        private string GetParserToolPath()
+        private static string GetParserToolPath()
         {
             return EditorUtils.GetToolPath(@"External\Parser\CompileScoreParser.exe");
         }
 
-        private string CreateDirectory(string path)
+        private static string CreateDirectory(string path)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -165,12 +162,12 @@ namespace CompileScore
             return null;
         }
 
-        private string AdjustPath(string input)
+        private static string AdjustPath(string input)
         {
             return input.Contains(' ') ? '"' + input + '"' : input;
         }
 
-        private void AdjustPaths(List<string> list)
+        private static void AdjustPaths(List<string> list)
         {
             for (int i = 0; i < list.Count; ++i)
             {
@@ -178,7 +175,7 @@ namespace CompileScore
             }
         }
 
-        private string GenerateCommandStr(string prefix, List<string> args)
+        private static string GenerateCommandStr(string prefix, List<string> args)
         {
             string ret = "";
             if (args != null)
@@ -191,7 +188,7 @@ namespace CompileScore
 
             return ret;
         }
-        static public string GetTimeStr(ulong uSeconds)
+        private static string GetTimeStr(ulong uSeconds)
         {
             ulong ms = uSeconds / 1000;
             ulong us = uSeconds - (ms * 1000);
@@ -210,7 +207,7 @@ namespace CompileScore
             return "< 1 μs";
         }
 
-        static public string GetTimeStr(System.Diagnostics.Stopwatch watch)
+        private static string GetTimeStr(System.Diagnostics.Stopwatch watch)
         {
             const long TicksPerMicrosecond = (TimeSpan.TicksPerMillisecond / 1000);
             return GetTimeStr((ulong)(watch.ElapsedTicks / TicksPerMicrosecond));
@@ -224,9 +221,6 @@ namespace CompileScore
         private static readonly Lazy<ParserProcessor> lazy = new Lazy<ParserProcessor>(() => new ParserProcessor());
         public static ParserProcessor Instance { get { return lazy.Value; } }
 
-        Parser parser = new Parser();
-
-
         static public ParserSettingsPageGrid GetParserSettings() { return (ParserSettingsPageGrid)EditorUtils.Package.GetDialogPage(typeof(ParserSettingsPageGrid)); }
 
         public async System.Threading.Tasks.Task ParseAtCurrentLocationAsync()
@@ -235,7 +229,6 @@ namespace CompileScore
 
             Parser.LogClear();
 
-            ParseResult result;
             Document activeDocument = EditorUtils.GetActiveDocument(); 
             if ( activeDocument == null )
             {
@@ -251,13 +244,9 @@ namespace CompileScore
                 Parser.LogError("Unable to retrieve the project configuration");
                 return;
             }
-            else
-            {
-                result = await parser.ParseClangAsync(properties, activeDocument.FullName, GetParserOutputDirectory());
-            }
 
-            //TODO ~ digest result and pipe it to the new window - Process result
-
+            string outputFilePath = await Parser.ParseClangAsync(properties, activeDocument.FullName, GetParserOutputDirectory());
+            ParserData.Instance.LoadUnitFile(outputFilePath);
         }
 
         private string GetParserOutputDirectory()
