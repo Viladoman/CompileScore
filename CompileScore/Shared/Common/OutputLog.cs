@@ -7,72 +7,87 @@ namespace CompileScore
 {
     public static class OutputLog
     {
-        private static IVsOutputWindowPane pane;
+        public enum PaneInstance
+        { 
+            Default = 0, 
+            Parser,
+        };
 
-        public static IVsOutputWindowPane GetPane()
+        private static string GetPaneInstanceTitle(PaneInstance instance)
         {
-            return pane;
-        } 
+            switch (instance)
+            { 
+                case PaneInstance.Parser:  
+                    return "Compile Score Parser";
 
-        public static void Initialize(IServiceProvider serviceProvider)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            CreatePane(serviceProvider, Guid.NewGuid(), "Compile Score", true, false);
-        }
-
-        public static void Focus()
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            pane.Activate();
-        }
-
-        public static void Clear()
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            pane.Clear();
-        }
-
-        public static void Log(string text)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            Write(text);
-        }
-
-        public static void LogLine(string text)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            if (text != null)
-            {
-                OutputString(text + "\n");
+                case PaneInstance.Default: 
+                default:
+                    return "Compile Score";
             }
         }
 
-        public static void Error(string text)
+        private static IServiceProvider ServiceProvider { set; get; }
+
+        private static IVsOutputWindowPane[] paneInstances = { null, null };
+
+        public static IVsOutputWindowPane GetPane(PaneInstance instance = PaneInstance.Default)
         {
+            //Lazy creation to reduce noise. It will be created on the first request
             ThreadHelper.ThrowIfNotOnUIThread();
-            Write("[ERROR] "+text);
+            int instanceIndex = (int)instance;
+            if (paneInstances[instanceIndex] == null)
+            {
+                paneInstances[instanceIndex] = CreatePane(ServiceProvider, Guid.NewGuid(), GetPaneInstanceTitle(instance), true, false);
+            }
+            return paneInstances[instanceIndex];
         }
 
-        private static void Write(string text)
+        public static IVsOutputWindowPane GetPaneUnsafe(PaneInstance instance = PaneInstance.Default)
+        {
+            //Lazy creation to reduce noise. It will be created on the first request
+            return paneInstances[(int)instance];
+        }
+
+        public static void Initialize(IServiceProvider serviceProvider)
+        {
+            ServiceProvider = serviceProvider;
+        }
+
+        public static void Clear(PaneInstance instance = PaneInstance.Default)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            GetPane(instance).Clear();
+        }
+
+        public static void Focus(PaneInstance instance = PaneInstance.Default)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            GetPane(instance).Activate();
+        }
+
+        public static void Log(string text, PaneInstance instance = PaneInstance.Default)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            Write(text, instance);
+        }
+
+        public static void Error(string text, PaneInstance instance = PaneInstance.Default)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            Write("[ERROR] " + text, instance);
+        }
+
+        private static void Write(string text, PaneInstance instance)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             DateTime currentTime = DateTime.Now;
-            OutputString("["+ String.Format("{0:HH:mm:ss}", currentTime) + "] "+ text + "\n");
+            GetPane(instance).OutputString("[" + String.Format("{0:HH:mm:ss}", currentTime) + "] " + text + "\n");
         }
 
-        private static void OutputString(string text)
+        private static IVsOutputWindowPane CreatePane(IServiceProvider serviceProvider, Guid paneGuid, string title, bool visible, bool clearWithSolution)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-#if VS17
-            pane.OutputStringThreadSafe(text);
-#else
-            pane.OutputString(text);
-#endif
-        }
 
-        private static void CreatePane(IServiceProvider serviceProvider, Guid paneGuid, string title, bool visible, bool clearWithSolution)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
             IVsOutputWindow output = (IVsOutputWindow)serviceProvider.GetService(typeof(SVsOutputWindow));
             Assumes.Present(output);
 
@@ -80,18 +95,20 @@ namespace CompileScore
             output.CreatePane(ref paneGuid, title, Convert.ToInt32(visible), Convert.ToInt32(clearWithSolution));
 
             // Retrieve the new pane.
+            IVsOutputWindowPane pane;
             output.GetPane(ref paneGuid, out pane);
+            return pane;
         }
 
-        public static async System.Threading.Tasks.Task ErrorGlobalAsync(string text)
+        public static async System.Threading.Tasks.Task ErrorGlobalAsync(string text, PaneInstance instance = PaneInstance.Default)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            OutputLog.Error(text);
+            Error(text, instance);
         }
-        public static async System.Threading.Tasks.Task LogGlobalAsync(string text)
+        public static async System.Threading.Tasks.Task LogGlobalAsync(string text, PaneInstance instance = PaneInstance.Default)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            OutputLog.Log(text);
+            Log(text, instance);
         }
     }
 }

@@ -14,50 +14,39 @@ namespace CompileScore
 {
     public class ParseResult
     {
-        public enum StatusCode
-        {
-            //TODO ~ ramonv ~ rethink these messages
-            Unknown,
-            ToolMissing,
-            InvalidLocation,
-            InvalidProject,
-            InvalidOutputDir,
-            VersionMismatch,
-            InvalidInput,
-            ParseFailed,
-            NotFound,
-            Found
-        }
-
         //TODO ~ ramonv ~ add unbinarized data here
-
-        public StatusCode Status { set; get; } = StatusCode.Unknown;
-        public string Message { set; get; } = "";
     }
 
     public class Parser
     {
+        static public void LogClear() { ThreadHelper.ThrowIfNotOnUIThread(); OutputLog.Clear( OutputLog.PaneInstance.Parser); }
+        static public void LogFocus() { ThreadHelper.ThrowIfNotOnUIThread(); OutputLog.Focus( OutputLog.PaneInstance.Parser); }
+        static public void Log(string input) { ThreadHelper.ThrowIfNotOnUIThread(); OutputLog.Log(input, OutputLog.PaneInstance.Parser); }
+        static public void LogError(string input) { ThreadHelper.ThrowIfNotOnUIThread(); OutputLog.Error(input, OutputLog.PaneInstance.Parser); }
+
+
         public async Task<ParseResult> ParseClangAsync(ProjectProperties projProperties, string inputFilename, string outputDirectory)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             if (inputFilename == null || inputFilename.Length == 0)
             {
-                OutputLog.Error("No file provided for parsing");
-                return new ParseResult { Status = ParseResult.StatusCode.InvalidInput };
+                LogError("No file provided for parsing");
+                return null;
             }
 
             string toolPath = GetParserToolPath();
             if (toolPath == null)
             {
-                OutputLog.Error("Unable to find the parser tool");
-                return new ParseResult { Status = ParseResult.StatusCode.ToolMissing };
+                LogError("Unable to find the parser tool");
+                return null;
             }
 
             string errorStr = CreateDirectory(outputDirectory);
             if (errorStr != null)
             {
-                return new ParseResult { Status = ParseResult.StatusCode.InvalidOutputDir, Message = errorStr };
+                LogError("Invalid output directory");
+                return null;
             }
 
             AdjustPaths(projProperties.IncludeDirectories);
@@ -82,7 +71,8 @@ namespace CompileScore
             errorStr = CreateDirectory(compileCommandsDir);
             if (errorStr != null)
             {
-                return new ParseResult { Status = ParseResult.StatusCode.InvalidOutputDir, Message = errorStr };
+                LogError("Invalid output directory: " + errorStr);
+                return null;
             }
 
             string compileCommandsFilePath = Path.Combine(compileCommandsDir, "compile_commands.json");
@@ -106,32 +96,32 @@ namespace CompileScore
             //TODO ~ at the moment just output on the output pane ( binarize the data to the output file and build a proper UI for this )
             string toolCmd = $"-print -o={AdjustPath(outputPath)} -p {AdjustPath(compileCommandsDir)} {AdjustPath(inputFilename)}";
 
-            OutputLog.Focus();
-            OutputLog.Log("Searching Code Requirements for " + inputFilename + "...");
+            LogFocus();
+            Log("Searching Code Requirements for " + inputFilename + "...");
 
             if (ParserProcessor.GetParserSettings().OptionParserShowCommandLine)
             {
-                OutputLog.Log($"TOOL ARGUMENTS: {toolCmd}");
-                OutputLog.Log($"CLANG ARGUMENTS: {clangCmd}");
+                Log($"TOOL ARGUMENTS: {toolCmd}");
+                Log($"CLANG ARGUMENTS: {clangCmd}");
             }
 
             var watch = System.Diagnostics.Stopwatch.StartNew();
 
             ExternalProcess externalProcess = new ExternalProcess();
+            externalProcess.LogPane = OutputLog.PaneInstance.Parser;
             int exitCode = await externalProcess.ExecuteAsync(toolPath, toolCmd);
             watch.Stop();
 
             if (exitCode != 0)
             {
-                OutputLog.Error("The Compile Score parser failed to parse this document. (" + GetTimeStr(watch) + ")");
-                return new ParseResult { Status = ParseResult.StatusCode.ParseFailed };
+                LogError("The Compile Score parser failed to parse this document. (" + GetTimeStr(watch) + ")");
+                return null;
             }
 
-            OutputLog.Log("Parsing completed! (" + GetTimeStr(watch) + ")");
+            Log("Parsing completed! (" + GetTimeStr(watch) + ")");
 
             //TODO ~ ramonv ~ process outputPath file 
-
-            return new ParseResult { Status = ParseResult.StatusCode.Found };
+            return new ParseResult();
         }
         private string GetStandardFlag(ProjectProperties.StandardVersion standard)
         {
@@ -168,7 +158,7 @@ namespace CompileScore
             catch (Exception e)
             {
                 string errorStr = "Unable to create directory '" + path + "'.\n" + e.ToString();
-                OutputLog.Error(errorStr);
+                LogError(errorStr);
                 return errorStr;
             }
 
@@ -243,14 +233,13 @@ namespace CompileScore
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            OutputLog.Clear(); // TODO ~ Ramonv ~ we want our own pane for the parser 
+            Parser.LogClear();
 
             ParseResult result;
             Document activeDocument = EditorUtils.GetActiveDocument(); 
             if ( activeDocument == null )
             {
-                //OutputLog.Error(GetErrorMessage(ParseResult.StatusCode.InvalidLocation));
-                result = new ParseResult { Status = ParseResult.StatusCode.InvalidLocation };
+                Parser.LogError("Unable to retrieve current document position.");
                 return;
             }
 
@@ -259,8 +248,8 @@ namespace CompileScore
             ProjectProperties properties = GetProjectData();
             if (properties == null)
             {
-                //OutputLog.Error(GetErrorMessage(ParseResult.StatusCode.InvalidProject));
-                result = new ParseResult { Status = ParseResult.StatusCode.InvalidProject };
+                Parser.LogError("Unable to retrieve the project configuration");
+                return;
             }
             else
             {
