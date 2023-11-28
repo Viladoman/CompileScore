@@ -78,8 +78,7 @@ namespace CompileScore
     {
         public string Filename { set; get; }
         public List<ParserFileRequirements> Files { set; get; }
-
-        //TODO ~ add dictionaries for quick access
+        public Dictionary<string, ParserFileRequirements> FilesMap { set; get; }
 
     }
 
@@ -94,20 +93,26 @@ namespace CompileScore
 
         public void LoadUnitFile(string fullPath)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             //TODO ~ ramonv ~ fork here ( but first figure out how to avoid another request to stomp the tmpresult file while doing this )
             ParserUnit parserUnit = ReadUnitFile(fullPath);
             LinkUnit(parserUnit);
             //TODO ~ NotifyUnitLoaded
         }
 
-        static public bool CheckVersion(uint version)
-        {
-            if (version != VERSION )
+        public ParserFileRequirements GetFileRequirements(string mainPath, string filename)
+        { 
+            if (Units.ContainsKey(mainPath))
             {
-                _ = OutputLog.ErrorGlobalAsync("Trying to load an unsupported file Version! Expected version " + VERSION + " - Found " + version + " - The Parser tool is out of sync.", OutputLog.PaneInstance.Parser);
-                return false;
+                ParserUnit unit = Units[mainPath];
+                if ( unit.FilesMap.ContainsKey(filename) )
+                {
+                    return unit.FilesMap[filename];
+                }
             }
-            return true;
+
+            return null;
         }
 
         private void LinkUnit(ParserUnit parserUnit)
@@ -121,10 +126,19 @@ namespace CompileScore
                 return;
             }
 
-            Units[parserUnit.Filename] = parserUnit;
+            Units[parserUnit.Filename.ToLower()] = parserUnit;
+        }
+        private static bool CheckVersion(uint version)
+        {
+            if (version != VERSION )
+            {
+                _ = OutputLog.ErrorGlobalAsync("Trying to load an unsupported file Version! Expected version " + VERSION + " - Found " + version + " - The Parser tool is out of sync.", OutputLog.PaneInstance.Parser);
+                return false;
+            }
+            return true;
         }
 
-        public static ParserUnit ReadUnitFile(string fullPath)
+        private static ParserUnit ReadUnitFile(string fullPath)
         {
             ParserUnit chunk = new ParserUnit();
             if (File.Exists(fullPath))
@@ -141,9 +155,10 @@ namespace CompileScore
                         //Read Files 
                         uint filesLength = reader.ReadUInt32();
                         chunk.Files = new List<ParserFileRequirements>((int)filesLength);
+                        chunk.FilesMap = new Dictionary<string, ParserFileRequirements>();
                         for (uint i = 0; i < filesLength; ++i)
                         {
-                            ReadFileRequirement(reader, version, chunk.Files);
+                            ReadFileRequirement(reader, version, chunk);
                         }
 
                         //first file processed is always the one processed
@@ -241,7 +256,7 @@ namespace CompileScore
             list.Add(entry);
         }
 
-        private static void ReadFileRequirement(BinaryReader reader, uint version, List<ParserFileRequirements> list)
+        private static void ReadFileRequirement(BinaryReader reader, uint version, ParserUnit unit)
         {
             ParserFileRequirements entry = new ParserFileRequirements();
             entry.Name = reader.ReadString();
@@ -270,7 +285,13 @@ namespace CompileScore
                 }
             }
 
-            list.Add(entry);
+            unit.Files.Add(entry);
+
+            string fileName = EditorUtils.GetFileNameSafe(entry.Name);
+            if (fileName != null )
+            {
+                unit.FilesMap[fileName.ToLower()] = entry;
+            }
         }
     }
 }

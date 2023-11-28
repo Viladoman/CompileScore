@@ -1,0 +1,24 @@
+{
+  "ScoreSource": 0,
+  "ScoreLocation": "$(SolutionDir)compileData.scor",
+  "ScoreGenerator": {
+    "Compiler": 0,
+    "InputPath": "$(SolutionDir)",
+    "OutputPath": "$(SolutionDir)buildData/compileData.scor",
+    "OverviewDetail": 1,
+    "TimelineDetail": 1,
+    "TimelinePacking": 100,
+    "ExtractIncluders": true,
+    "CollapseTemplateArgs": true
+  },
+  "ParserSettings": {
+    "AutomaticExtraction": true,
+    "CMakeCommandsFile": "",
+    "AdditionalPreprocessorDefinitions": "",
+    "AdditionalIncludeDirs": "",
+    "AdditionalForceIncludes": "",
+    "AdditionalCommandLine": "",
+    "EnableWarnings": false,
+    "ParserOutputFolder": ""
+  }
+}
