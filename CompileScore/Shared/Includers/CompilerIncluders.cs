@@ -5,12 +5,26 @@ using System.IO;
 
 namespace CompileScore.Includers
 {
+    class IncludersInclValue
+    {
+        public uint Index { get; set; }
+        public ulong Accumulated { get; set; }
+        public uint Max { get; set; }
+        public uint MaxId { get; set; }
+    }
+
+    class IncludersUnitValue
+    {
+        public uint Index { get; set; }
+        public uint Duration { get; set; }
+    }
+
     class IncludersValue
     {
         public bool Visited { set; get; } = false;
 
-        public List<uint> Includes { get; set; }
-        public List<uint> Units { get; set; }
+        public List<IncludersInclValue> Includes { get; set; }
+        public List<IncludersUnitValue> Units { get; set; }
     }
 
     class CompilerIncluders
@@ -86,7 +100,7 @@ namespace CompileScore.Includers
 
                     if (CompilerData.CheckVersion(thisVersion))
                     {
-                        ret = ReadIncluderValues(reader);
+                        ret = ReadIncluderValues(reader,thisVersion);
                     }
                 }
 
@@ -96,30 +110,30 @@ namespace CompileScore.Includers
             return ret;
         }
 
-        private static List<IncludersValue> ReadIncluderValues(BinaryReader reader)
+        private static List<IncludersValue> ReadIncluderValues(BinaryReader reader, uint version)
         {
             List<IncludersValue> list = new List<IncludersValue>();
 
             uint count = reader.ReadUInt32();
             for (uint i=0;i<count;++i)
             {
-                list.Add(ReadIncluderValue(reader));
+                list.Add(ReadIncluderValue(reader, version));
             }
 
             return list;
         }
 
-        private static IncludersValue ReadIncluderValue(BinaryReader reader)
+        private static IncludersValue ReadIncluderValue(BinaryReader reader, uint version)
         {
             IncludersValue ret = new IncludersValue();
 
-            ret.Includes = ReadIndexList(reader);
-            ret.Units = ReadIndexList(reader);
+            ret.Includes = ReadIncludersInclList(reader, version);
+            ret.Units    = ReadIncludersUnitList(reader, version);
 
             return ret;
         }
 
-        private static List<uint> ReadIndexList(BinaryReader reader)
+        private static List<IncludersInclValue> ReadIncludersInclList(BinaryReader reader, uint version)
         {
             uint count = reader.ReadUInt32();
             if (count == 0)
@@ -127,10 +141,41 @@ namespace CompileScore.Includers
                 return null;
             }
 
-            List<uint> ret = new List<uint>();
+            List<IncludersInclValue> ret = new List<IncludersInclValue>();
             for (uint i = 0; i < count; ++i)
             {
-                ret.Add(reader.ReadUInt32());
+                IncludersInclValue entry = new IncludersInclValue();
+                entry.Index       = reader.ReadUInt32();
+                if (version >= 11)
+                {
+                    entry.Accumulated = reader.ReadUInt64();
+                    entry.Max         = reader.ReadUInt32();
+                    entry.MaxId       = reader.ReadUInt32();
+                }
+                ret.Add(entry);
+            }
+
+            return ret;
+        }
+
+        private static List<IncludersUnitValue> ReadIncludersUnitList(BinaryReader reader, uint version)
+        {
+            uint count = reader.ReadUInt32();
+            if (count == 0)
+            {
+                return null;
+            }
+
+            List<IncludersUnitValue> ret = new List<IncludersUnitValue>();
+            for (uint i = 0; i < count; ++i)
+            {
+                IncludersUnitValue entry = new IncludersUnitValue();
+                entry.Index = reader.ReadUInt32();
+                if (version >= 11)
+                {
+                    entry.Duration = reader.ReadUInt32();
+                }
+                ret.Add(entry);
             }
 
             return ret;
@@ -160,7 +205,7 @@ namespace CompileScore.Includers
                 for (int i=0;i<value.Includes.Count;++i)
                 {
                     //Build all children 
-                    Timeline.TimelineNode child = BuildGraphRecursive(includers, value.Includes[i]);
+                    Timeline.TimelineNode child = BuildGraphRecursive(includers, value.Includes[i].Index);
                     if (child != null)
                     {
                         node.Duration += child.Duration;
@@ -173,7 +218,7 @@ namespace CompileScore.Includers
             {
                 for (int i=0;i<value.Units.Count;++i)
                 {
-                    Timeline.TimelineNode child = CreateUnitNode(value.Units[i]);
+                    Timeline.TimelineNode child = CreateUnitNode(value.Units[i].Index);
                     node.Duration += child.Duration;
                     node.AddChild(child);
                 }

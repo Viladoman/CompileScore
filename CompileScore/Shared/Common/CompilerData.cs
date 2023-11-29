@@ -113,7 +113,7 @@ namespace CompileScore
         public static CompilerData Instance { get { return lazy.Value; } }
 
         public const uint VERSION_MIN = 9;
-        public const uint VERSION = 10;
+        public const uint VERSION = 11;
 
         //Keep this in sync with the data exporter
         public enum CompileCategory

@@ -7,7 +7,7 @@
 
 #include "ScoreDefinitions.h"
 
-constexpr U32 SCORE_VERSION = 10;
+constexpr U32 SCORE_VERSION = 11;
 constexpr U32 TIMELINE_FILE_NUM_DIGITS = 4;
 
 static_assert(TIMELINE_FILE_NUM_DIGITS > 0);
@@ -366,20 +366,34 @@ namespace IO
         }
 
         // -----------------------------------------------------------------------------------------------------------
-        void BinarizeIndexSet( FILE* stream, const TCompileIndexSet& indexSet )
+        void BinarizeIncluderUnitMap(FILE* stream, const TCompileIncluderUnitMap& includerMap)
         {
-            BinarizeU32( stream, static_cast< U32 >( indexSet.size() ) );
-            for( const U32 index : indexSet )
+            BinarizeU32(stream, static_cast<U32>(includerMap.size()));
+            for (const TCompileIncluderUnitMap::value_type& pair : includerMap)
             {
-                BinarizeU32( stream, index );
+                BinarizeU32(stream, pair.first);
+                BinarizeU32(stream, pair.second);
+            }
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeIncluderInclMap(FILE* stream, const TCompileIncluderInclMap& includerMap)
+        {
+            BinarizeU32(stream, static_cast<U32>(includerMap.size()));
+            for (const TCompileIncluderInclMap::value_type& pair : includerMap)
+            {
+                BinarizeU32(stream, pair.first);
+                BinarizeU64(stream, pair.second.accumulated);
+                BinarizeU32(stream, pair.second.maximum);
+                BinarizeU32(stream, pair.second.maxId);
             }
         }
 
         // -----------------------------------------------------------------------------------------------------------
         void BinarizeIncluder( FILE* stream, const CompileIncluder& includer )
         {
-            BinarizeIndexSet( stream, includer.includes ); 
-            BinarizeIndexSet( stream, includer.units );
+            BinarizeIncluderInclMap( stream, includer.includes );
+            BinarizeIncluderUnitMap( stream, includer.units );
         }
 
         // -----------------------------------------------------------------------------------------------------------

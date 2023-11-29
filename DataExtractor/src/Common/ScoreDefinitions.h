@@ -4,7 +4,6 @@
 #include "../fastl/vector.h"
 #include "../fastl/string.h"
 #include "../fastl/unordered_map.h"
-#include "../fastl/unordered_set.h"
 
 constexpr U32 InvalidCompileId = 0xffffffff;
 
@@ -148,14 +147,29 @@ struct CompileEvent
     CompileCategory category; 
 };
 
-using TCompileIndexSet       = fastl::unordered_set<U32>;
-using TCompileDataDictionary = fastl::unordered_map<U64,U32>;
+struct CompileIncluderInclData
+{
+    CompileIncluderInclData()
+        : maximum(0u)
+        , maxId(InvalidCompileId)
+        , accumulated(0u)
+    {}
+
+    U64 accumulated;
+    U32 maximum;
+    U32 maxId;
+};
+
+using TCompileIncluderInclMap = fastl::unordered_map<U32,CompileIncluderInclData>;
+using TCompileIncluderUnitMap = fastl::unordered_map<U32,U32>;
 
 struct CompileIncluder
 {
-    TCompileIndexSet includes;
-    TCompileIndexSet units;
+    TCompileIncluderInclMap  includes;
+    TCompileIncluderUnitMap  units;
 };
+
+using TCompileDataDictionary = fastl::unordered_map<U64,U32>;
 
 struct CompileFolder
 {

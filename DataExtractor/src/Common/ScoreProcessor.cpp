@@ -4,6 +4,7 @@
 #include "../Common/StringUtils.h"
 #include "../fastl/algorithm.h"
 #include "../fastl/memory.h"
+#include "../fastl/unordered_set.h"
 
 #include "IOStream.h"
 #include "CommandLine.h"
@@ -166,13 +167,20 @@ namespace CompileScore
 			return;
 		} 
 		
+		//Store this include relationship data
 		if( parent->category == CompileCategory::Include )
 		{
-			scoreData.includers[ child.nameId ].includes.emplace( parent->nameId ); 
+			CompileIncluderInclData& includerData = scoreData.includers[child.nameId].includes[parent->nameId];
+			includerData.accumulated += child.duration;
+			if (child.duration >= includerData.maximum)
+			{
+				includerData.maximum = child.duration;
+				includerData.maxId = unit.unitId;
+			}
 		}
 		else
 		{
-			scoreData.includers[ child.nameId ].units.emplace( unit.unitId );
+			scoreData.includers[ child.nameId ].units[ unit.unitId ] = child.duration;
 		}
 	}
 
