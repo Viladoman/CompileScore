@@ -49,8 +49,8 @@ namespace CompileScore
             CompilerData.Instance.Initialize(this, this);
             EditorUtils.Initialize(this,this);
             Profiler.Instance.Initialize(this);
-            Timeline.CompilerTimeline.Instance.Initialize(this);
             Includers.CompilerIncluders.Instance.Initialize(this);
+            Timeline.CompilerTimeline.Instance.Initialize(this);
 
             EditorContext.Instance.Initialize(this);
 

@@ -201,6 +201,10 @@ namespace CompileScore.Timeline
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            //Ensure we only have one entry in the events (we need to get notified when to try again if the data needs to get loaded )
+            Includers.CompilerIncluders.Instance.IncludersDataLoaded -= OnDataChanged;
+            Includers.CompilerIncluders.Instance.IncludersDataLoaded += OnDataChanged;
+
             SetMode(Mode.Includers);
             IncludersValue = value;
             SourcePath = valuePath != null && IncludersValue != null? valuePath : CompilerData.Instance.Folders.GetValuePath(value);

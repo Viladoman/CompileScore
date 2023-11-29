@@ -17,39 +17,64 @@ namespace CompileScore.Includers
     {
         public const uint durationMultiplier = 1000;
         const uint basePadding = 20;
+        private CompileScorePackage Package { get; set; }
 
         private static readonly Lazy<CompilerIncluders> lazy = new Lazy<CompilerIncluders>(() => new CompilerIncluders());
+        public static CompilerIncluders Instance { get { return lazy.Value; } }
 
-        private CompileScorePackage Package { get; set; }
+        private List<IncludersValue> CachedIncludes { get; set; }
+
+        public event Notify IncludersDataLoaded;
 
         public void Initialize(CompileScorePackage package)
         {
             Package = package;
-        }
 
-        public static CompilerIncluders Instance { get { return lazy.Value; } }
+            CompilerData.Instance.ScoreDataChanged += OnScoreDataChanged;
+        }
 
         public Timeline.TimelineNode LoadInclude(uint index)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            List<IncludersValue> includers = LoadIncluderValues();
-            if (includers == null)
+            if (CachedIncludes == null)
+            {
+                TriggerLoadCachedValues();
+            }
+
+            if (CachedIncludes == null)
             {
                 return null;
             }
 
-            Timeline.TimelineNode root = BuildGraphRecursive(includers, index);
+            Timeline.TimelineNode root = BuildGraphRecursive(CachedIncludes, index);
+            ClearVisited(CachedIncludes);
             InitializeTree(root);
             return root;
         }
-
-        private List<IncludersValue> LoadIncluderValues()
+        private void TriggerLoadCachedValues()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             string fullPath = CompilerData.Instance.GetScoreFullPath() + ".incl";
 
+            Common.ThreadUtils.Fork(async delegate
+            {
+                List<IncludersValue> list = LoadIncluderValues(fullPath);
+
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                CachedIncludes = list;
+                IncludersDataLoaded?.Invoke();
+            });
+        }
+
+        private void OnScoreDataChanged()
+        {
+            //drop the cached includers list
+            CachedIncludes = null;
+        }
+
+        private static List<IncludersValue> LoadIncluderValues(string fullPath)
+        {
             List<IncludersValue> ret = null;
 
             if (File.Exists(fullPath))
@@ -71,7 +96,7 @@ namespace CompileScore.Includers
             return ret;
         }
 
-        private List<IncludersValue> ReadIncluderValues(BinaryReader reader)
+        private static List<IncludersValue> ReadIncluderValues(BinaryReader reader)
         {
             List<IncludersValue> list = new List<IncludersValue>();
 
@@ -84,7 +109,7 @@ namespace CompileScore.Includers
             return list;
         }
 
-        private IncludersValue ReadIncluderValue(BinaryReader reader)
+        private static IncludersValue ReadIncluderValue(BinaryReader reader)
         {
             IncludersValue ret = new IncludersValue();
 
@@ -94,7 +119,7 @@ namespace CompileScore.Includers
             return ret;
         }
 
-        private List<uint> ReadIndexList(BinaryReader reader)
+        private static List<uint> ReadIndexList(BinaryReader reader)
         {
             uint count = reader.ReadUInt32();
             if (count == 0)
@@ -172,6 +197,14 @@ namespace CompileScore.Includers
             UnitValue unit = CompilerData.Instance.GetUnitByIndex(index);
             string label = unit == null? "-- Unknown -- " : unit.Name; 
             return new Timeline.TimelineNode(label, 0, durationMultiplier, CompilerData.CompileCategory.ExecuteCompiler, unit);
+        }
+
+        private void ClearVisited(List<IncludersValue> includers)
+        {
+            foreach(IncludersValue value in includers) 
+            { 
+                value.Visited = false; 
+            }
         }
 
         private void InitializeTree(Timeline.TimelineNode node)
