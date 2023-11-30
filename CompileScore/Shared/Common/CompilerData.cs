@@ -208,7 +208,7 @@ namespace CompileScore
         }
 
         private bool _customTextHighlightEnabled = true;
-        public bool CustomTextHighlightEnabled { set { _customTextHighlightEnabled = value; OnHighlightModeChanged();  } get { return _customTextHighlightEnabled; } }
+        public bool CustomTextHighlightEnabled { set { _customTextHighlightEnabled = value; OnHighlightModeChanged(); } get { return _customTextHighlightEnabled; } }
 
         //events
         public event Notify ScoreDataChanged;
@@ -249,7 +249,7 @@ namespace CompileScore
         {
             return Package == null ? null : Package.GetGeneralSettings();
         }
-        
+
         public ThemeSettingsPageGrid GetThemeSettings()
         {
             return Package == null ? null : Package.GetThemeSettings();
@@ -366,6 +366,11 @@ namespace CompileScore
                 return dataset.collection.IndexOf(value);
             }
             return -1;
+        }
+
+        public int GetIndexOf(UnitValue value)
+        {
+            return UnitsCollection.IndexOf(value);
         }
 
         public UnitValue GetUnit(int index)

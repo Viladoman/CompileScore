@@ -151,11 +151,13 @@ struct CompileIncluderInclData
 {
     CompileIncluderInclData()
         : maximum(0u)
+        , count(0u)
         , maxId(InvalidCompileId)
         , accumulated(0u)
     {}
 
     U64 accumulated;
+    U32 count;
     U32 maximum;
     U32 maxId;
 };
