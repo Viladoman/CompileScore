@@ -166,9 +166,9 @@ namespace CompileScore
 
                     foreach (ParserCodeRequirement req in requirements)
                     {
-                        string tag = req.UseLocations.Count > 1 ? $"{req.Name} ({req.UseLocations.Count}) " : req.Name;
+                        string tag = req.UseLocations.Count > 1 ? $"{req.Name} ({req.UseLocations.Count}) " : $"{req.Name} ";
 //#if VS17
-                        //ClassifiedTextElement text = new ClassifiedTextElement( ClassifiedTextElement.CreateHyperlink(tag, null,  => Parser.Log(loc.ToString()) ) );
+//ClassifiedTextElement text = new ClassifiedTextElement( ClassifiedTextElement.CreateHyperlink(tag, null,  => Parser.Log(loc.ToString()) ) );
 //#else
                         ClassifiedTextElement text = new ClassifiedTextElement( new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, tag) );
 //#endif
@@ -243,7 +243,7 @@ namespace CompileScore
 
                             foreach (ParserCodeRequirement req in named)
                             {
-                                string tag = req.UseLocations.Count > 1 ? $"{req.Name} ({req.UseLocations.Count}) " : req.Name;
+                                string tag = req.UseLocations.Count > 1 ? $"{req.Name} ({req.UseLocations.Count}) " : $"{req.Name} ";
                                 ClassifiedTextElement text = new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, tag));
                                 reqElems.Add(new ContainerElement(ContainerElementStyle.Wrapped, text));
                             }
