@@ -481,6 +481,7 @@ namespace Parser
         tool.run(clang::tooling::newFrontendActionFactory<CompileScore::Action>().get());
 
         //TODO ~ ramonv ~ finalize result ( normalize paths - removing ../ and ./ from them )
+        //TODO ~ ramonv ~ remove empty non direct includes / remove root / add main filename entry / add extra file dependencies
 
         const char* outputFileName = CommandLine::g_outputFilename.size() == 0 ? "output.cspbin" : CommandLine::g_outputFilename.c_str();
         
