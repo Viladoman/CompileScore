@@ -54,7 +54,7 @@ namespace CompileScore
         {
             if (!location.isValid())
             {
-                return kOtherFileIndex;
+                return kInvalidFileIndex;
             }
 
             const clang::PresumedLoc startLocation = sourceManager.getPresumedLoc(location);
@@ -62,16 +62,17 @@ namespace CompileScore
 
             if (!startLocation.isValid() || !fileId.isValid())
             {
-                return kOtherFileIndex;
+                return kInvalidFileIndex;
             }
 
             return static_cast<int>(GetFileIndex(fileId, startLocation.getFilename()));
         }
 
         // -----------------------------------------------------------------------------------------------------------
-        File& GetFile(size_t fileIndex)
+        File& GetFile(int fileIndex)
         {
-            return fileIndex < 0 ? g_result.otherFile : g_result.files[fileIndex];
+            static File dummyFile( "dummy" );
+            return fileIndex < 0 ? dummyFile : g_result.files[fileIndex];
         }
 
         // -----------------------------------------------------------------------------------------------------------
@@ -172,9 +173,9 @@ namespace CompileScore
             if (!IsDeclaredInMainFile(declaration->getLocation()))
                 return true;
             
-            if (declaration->isCompleteDefinition())
+            if (!declaration->isCompleteDefinition())
                 return true;
-            
+
             ProcessStructDeclaration(declaration);
             return true;
         }
@@ -412,7 +413,7 @@ namespace CompileScore
             const clang::PresumedLoc expLocation = m_sourceManager.getPresumedLoc(Range.getBegin());
             if (macroDirective && m_mainFileId == expLocation.getFileID())
             {
-                File& file = Helpers::GetFile(Helpers::GetFileIndex(macroDirective->getLocation(), m_sourceManager));
+                File& file = Helpers::GetFile( Helpers::GetFileIndex( macroDirective->getLocation(), m_sourceManager ) );
                 const char* macroName = MacroNameTok.getIdentifierInfo()->getName().data();
                 Helpers::AddCodeRequirement(file.global[GlobalRequirementType::MacroExpansion], macroDirective, macroName, macroDirective->getLocation(), Range.getBegin(), m_sourceManager);
             }

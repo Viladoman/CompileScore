@@ -10,7 +10,7 @@ namespace clang
 
 namespace CompileScore
 {
-    enum { kOtherFileIndex = -1 };
+    enum { kInvalidFileIndex = -1 };
     
     namespace GlobalRequirementType
     {
@@ -125,10 +125,7 @@ namespace CompileScore
     // ----------------------------------------------------------------------------------------------------------
     struct Result
     {
-        Result() : otherFile("") {}
-
         TFiles          files;
-        File            otherFile;
         TIncludeLinks   links;
     };
 

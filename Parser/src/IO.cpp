@@ -312,8 +312,6 @@ namespace IO
                 PrintUtils::Print(file);
             }
         }
-
-        PrintUtils::Print(result.otherFile);
     }
 
 }

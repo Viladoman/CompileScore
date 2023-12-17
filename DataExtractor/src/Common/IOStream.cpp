@@ -384,6 +384,7 @@ namespace IO
             {
                 BinarizeU32(stream, pair.first);
                 BinarizeU64(stream, pair.second.accumulated);
+                BinarizeU32(stream, pair.second.count);
                 BinarizeU32(stream, pair.second.maximum);
                 BinarizeU32(stream, pair.second.maxId);
             }

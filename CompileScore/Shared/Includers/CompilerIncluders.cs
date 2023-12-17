@@ -9,6 +9,7 @@ namespace CompileScore.Includers
     {
         public uint Index { get; set; }
         public ulong Accumulated { get; set; }
+        public uint Count { get; set; }
         public uint Max { get; set; }
         public uint MaxId { get; set; }
     }
@@ -125,6 +126,7 @@ namespace CompileScore.Includers
                 if (version >= 11)
                 {
                     entry.Accumulated = reader.ReadUInt64();
+                    entry.Count       = reader.ReadUInt32();
                     entry.Max         = reader.ReadUInt32();
                     entry.MaxId       = reader.ReadUInt32();
                 }
@@ -155,6 +157,44 @@ namespace CompileScore.Includers
             }
 
             return ret;
+        }
+
+        public IncludersUnitValue GetIncludeUnitValue(int includerIndex, int includeeIndex)
+        {
+            if ( CompilerData.Instance.GetSession().Version < 11 )
+                return null;
+
+            if ( CachedIncludes == null || includerIndex < 0 || includeeIndex < 0 )
+                return null;
+
+            foreach ( IncludersUnitValue value in CachedIncludes[includeeIndex].Units )
+            {
+                if ( value.Index == includerIndex)
+                {
+                    return value; 
+                }
+            }
+
+            return null;
+        }
+
+        public IncludersInclValue GetIncludeInclValue(int includerIndex, int includeeIndex)
+        {
+            if (CompilerData.Instance.GetSession().Version < 11)
+                return null;
+
+            if (CachedIncludes == null || includerIndex < 0 || includeeIndex < 0)
+                return null;
+
+            foreach ( IncludersInclValue value in CachedIncludes[includeeIndex].Includes)
+            {
+                if (value.Index == includerIndex)
+                {
+                    return value;
+                }
+            }
+
+            return null;
         }
 
         private Timeline.TimelineNode BuildGraphRecursive(List<IncludersValue> includers, uint index)

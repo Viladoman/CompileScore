@@ -20,7 +20,7 @@
 *.cspbin
 
 # Symlinks
-llvm-project
+External
 
 # Shared
 CompileScore/.vs/

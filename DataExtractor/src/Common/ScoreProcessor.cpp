@@ -172,6 +172,7 @@ namespace CompileScore
 		{
 			CompileIncluderInclData& includerData = scoreData.includers[child.nameId].includes[parent->nameId];
 			includerData.accumulated += child.duration;
+			++includerData.count;
 			if (child.duration >= includerData.maximum)
 			{
 				includerData.maximum = child.duration;
