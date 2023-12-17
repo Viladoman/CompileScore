@@ -4,6 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using CompileScore.Includers;
 
 namespace CompileScore
 {
@@ -582,7 +583,10 @@ namespace CompileScore
                 using (BinaryReader reader = new BinaryReader(fileStream))
                 {
                     // Read version
-                    uint version = reader.ReadUInt32(); 
+                    uint version = reader.ReadUInt32();
+
+                    _ = OutputLog.LogGlobalAsync("Score file version " + version);
+
                     if (CheckVersion(version))
                     {
                         // Read Session
@@ -698,12 +702,15 @@ namespace CompileScore
             Common.ThreadUtils.Fork(async delegate
             {
                 ReadMainScore(fullPath, chunk);
+                List<IncludersValue> includerChunk = CompilerIncluders.ReadIncludersFromFile(fullPath + ".incl");
 
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 if (LoadingBatch == chunk.LoadingBatch)
                 {
                     ApplyLoadChunk(chunk);
+                    CompilerIncluders.Instance.SetIncluderData(includerChunk);
+
                     LoadingFlags &= ~(uint)HydrateFlag.Main;
                     TryNotifyDataChanged();
                 }

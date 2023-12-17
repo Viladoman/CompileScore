@@ -36,58 +36,34 @@ namespace CompileScore.Includers
         private static readonly Lazy<CompilerIncluders> lazy = new Lazy<CompilerIncluders>(() => new CompilerIncluders());
         public static CompilerIncluders Instance { get { return lazy.Value; } }
 
-        private List<IncludersValue> CachedIncludes { get; set; }
-
-        public event Notify IncludersDataLoaded;
+        private List<IncludersValue> IncludersData { get; set; }
 
         public void Initialize(CompileScorePackage package)
         {
             Package = package;
-
-            CompilerData.Instance.ScoreDataChanged += OnScoreDataChanged;
         }
 
-        public Timeline.TimelineNode LoadInclude(uint index)
+        public Timeline.TimelineNode BuildIncludersTree(uint index)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (CachedIncludes == null)
-            {
-                TriggerLoadCachedValues();
-            }
-
-            if (CachedIncludes == null)
+            if (IncludersData == null)
             {
                 return null;
             }
 
-            Timeline.TimelineNode root = BuildGraphRecursive(CachedIncludes, index);
-            ClearVisited(CachedIncludes);
+            Timeline.TimelineNode root = BuildGraphRecursive(IncludersData, index);
+            ClearVisited(IncludersData);
             InitializeTree(root);
             return root;
         }
-        private void TriggerLoadCachedValues()
+
+        public void SetIncluderData(List<IncludersValue> data)
         {
-            string fullPath = CompilerData.Instance.GetScoreFullPath() + ".incl";
-
-            Common.ThreadUtils.Fork(async delegate
-            {
-                List<IncludersValue> list = LoadIncluderValues(fullPath);
-
-                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                CachedIncludes = list;
-                IncludersDataLoaded?.Invoke();
-            });
+            IncludersData = data;
         }
 
-        private void OnScoreDataChanged()
-        {
-            //drop the cached includers list
-            CachedIncludes = null;
-        }
-
-        private static List<IncludersValue> LoadIncluderValues(string fullPath)
+        public static List<IncludersValue> ReadIncludersFromFile(string fullPath)
         {
             List<IncludersValue> ret = null;
 
