@@ -164,10 +164,10 @@ namespace CompileScore.Includers
             if ( CompilerData.Instance.GetSession().Version < 11 )
                 return null;
 
-            if ( CachedIncludes == null || includerIndex < 0 || includeeIndex < 0 )
+            if (IncludersData == null || includerIndex < 0 || includeeIndex < 0 )
                 return null;
 
-            foreach ( IncludersUnitValue value in CachedIncludes[includeeIndex].Units )
+            foreach ( IncludersUnitValue value in IncludersData[includeeIndex].Units )
             {
                 if ( value.Index == includerIndex)
                 {
@@ -183,10 +183,10 @@ namespace CompileScore.Includers
             if (CompilerData.Instance.GetSession().Version < 11)
                 return null;
 
-            if (CachedIncludes == null || includerIndex < 0 || includeeIndex < 0)
+            if (IncludersData == null || includerIndex < 0 || includeeIndex < 0)
                 return null;
 
-            foreach ( IncludersInclValue value in CachedIncludes[includeeIndex].Includes)
+            foreach ( IncludersInclValue value in IncludersData[includeeIndex].Includes)
             {
                 if (value.Index == includerIndex)
                 {
