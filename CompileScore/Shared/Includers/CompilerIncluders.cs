@@ -12,6 +12,7 @@ namespace CompileScore.Includers
         public uint Count { get; set; }
         public uint Max { get; set; }
         public uint MaxId { get; set; }
+        public uint Average { get { return Count > 0 ? (uint)(Accumulated / Count) : 0; } }
     }
 
     class IncludersUnitValue
@@ -26,6 +27,13 @@ namespace CompileScore.Includers
 
         public List<IncludersInclValue> Includes { get; set; }
         public List<IncludersUnitValue> Units { get; set; }
+    }
+
+    class IncluderTreeLink
+    {
+        public CompileValue Includee { set; get; }
+        public object Includer { set; get; } //CompileValue or UnitValue
+        public object Value { set; get; } //This can be either IncludersUnitValue or IncludersInclValue
     }
 
     class CompilerIncluders
@@ -164,7 +172,7 @@ namespace CompileScore.Includers
             if ( CompilerData.Instance.GetSession().Version < 11 )
                 return null;
 
-            if (IncludersData == null || includerIndex < 0 || includeeIndex < 0 )
+            if (IncludersData == null || includerIndex < 0 || includeeIndex < 0 || includeeIndex > IncludersData.Count || IncludersData[includeeIndex].Units == null)
                 return null;
 
             foreach ( IncludersUnitValue value in IncludersData[includeeIndex].Units )
@@ -183,7 +191,13 @@ namespace CompileScore.Includers
             if (CompilerData.Instance.GetSession().Version < 11)
                 return null;
 
-            if (IncludersData == null || includerIndex < 0 || includeeIndex < 0)
+            if (IncludersData == null || includerIndex < 0 || includeeIndex < 0 )
+                return null;
+
+            if (includeeIndex > IncludersData.Count)
+                return null;
+
+            if ( IncludersData[includeeIndex].Includes == null)
                 return null;
 
             foreach ( IncludersInclValue value in IncludersData[includeeIndex].Includes)
@@ -197,7 +211,7 @@ namespace CompileScore.Includers
             return null;
         }
 
-        private Timeline.TimelineNode BuildGraphRecursive(List<IncludersValue> includers, uint index)
+        private Timeline.TimelineNode BuildGraphRecursive(List<IncludersValue> includers, uint index, CompileValue includee = null, IncludersInclValue includerValue = null)
         {
             if (index > includers.Count)
             {
@@ -205,6 +219,8 @@ namespace CompileScore.Includers
             }
 
             IncludersValue value = includers[(int)index];
+
+            //TODO ~ ramonv ~ rethink this Visited...Visited is only valid within the current recursion stack 
 
             //Only add each element once to avoid cycles
             if (value.Visited)
@@ -214,14 +230,20 @@ namespace CompileScore.Includers
             value.Visited = true;
 
             CompileValue compileValue = CompilerData.Instance.GetValue(CompilerData.CompileCategory.Include, (int)index);
-            Timeline.TimelineNode node = new Timeline.TimelineNode(null, 0, 0, CompilerData.CompileCategory.Include, compileValue);
+
+            IncluderTreeLink nodeValue = new IncluderTreeLink();
+            nodeValue.Includer = compileValue;
+            nodeValue.Value = CompilerData.Instance.GetSession().Version < 11? null : includerValue;
+            nodeValue.Includee = includee;
+
+            Timeline.TimelineNode node = new Timeline.TimelineNode(null, 0, 0, CompilerData.CompileCategory.Include, nodeValue);
 
             if (value.Includes != null)
             {
                 for (int i=0;i<value.Includes.Count;++i)
                 {
                     //Build all children 
-                    Timeline.TimelineNode child = BuildGraphRecursive(includers, value.Includes[i].Index);
+                    Timeline.TimelineNode child = BuildGraphRecursive(includers, value.Includes[i].Index, compileValue, value.Includes[i]);
                     if (child != null)
                     {
                         node.Duration += child.Duration;
@@ -234,7 +256,7 @@ namespace CompileScore.Includers
             {
                 for (int i=0;i<value.Units.Count;++i)
                 {
-                    Timeline.TimelineNode child = CreateUnitNode(value.Units[i].Index);
+                    Timeline.TimelineNode child = CreateUnitNode(value.Units[i].Index, compileValue, value.Units[i]);
                     node.Duration += child.Duration;
                     node.AddChild(child);
                 }
@@ -253,11 +275,17 @@ namespace CompileScore.Includers
             return node;
         }
 
-        private Timeline.TimelineNode CreateUnitNode(uint index)
+        private Timeline.TimelineNode CreateUnitNode(uint index, CompileValue includee, IncludersUnitValue includerValue )
         {
             UnitValue unit = CompilerData.Instance.GetUnitByIndex(index);
+
+            IncluderTreeLink nodeValue = new IncluderTreeLink();
+            nodeValue.Includer = unit;
+            nodeValue.Value = CompilerData.Instance.GetSession().Version < 11? null : includerValue;
+            nodeValue.Includee = includee;
+
             string label = unit == null? "-- Unknown -- " : unit.Name; 
-            return new Timeline.TimelineNode(label, 0, durationMultiplier, CompilerData.CompileCategory.ExecuteCompiler, unit);
+            return new Timeline.TimelineNode(label, 0, durationMultiplier, CompilerData.CompileCategory.ExecuteCompiler, nodeValue);
         }
 
         private void ClearVisited(List<IncludersValue> includers)

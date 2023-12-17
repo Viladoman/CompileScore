@@ -1,14 +1,11 @@
 ﻿using CompileScore.Includers;
-using EnvDTE;
 using Microsoft.VisualStudio.Core.Imaging;
 using Microsoft.VisualStudio.Imaging;
-using Microsoft.VisualStudio.Language.CodeCleanUp;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Language.StandardClassification;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Adornments;
 using Microsoft.VisualStudio.Text.Editor;
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -96,9 +93,6 @@ namespace CompileScore
                             compilerData.Hydrate(CompilerData.HydrateFlag.Main);
                             CompileValue value = compilerData.GetValueByName(CompilerData.CompileCategory.Include,lowerFilename);
 
-                            //retrieve concrete information on this include 
-                            string docFilePath = GetDocumentPath(session.TextView);
-
                             Microsoft.VisualStudio.Text.Span span = new Microsoft.VisualStudio.Text.Span(line.Extent.Start + match.Index, match.Length);
                             var trackingSpan = _textBuffer.CurrentSnapshot.CreateTrackingSpan(span, SpanTrackingMode.EdgeExclusive);
 
@@ -111,6 +105,7 @@ namespace CompileScore
                                     new ClassifiedTextRun(PredefinedClassificationTypeNames.PreprocessorKeyword, fileName)
                                 )) );
 
+                            string docFilePath = GetDocumentPath(session.TextView);
                             CreateCompileDataElements(elements, value, docFilePath);
 
                             if ( docFilePath != null)
@@ -165,7 +160,11 @@ namespace CompileScore
                         new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.UIConverters.GetTimeStr(value.Min)),
                         new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " Average: "),
                         new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.UIConverters.GetTimeStr(value.Average)),
-                        new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " Units: "),
+                        new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " Accumulated: "),
+                        new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.UIConverters.GetTimeStr(value.Accumulated)),
+                        new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " (Self: "),
+                        new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.UIConverters.GetTimeStr(value.SelfAccumulated)),
+                        new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, ") Units: "),
                         new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, $"{value.Count}"),
                         new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, " ("),
                         new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, unitImpactPercent.ToString("n2")),

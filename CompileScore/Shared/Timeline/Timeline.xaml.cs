@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.Shell;
+﻿using CompileScore.Includers;
+using Microsoft.VisualStudio.Shell;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -501,13 +502,19 @@ namespace CompileScore.Timeline
         private void CreateContextualMenu(TimelineNode node)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            System.Windows.Forms.ContextMenuStrip contextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
-            
-            bool isVisualStudio = EditorContext.IsEnvironment(EditorContext.ExecutionEnvironment.VisualStudio);
 
-            if (node.Value is CompileValue)
+            System.Windows.Forms.ContextMenuStrip contextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
+            AppendContextualMenuValue(contextMenuStrip, node, node.Value);
+            contextMenuStrip.Show(System.Windows.Forms.Control.MousePosition);
+        }
+
+        private void AppendContextualMenuValue(System.Windows.Forms.ContextMenuStrip contextMenuStrip, TimelineNode node, object nodeValue )
+        {           
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (nodeValue is CompileValue)
             {
-                var value = node.Value as CompileValue;
+                var value = nodeValue as CompileValue;
 
                 if (node.Category == CompilerData.CompileCategory.Include)
                 {
@@ -534,9 +541,9 @@ namespace CompileScore.Timeline
                 }
                 
             }
-            else if (node.Value is UnitValue)
+            else if (nodeValue is UnitValue)
             {
-                var value = node.Value as UnitValue;
+                var value = nodeValue as UnitValue;
 
                 if (value.Name.Length > 0)
                 {
@@ -547,8 +554,21 @@ namespace CompileScore.Timeline
                 contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetText(CompilerData.Instance.Folders.GetUnitPathSafe(value))));
 
             }
+            else if ((nodeValue is IncluderTreeLink))
+            {
+                var value = nodeValue as IncluderTreeLink;
+                if ( value.Value != null && value.Value is IncludersInclValue )
+                {
+                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Locate This Max Timeline", (a, b) => CompilerTimeline.Instance.DisplayTimeline(CompilerData.Instance.GetUnitByIndex((value.Value as IncludersInclValue).MaxId), value.Includee)));
+                }
+                
+                if (value.Includer is UnitValue)
+                {
+                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Timeline", (a, b) => CompilerTimeline.Instance.DisplayTimeline(value.Includer as UnitValue) ) );
+                }
 
-            contextMenuStrip.Show(System.Windows.Forms.Control.MousePosition);
+                AppendContextualMenuValue(contextMenuStrip, node, value.Includer);
+            }
         }
 
         private void OnScrollViewerContextMenu(object sender, MouseButtonEventArgs e)
