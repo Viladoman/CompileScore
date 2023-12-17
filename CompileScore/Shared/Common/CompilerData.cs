@@ -68,19 +68,14 @@ namespace CompileScore
     {
         private uint[] values = new uint[(int)CompilerData.CompileThresholds.Display];
 
-        public UnitValue(string name, uint index, uint[] threads, ulong[] startTimes)
+        public UnitValue(string name, uint index)
         {
             Name = name;
             Index = index;
-            Threads = threads;
-            StartTimes = startTimes;
         }
 
         public string Name { get; }
         public uint Index { get; }
-
-        public uint[] Threads { get; }
-        public ulong[] StartTimes { get; }
 
         public List<uint> ValuesList { get { return values.ToList(); } }
 
@@ -98,7 +93,6 @@ namespace CompileScore
         public uint  Version { set; get; } = 0;
         public uint  TimelinePacking { set; get; } = 0; 
         public ulong FullDuration { set; get; } = 0;
-        public uint  NumThreads { set; get; } = 0;
     }
 
     public class CompileDataset
@@ -114,7 +108,7 @@ namespace CompileScore
         public static CompilerData Instance { get { return lazy.Value; } }
 
         public const uint VERSION_MIN = 9;
-        public const uint VERSION = 11;
+        public const uint VERSION = 12;
 
         //Keep this in sync with the data exporter
         public enum CompileCategory
@@ -200,6 +194,7 @@ namespace CompileScore
             public List<UnitValue> Units { set; get; } = new List<UnitValue>();
             public CompileDataset[] Datasets { set; get; } = new CompileDataset[(int)CompileThresholds.Gather].Select(h => new CompileDataset()).ToArray();
             public CompileFolders Folders { set; get; } = new CompileFolders();
+            public List<IncludersValue> Includers { set; get; }
         }
 
         private class GlobalsChunk
@@ -438,7 +433,12 @@ namespace CompileScore
             session.Version = version;
             session.TimelinePacking = reader.ReadUInt32();
             session.FullDuration = reader.ReadUInt64();
-            session.NumThreads = reader.ReadUInt32();
+            
+            if (version < 12)
+            {
+                //Read deprecated numThreads
+                reader.ReadUInt32();
+            }
 
             for (int k = 0; k < (int)CompileThresholds.Display; ++k)
             {
@@ -453,17 +453,15 @@ namespace CompileScore
             var name = reader.ReadString();
 
             //read context
-            uint[] threads = { 0, 0 };
-            ulong[] startTimes = { 0, 0 };
-            if ( version >= 10 )
+            if ( version >= 10 && version < 12 )
             {
-                startTimes[0] = reader.ReadUInt64();
-                startTimes[1] = reader.ReadUInt64();
-                threads[0] = reader.ReadUInt32();
-                threads[1] = reader.ReadUInt32();
+                reader.ReadUInt64();
+                reader.ReadUInt64();
+                reader.ReadUInt32();
+                reader.ReadUInt32();
             }
 
-            var compileData = new UnitValue(name, index, threads, startTimes);
+            var compileData = new UnitValue(name, index);
 
             for (CompileCategory category = 0; (int)category < (int)CompileThresholds.Display; ++category)
             {
@@ -618,6 +616,16 @@ namespace CompileScore
                         }
 
                         chunk.Folders.ReadFolders(reader, chunk.Units, chunk.Datasets);
+
+                        if ( version >= 12 )
+                        {
+                            chunk.Includers = CompilerIncluders.ReadIncluderValues(reader, version);
+                        }
+                        else
+                        {
+                            chunk.Includers = CompilerIncluders.ReadIncludersFromFile(fullPath + ".incl");
+                        }
+
                     }
                 }
 
@@ -677,6 +685,8 @@ namespace CompileScore
             Datasets = chunk.Datasets;
             Folders = chunk.Folders;
 
+            CompilerIncluders.Instance.SetIncluderData(chunk.Includers);
+
             //Propagate session information
             if ( Session.TimelinePacking > 0 )
             {
@@ -707,15 +717,12 @@ namespace CompileScore
             Common.ThreadUtils.Fork(async delegate
             {
                 ReadMainScore(fullPath, chunk);
-                List<IncludersValue> includerChunk = CompilerIncluders.ReadIncludersFromFile(fullPath + ".incl");
 
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 if (LoadingBatch == chunk.LoadingBatch)
                 {
                     ApplyLoadChunk(chunk);
-                    CompilerIncluders.Instance.SetIncluderData(includerChunk);
-
                     LoadingFlags &= ~(uint)HydrateFlag.Main;
                     TryNotifyDataChanged();
                 }

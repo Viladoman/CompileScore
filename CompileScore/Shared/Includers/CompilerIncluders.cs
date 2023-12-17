@@ -95,7 +95,7 @@ namespace CompileScore.Includers
             return ret;
         }
 
-        private static List<IncludersValue> ReadIncluderValues(BinaryReader reader, uint version)
+        public static List<IncludersValue> ReadIncluderValues(BinaryReader reader, uint version)
         {
             List<IncludersValue> list = new List<IncludersValue>();
 

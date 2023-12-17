@@ -7,7 +7,7 @@
 
 #include "ScoreDefinitions.h"
 
-constexpr U32 SCORE_VERSION = 11;
+constexpr U32 SCORE_VERSION = 12;
 constexpr U32 TIMELINE_FILE_NUM_DIGITS = 4;
 
 static_assert(TIMELINE_FILE_NUM_DIGITS > 0);
@@ -412,13 +412,7 @@ namespace IO
         { 
             //Name
             BinarizeStringPath(stream, strings, unit.nameHash);
-
-            //Context
-            BinarizeU64(stream, unit.context.startTime[0]);
-            BinarizeU64(stream, unit.context.startTime[1]);
-            BinarizeU32(stream, unit.context.threadId[0]);
-            BinarizeU32(stream, unit.context.threadId[1]);
-
+            
             //values
             for (U32 value : unit.values)
             { 
@@ -520,7 +514,6 @@ namespace IO
         void BinarizeSession(FILE* stream, const CompileSession& session)
         {
             BinarizeU64(stream, session.fullDuration);
-            BinarizeU32(stream, session.numThreads);
 
             for (size_t i = 0; i < ToUnderlying(CompileCategory::DisplayCount); ++i)
             {
@@ -546,7 +539,6 @@ namespace IO
 
         U32 GetTimelinesPerFile() const { return timelinesPerFile; }
 
-        void Binarize( const TCompileIncluders& includers );
         void BinarizeGlobals( const ScoreData& data );
         void BinarizeMain( const ScoreData& data );
 
@@ -624,38 +616,6 @@ namespace IO
             fclose(timelineStream);
             timelineStream = nullptr;
         }
-    }
-
-    // -----------------------------------------------------------------------------------------------------------
-    void ScoreBinarizer::Impl::Binarize(const TCompileIncluders& includers)
-    {
-        if( includers.empty() )
-        {
-            return;
-        }
-
-        fastl::string filename = path; 
-        filename.append(".incl");
-
-        LOG_INFO( "Writing to file %s", filename.c_str() );
-
-        FILE* stream;
-		const errno_t result = fopen_s( &stream, filename.c_str(), "wb" );
-
-		if( result )
-		{
-			LOG_ERROR( "Unable to create output file %s", filename.c_str() );
-            return; 
-		}
-
-		//Header
-		Utils::BinarizeU32( stream, SCORE_VERSION );
-
-		Utils::BinarizeIncluders( stream, includers );
-
-		fclose( stream );
-
-		LOG_INFO( "Parents exported!" );
     }
 
     // -----------------------------------------------------------------------------------------------------------
@@ -737,6 +697,8 @@ namespace IO
         
         Utils::BinarizeFolders(stream, data.folders);
 
+        Utils::BinarizeIncluders(stream, data.includers);
+
         fclose(stream);
 
         LOG_INFO("Units exported!");
@@ -759,7 +721,6 @@ namespace IO
     void ScoreBinarizer::Binarize(const ScoreData& data)
     { 
         //do this one first as the Scoredata file close might trigger refreshers on listeners ( it needs to be the last file to be created ) 
-        m_impl->Binarize( data.includers );
         m_impl->BinarizeGlobals( data );
         m_impl->BinarizeMain( data );
 

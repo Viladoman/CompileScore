@@ -355,100 +355,12 @@ namespace CompileScore
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	void ReconstructThreadModel(ScoreData& scoreData)
-	{
-		//sort all units by time start via back insertion sort
-		fastl::vector<CompileUnit*> units;
-		units.resize(scoreData.units.size());
-
-		U32 numInsertions = 0u;
-		U32 insertionPoint = 0u;
-		for (CompileUnit& unit : scoreData.units)
-		{
-			const U64 thisUnitTime = unit.context.startTime[0];
-			while (insertionPoint > 0 && units[insertionPoint - 1]->context.startTime[0] > thisUnitTime)
-			{
-				units[insertionPoint] = units[insertionPoint - 1];
-				--insertionPoint;
-			}
-
-			units[insertionPoint] = &unit;
-			insertionPoint = ++numInsertions;
-		}
-
-		fastl::vector<U64> threads;
-		threads.emplace_back(0u);
-		U32 lowestThreadIndex = 0u;
-		U32 numThreads = 1u;
-
-		for (CompileUnit* unit : units)
-		{
-			//Check if we need to use a new thread
-			const U64 startTime = unit->context.startTime[0]; 
-			const U64 lowestThreadTime = threads[lowestThreadIndex];
-			if ( lowestThreadTime > startTime)
-			{
-				//assign unit to new thread - update/keep lowest thread
-				unit->context.threadId[0] = numThreads;
-				unit->context.threadId[1] = numThreads;
-
-				const U64 endTime = startTime + unit->values[ToUnderlying(CompileCategory::ExecuteCompiler)];
-				threads.emplace_back(endTime);
-				lowestThreadIndex = lowestThreadTime > endTime ? numThreads : lowestThreadIndex;
-				++numThreads;
-			}
-			else
-			{
-				//assign unit to lowest thread
-				threads[lowestThreadIndex] = startTime + unit->values[ToUnderlying(CompileCategory::ExecuteCompiler)];
-				unit->context.threadId[0] = lowestThreadIndex;
-				unit->context.threadId[1] = lowestThreadIndex;
-
-				//find the next lowest thread
-				U64 lowestTime = 0xffffffffffffffff;
-				for (U32 i = 0u; i < numThreads; ++i)
-				{
-					if (threads[i] < lowestTime)
-					{
-						lowestTime = threads[i];
-						lowestThreadIndex = i;
-					}
-				}
-			}
-		}
-
-		scoreData.session.numThreads = numThreads;
-	}
-
-	// -----------------------------------------------------------------------------------------------------------
-	void NormalizeThreadIds(ScoreData& scoreData)
-	{
-		typedef fastl::unordered_map<U32, U32> TThreadDictionary;
-		TThreadDictionary threadDict;
-		U32 nextThreadIndex = 0;
-
-		for (CompileUnit& unit : scoreData.units)
-		{
-			//Add Threads and prepare for total time computations
-			for (size_t k = 0; k < 2; ++k)
-			{
-				auto const& result = threadDict.insert(TThreadDictionary::value_type(unit.context.threadId[k], nextThreadIndex));
-				unit.context.threadId[k] = result.first->second;
-				nextThreadIndex += result.second ? 1 : 0;
-			}
-		}
-
-		scoreData.session.numThreads = nextThreadIndex;
-	}
-
-	// -----------------------------------------------------------------------------------------------------------
 	void FinalizeScoreData(ScoreData& scoreData)
 	{
 		//setup the scoredata
 		scoreData.folders.clear();
 		scoreData.folders.emplace_back();
 		scoreData.session.fullDuration = 0u; 
-		scoreData.session.numThreads = 0u;
 		fastl::memset(scoreData.session.totals, 0, sizeof(U64) * ToUnderlying(CompileCategory::DisplayCount));
 
 		//Normalize unit start times
@@ -485,21 +397,6 @@ namespace CompileScore
 			const U64 backEndFinish  = unit.context.startTime[1] + unit.values[ToUnderlying(CompileCategory::BackEnd)];
 			scoreData.session.fullDuration = scoreData.session.fullDuration > frontEndFinish ? scoreData.session.fullDuration : frontEndFinish;
 			scoreData.session.fullDuration = scoreData.session.fullDuration > backEndFinish ? scoreData.session.fullDuration : backEndFinish;
-		}
-
-		//Normalize the threadIds 
-		ExportParams* exportParams = Context::Get<ExportParams>();
-		if (exportParams && exportParams->source == ExportParams::Source::Clang)
-		{
-			//Clang threadIds are not consistent. 
-			//We reconstruct the thread timeline from the unit timers that got provided.
-			ReconstructThreadModel(scoreData); 
-		}
-		else
-		{
-			//We trust MSVC threadIds to be consistent.
-			//this means we just need to normalize the ids
-			NormalizeThreadIds(scoreData);
 		}
 
 		//Add folder paths for the includes

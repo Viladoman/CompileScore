@@ -203,8 +203,6 @@ namespace Clang
 			else if (Utils::EqualTokens(token, tagThread))
 			{
 				if (!reader.NextToken(token) || token.type != Json::Token::Type::Number) return false;
-				context.threadId[0] = Utils::TokenToU32(token);
-				context.threadId[1] = context.threadId[0];
 			}
 			else 
 			{

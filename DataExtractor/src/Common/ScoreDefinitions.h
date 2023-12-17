@@ -52,11 +52,9 @@ struct CompileUnitContext
 {
     CompileUnitContext()
         : startTime{ 0u,0u }
-        , threadId{ 0u,0u }
     {}
 
     U64 startTime[2];
-    U32 threadId[2];
 };
 
 struct CompileUnit
@@ -191,12 +189,10 @@ struct CompileSession
 {
     CompileSession()
         : fullDuration(0u)
-        , numThreads(0u)
     {}
 
     U64 totals[ToUnderlying(CompileCategory::DisplayCount)];
     U64 fullDuration;
-    U32 numThreads;
 };
 
 using TCompileDatas            = fastl::vector<CompileData>;

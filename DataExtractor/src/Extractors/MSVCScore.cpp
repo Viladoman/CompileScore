@@ -8,7 +8,6 @@
 #include <CppBuildInsights.hpp>
 
 #include "../fastl/algorithm.h"
-#include "../fastl/string.h"
 #include "../Common/CommandLine.h"
 #include "../Common/Context.h"
 #include "../Common/DirectoryUtils.h"
@@ -164,7 +163,8 @@ namespace MSVC
     private: 
         U32 ConvertDuration(std::chrono::nanoseconds nanos) const;
         U32 ComputeEventStartTime(TUEntry* activeTU, const MSBI::Activities::Activity& activity) const;
-        MSVCCompileEvent* AddEvent(TUEntry* activeTU, const CompileCategory category, const MSBI::Activities::Activity& activity, const fastl::string& name = "", const TSymbolId nameSymbol = 0u);
+        bool IsValidEvent(TUEntry* activeTU, CompileCategory category, U64 nameHash) const;
+        MSVCCompileEvent* AddEvent(TUEntry* activeTU, CompileCategory category, const MSBI::Activities::Activity& activity, const fastl::string& name = "", TSymbolId nameSymbol = 0u);
         
         void FixNameTU(TUEntry& entry);
         void FinalizeTU(TUEntry& entry);
@@ -371,7 +371,6 @@ namespace MSVC
             if (category == CompileCategory::BackEnd)
             {
                 activeTU->context.startTime[1] = startTime;
-                activeTU->context.threadId[1] = activity.ThreadId();
 
                 FixNameTU(*activeTU);
                 FinalizeTU(*activeTU);
@@ -380,7 +379,6 @@ namespace MSVC
             else
             {
                 activeTU->context.startTime[0] = startTime;
-                activeTU->context.threadId[0] = activity.ThreadId();
             }
         }
 
@@ -458,19 +456,29 @@ namespace MSVC
     }
 
     // -----------------------------------------------------------------------------------------------------------
-    MSVCCompileEvent* Gatherer::AddEvent(TUEntry* activeTU, const CompileCategory category, const MSBI::Activities::Activity& activity, const fastl::string& name, const TSymbolId nameSymbol)
+    bool Gatherer::IsValidEvent(TUEntry* activeTU, CompileCategory category, U64 nameHash) const
+    {
+        //filter out includes that represent the translation unit itself
+        return category != CompileCategory::Include || nameHash != activeTU->nameHash;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------
+    MSVCCompileEvent* Gatherer::AddEvent(TUEntry* activeTU, CompileCategory category, const MSBI::Activities::Activity& activity, const fastl::string& name, TSymbolId nameSymbol)
     { 
         if (activeTU)
         { 
             const U64 nameHash = CompileScore::StoreCategoryValueString(m_scoreData,name.c_str(),category);
             const U32 startTime = ComputeEventStartTime(activeTU,activity);
 
-            MSVCCompileTrack& track = activeTU->GetTrack(activity.ThreadId());
-            TMSVCCompileEvents& events = track.events;
-            TMSVCCompileEvents::iterator startSearch = events.begin()+track.sectionStartIndex;
-            TMSVCCompileEvents::iterator found = fastl::lower_bound(startSearch,events.end(),startTime,[=](const MSVCCompileEvent& input, U32 value){ return value >= input.event.start; });
-            TMSVCCompileEvents::iterator elem = events.emplace(found,MSVCCompileEvent(CompileEvent(category,startTime,ConvertDuration(activity.Duration()), nameHash),nameSymbol));
-            return &(*elem);
+            if (IsValidEvent(activeTU, category, nameHash))
+            {
+                MSVCCompileTrack& track = activeTU->GetTrack(activity.ThreadId());
+                TMSVCCompileEvents& events = track.events;
+                TMSVCCompileEvents::iterator startSearch = events.begin()+track.sectionStartIndex;
+                TMSVCCompileEvents::iterator found = fastl::lower_bound(startSearch,events.end(),startTime,[=](const MSVCCompileEvent& input, U32 value){ return value >= input.event.start; });
+                TMSVCCompileEvents::iterator elem = events.emplace(found,MSVCCompileEvent(CompileEvent(category,startTime,ConvertDuration(activity.Duration()), nameHash),nameSymbol));
+                return &(*elem);
+            }
         }
 
         return nullptr;
