@@ -341,15 +341,19 @@ namespace CompileScore
             if ( textBuffer != null)
             {
                 textBuffer.GetLineText(line,0,line+1,0,out string text);
-                MatchCollection matches = Regex.Matches(text, IncludeRegex);
-                foreach (Match match in matches)
+                if ( text != null )
                 {
-                    if (match.Success)
+                    MatchCollection matches = Regex.Matches(text, IncludeRegex);
+                    foreach (Match match in matches)
                     {
-                        string fileName = GetFileNameSafe(match.Groups[1].Value).ToLower();
-                        return fileName != null ? CompilerData.Instance.GetValueByName(CompilerData.CompileCategory.Include, fileName) : null;
+                        if (match.Success)
+                        {
+                            string fileName = GetFileNameSafe(match.Groups[1].Value).ToLower();
+                            return fileName != null ? CompilerData.Instance.GetValueByName(CompilerData.CompileCategory.Include, fileName) : null;
+                        }
                     }
                 }
+
             }
 
             return null;
