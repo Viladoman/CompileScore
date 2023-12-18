@@ -67,6 +67,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+	<Page Include="..\Shared\Overview\IncludersTable.xaml">
+      <Link>Shared\Overview\IncludersTable.xaml</Link>
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="..\Shared\Overview\OverviewTotalsTable.xaml">
       <Link>Shared\Overview\OverviewTotalsTable.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
@@ -113,6 +118,9 @@
     </Compile>
     <Compile Include="..\Shared\Overview\OverviewTable.xaml.cs" Link="Shared\Overview\OverviewTable.xaml.cs">
       <DependentUpon>OverviewTable.xaml</DependentUpon>
+    </Compile>
+	<Compile Include="..\Shared\Overview\IncludersTable.xaml.cs" Link="Shared\Overview\IncludersTable.xaml.cs">
+      <DependentUpon>IncludersTable.xaml</DependentUpon>
     </Compile>
     <Compile Include="..\Shared\Overview\OverviewTotalsTable.xaml.cs" Link="Shared\Overview\OverviewTotalsTable.xaml.cs">
       <DependentUpon>OverviewTotalsTable.xaml</DependentUpon>

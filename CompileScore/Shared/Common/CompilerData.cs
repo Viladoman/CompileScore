@@ -194,7 +194,7 @@ namespace CompileScore
             public List<UnitValue> Units { set; get; } = new List<UnitValue>();
             public CompileDataset[] Datasets { set; get; } = new CompileDataset[(int)CompileThresholds.Gather].Select(h => new CompileDataset()).ToArray();
             public CompileFolders Folders { set; get; } = new CompileFolders();
-            public List<IncludersValue> Includers { set; get; }
+            public IncludersDataChunk Includers { set; get; }
         }
 
         private class GlobalsChunk

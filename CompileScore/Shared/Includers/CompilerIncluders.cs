@@ -36,6 +36,12 @@ namespace CompileScore.Includers
         public object Value { set; get; } //This can be either IncludersUnitValue or IncludersInclValue
     }
 
+    class IncludersDataChunk
+    {
+        public List<IncludersValue> Includers { get; set; } = new List<IncludersValue>();
+        public int LinkCount { get; set; } = 0;
+    } 
+
     class CompilerIncluders
     {
         public const uint durationMultiplier = 1000;
@@ -45,7 +51,7 @@ namespace CompileScore.Includers
         private static readonly Lazy<CompilerIncluders> lazy = new Lazy<CompilerIncluders>(() => new CompilerIncluders());
         public static CompilerIncluders Instance { get { return lazy.Value; } }
 
-        private List<IncludersValue> IncludersData { get; set; }
+        private IncludersDataChunk IncludersData { get; set; }
 
         public void Initialize(CompileScorePackage package)
         {
@@ -61,20 +67,25 @@ namespace CompileScore.Includers
                 return null;
             }
 
-            Timeline.TimelineNode root = BuildGraphRecursive(IncludersData, index);
-            ClearVisited(IncludersData);
+            Timeline.TimelineNode root = BuildGraphRecursive(IncludersData.Includers, index);
+            ClearVisited(IncludersData.Includers);
             InitializeTree(root);
             return root;
         }
 
-        public void SetIncluderData(List<IncludersValue> data)
+        public void SetIncluderData(IncludersDataChunk data)
         {
             IncludersData = data;
         }
 
-        public static List<IncludersValue> ReadIncludersFromFile(string fullPath)
+        public IncludersDataChunk GetIncluderData() 
+        { 
+            return IncludersData; 
+        }
+
+        public static IncludersDataChunk ReadIncludersFromFile(string fullPath)
         {
-            List<IncludersValue> ret = null;
+            IncludersDataChunk ret = null;
 
             if (File.Exists(fullPath))
             {
@@ -95,17 +106,20 @@ namespace CompileScore.Includers
             return ret;
         }
 
-        public static List<IncludersValue> ReadIncluderValues(BinaryReader reader, uint version)
+        public static IncludersDataChunk ReadIncluderValues(BinaryReader reader, uint version)
         {
-            List<IncludersValue> list = new List<IncludersValue>();
+            IncludersDataChunk chunk = new IncludersDataChunk();
 
             uint count = reader.ReadUInt32();
             for (uint i=0;i<count;++i)
             {
-                list.Add(ReadIncluderValue(reader, version));
+                IncludersValue newValue = ReadIncluderValue(reader, version);
+                chunk.Includers.Add(newValue);
+                chunk.LinkCount += newValue.Units == null? 0 : newValue.Units.Count;
+                chunk.LinkCount += newValue.Includes == null? 0 : newValue.Includes.Count;
             }
 
-            return list;
+            return chunk;
         }
 
         private static IncludersValue ReadIncluderValue(BinaryReader reader, uint version)
@@ -172,10 +186,10 @@ namespace CompileScore.Includers
             if ( CompilerData.Instance.GetSession().Version < 11 )
                 return null;
 
-            if (IncludersData == null || includerIndex < 0 || includeeIndex < 0 || includeeIndex > IncludersData.Count || IncludersData[includeeIndex].Units == null)
+            if (IncludersData == null || includerIndex < 0 || includeeIndex < 0 || includeeIndex > IncludersData.Includers.Count || IncludersData.Includers[includeeIndex].Units == null)
                 return null;
 
-            foreach ( IncludersUnitValue value in IncludersData[includeeIndex].Units )
+            foreach ( IncludersUnitValue value in IncludersData.Includers[includeeIndex].Units )
             {
                 if ( value.Index == includerIndex)
                 {
@@ -191,16 +205,10 @@ namespace CompileScore.Includers
             if (CompilerData.Instance.GetSession().Version < 11)
                 return null;
 
-            if (IncludersData == null || includerIndex < 0 || includeeIndex < 0 )
+            if (IncludersData == null || includerIndex < 0 || includeeIndex < 0 || includeeIndex > IncludersData.Includers.Count || IncludersData.Includers[includeeIndex].Includes == null)
                 return null;
 
-            if (includeeIndex > IncludersData.Count)
-                return null;
-
-            if ( IncludersData[includeeIndex].Includes == null)
-                return null;
-
-            foreach ( IncludersInclValue value in IncludersData[includeeIndex].Includes)
+            foreach ( IncludersInclValue value in IncludersData.Includers[includeeIndex].Includes)
             {
                 if (value.Index == includerIndex)
                 {

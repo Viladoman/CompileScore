@@ -34,10 +34,29 @@ namespace CompileScore.Overview
 
         private void AddTab(CompilerData.CompileCategory category)
         {
-            TabItem tab = new TabItem();
-            tab.Header = CompileScore.Common.UIConverters.ToSentenceCase(Enum.GetName(typeof(CompilerData.CompileCategory), (int)category));
-            tab.Content = new CompileDataTable(category);
-            tabControl.Items.Add(tab);
+            if (category == CompilerData.CompileCategory.Include && CompilerData.Instance.GetSession().Version >= 11)
+            {
+                {
+                    TabItem tab = new TabItem();
+                    tab.Header = "Include Global";
+                    tab.Content = new CompileDataTable(category);
+                    tabControl.Items.Add(tab);
+                }
+
+                {
+                    TabItem tab = new TabItem();
+                    tab.Header = "Include Single";
+                    tab.Content = new IncludersTable();
+                    tabControl.Items.Add(tab);
+                }
+            }
+            else
+            {
+                TabItem tab = new TabItem();
+                tab.Header = CompileScore.Common.UIConverters.ToSentenceCase(Enum.GetName(typeof(CompilerData.CompileCategory), (int)category));
+                tab.Content = new CompileDataTable(category);
+                tabControl.Items.Add(tab);
+            }
         }
 
         private void RefreshTabs()
