@@ -11,6 +11,20 @@
 
     <UserControl.Resources>
         <common:UITimeConverterZero x:Key="uiTimeConverter"/>
+        <Style TargetType="ToggleButton">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}" />
+            <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.Background}}" />
+
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.Grid_CellSelectedBackground}}" />
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.ComboBox_MouseOverForeground}}" />
+                    <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.ComboBox_MouseOverBackground}}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
         <Style TargetType="Label">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}"/>
         </Style>
@@ -110,19 +124,28 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="100" />
             </Grid.ColumnDefinitions>
-            <TextBox   Grid.Column="0" x:Name="searchTextBox" TextChanged="SearchTextChangedEventHandler"/>
-            <TextBlock Grid.Column="0" IsHitTestVisible="False" Text="Search" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="DarkGray">
-                <TextBlock.Style>
-                    <Style TargetType="{x:Type TextBlock}">
-                        <Setter Property="Visibility" Value="Collapsed"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Text, ElementName=searchTextBox}" Value="">
-                                <Setter Property="Visibility" Value="Visible"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
+
+            <Grid Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBox   Grid.Column="0" x:Name="searchTextBox" TextChanged="SearchTextChangedEventHandler"/>
+                <TextBlock Grid.Column="0" IsHitTestVisible="False" Text="Search" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="DarkGray">
+                    <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=searchTextBox}" Value="">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <ToggleButton Grid.Column="1" x:Name="searchTextTarget" Click="SearchTextTargetChangedEventHandler" Content="P" ToolTip="Search Full Path instead of Name" />
+            </Grid>
             
             <TextBlock Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Path=Items.Count, ElementName=compileDataGrid, StringFormat='Count {0}'}" />
         </Grid>

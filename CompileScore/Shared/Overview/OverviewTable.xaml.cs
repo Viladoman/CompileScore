@@ -28,6 +28,7 @@ namespace CompileScore.Overview
         private ICollectionView dataView;
 
         private System.Threading.CancellationTokenSource TokenSource = new System.Threading.CancellationTokenSource();
+        private List<UnitProxyValue> originalValues = new List<UnitProxyValue>();
         private HashSet<UnitValue> FilterSet = new HashSet<UnitValue>();
 
         private int originalColumns = 0;
@@ -89,31 +90,30 @@ namespace CompileScore.Overview
             }
         }
 
-        private static bool FilterUnitValue(UnitValue value, string[] filterWords)
+        private static bool FilterTextValue(string value, string[] filterWords)
         {
             bool result = true;
             foreach (string word in filterWords)
             {
-                result = result && value.Name.ContainsNoCase(word);
+                result = result && value.ContainsNoCase(word);
             }
             return result;
         }
 
-        private async System.Threading.Tasks.Task FilterEntriesAsync(string filterText, System.Threading.CancellationToken token)
+        private async System.Threading.Tasks.Task FilterEntriesAsync(string filterText, bool targetFullPath, System.Threading.CancellationToken token)
         {
-            List<UnitValue> originalValues = CompilerData.Instance.GetUnits();
             HashSet<UnitValue> newSet = new HashSet<UnitValue>(originalValues.Count);
 
             if (filterText.Length > 0)
             {
                 string[] filterWords = filterText.Split(' ');
-                foreach (UnitValue value in originalValues)
+                foreach (UnitProxyValue value in originalValues)
                 {
                     token.ThrowIfCancellationRequested();
 
-                    if (!FilterUnitValue(value, filterWords))
+                    if (!FilterTextValue(targetFullPath? value.FullPath : value.Unit.Name, filterWords))
                     {
-                        newSet.Add(value);
+                        newSet.Add(value.Unit);
                     }
                 }
             }
@@ -130,7 +130,7 @@ namespace CompileScore.Overview
             }
         }
 
-        public async System.Threading.Tasks.Task SearchAsync(string filterText)
+        public async System.Threading.Tasks.Task SearchAsync(string filterText, bool targetFullPath)
         {
             var newTokenSource = new System.Threading.CancellationTokenSource();
             var oldTokenSource = System.Threading.Interlocked.Exchange(ref TokenSource, newTokenSource);
@@ -142,7 +142,7 @@ namespace CompileScore.Overview
 
             try
             {
-                await ThreadUtils.ForkAsync(() => FilterEntriesAsync(filterText, newTokenSource.Token));
+                await ThreadUtils.ForkAsync(() => FilterEntriesAsync(filterText, targetFullPath, newTokenSource.Token));
             }
             catch (System.OperationCanceledException)
             {
@@ -170,23 +170,33 @@ namespace CompileScore.Overview
             RefreshColumns();
 
             //create proxy structures for display
-            List<UnitValue> original = CompilerData.Instance.GetUnits();
-            List<UnitProxyValue> proxy = new List<UnitProxyValue>(original.Count);
-            foreach ( UnitValue value in original)
+            List<UnitValue> units = CompilerData.Instance.GetUnits();
+            originalValues = new List<UnitProxyValue>(units.Count);
+            foreach ( UnitValue value in units)
             {
-                proxy.Add(new UnitProxyValue(value)); 
+                originalValues.Add(new UnitProxyValue(value)); 
             }
 
-            ThreadUtils.Fork(async delegate { await PopulateProxyDataAsync(proxy); });
+            ThreadUtils.Fork(async delegate { await PopulateProxyDataAsync(originalValues); });
 
-            this.dataView = CollectionViewSource.GetDefaultView(proxy);
+            this.dataView = CollectionViewSource.GetDefaultView(originalValues);
             dataView.Filter = d => !FilterSet.Contains(((UnitProxyValue)d).Unit);
             compileDataGrid.ItemsSource = this.dataView;
         }
 
+        private void RefreshSearch()
+        {
+            _ = SearchAsync(searchTextBox.Text, searchTextTarget.IsChecked.HasValue && searchTextTarget.IsChecked.Value );
+        }
+
         private void SearchTextChangedEventHandler(object sender, TextChangedEventArgs args)
         {
-            _ = SearchAsync(searchTextBox.Text);
+            RefreshSearch();
+        }
+
+        private void SearchTextTargetChangedEventHandler(object sender, RoutedEventArgs e)
+        {
+            RefreshSearch();
         }
 
         private void DataGridRow_DoubleClick(object sender, MouseButtonEventArgs e)

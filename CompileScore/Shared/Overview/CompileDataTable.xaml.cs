@@ -27,6 +27,7 @@ namespace CompileScore.Overview
         private ICollectionView dataView;
 
         private System.Threading.CancellationTokenSource TokenSource = new System.Threading.CancellationTokenSource();
+        private List<IncludeViewerProxy> originalIncludeValues = new List<IncludeViewerProxy>();
         private HashSet<CompileValue> FilterSet = new HashSet<CompileValue>();
 
         private CompilerData.CompileCategory Category { set; get; }
@@ -65,6 +66,11 @@ namespace CompileScore.Overview
             if (category == CompilerData.CompileCategory.Include)
             {
                 CreateDataGridColumn("Full Path", "FullPath", 600);
+                searchTextTarget.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                searchTextTarget.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -84,31 +90,54 @@ namespace CompileScore.Overview
             compileDataGrid.Columns.Add(textColumn);
         }
 
-        private static bool FilterCompileValue(CompileValue value, string[] filterWords)
+        private static bool FilterTextValue(string value, string[] filterWords)
         {
             bool result = true;
             foreach(string word in filterWords)
             {
-                result = result && value.Name.ContainsNoCase(word);
+                result = result && value.ContainsNoCase(word);
             }
             return result;
         }
 
-        private async System.Threading.Tasks.Task FilterEntriesAsync(string filterText,System.Threading.CancellationToken token)
+        private async System.Threading.Tasks.Task FilterEntriesAsync(string filterText, bool targetFullPath, System.Threading.CancellationToken token)
         {
-            List<CompileValue> originalValues = CompilerData.Instance.GetCollection(Category);
-            HashSet<CompileValue> newSet = new HashSet<CompileValue>(originalValues.Count);
+            HashSet<CompileValue> newSet; 
 
-            if ( filterText.Length > 0 )
+            if (Category == CompilerData.CompileCategory.Include)
             {
-                string[] filterWords = filterText.Split(' ');
-                foreach(CompileValue value in originalValues)
-                {
-                    token.ThrowIfCancellationRequested();
+                newSet = new HashSet<CompileValue>(originalIncludeValues.Count);
 
-                    if (!FilterCompileValue(value, filterWords))
+                if (filterText.Length > 0)
+                {
+                    string[] filterWords = filterText.Split(' ');
+                    foreach (IncludeViewerProxy value in originalIncludeValues)
                     {
-                        newSet.Add(value);
+                        token.ThrowIfCancellationRequested();
+
+                        if (!FilterTextValue(targetFullPath? value.FullPath : value.Value.Name, filterWords))
+                        {
+                            newSet.Add(value.Value);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                List<CompileValue> collectionValues = CompilerData.Instance.GetCollection(Category);
+                newSet = new HashSet<CompileValue>(collectionValues.Count);
+
+                if (filterText.Length > 0)
+                {
+                    string[] filterWords = filterText.Split(' ');
+                    foreach (CompileValue value in collectionValues)
+                    {
+                        token.ThrowIfCancellationRequested();
+
+                        if (!FilterTextValue(value.Name, filterWords))
+                        {
+                            newSet.Add(value);
+                        }
                     }
                 }
             }
@@ -125,7 +154,7 @@ namespace CompileScore.Overview
             }
         }
 
-        public async System.Threading.Tasks.Task SearchAsync(string filterText)
+        public async System.Threading.Tasks.Task SearchAsync(string filterText, bool targetFullPath)
         {
             var newTokenSource = new System.Threading.CancellationTokenSource();
             var oldTokenSource = System.Threading.Interlocked.Exchange(ref TokenSource, newTokenSource);
@@ -137,7 +166,7 @@ namespace CompileScore.Overview
 
             try
             {
-                await ThreadUtils.ForkAsync(() => FilterEntriesAsync(filterText,newTokenSource.Token));
+                await ThreadUtils.ForkAsync(() => FilterEntriesAsync(filterText, targetFullPath, newTokenSource.Token));
             }
             catch (System.OperationCanceledException)
             {
@@ -165,16 +194,17 @@ namespace CompileScore.Overview
             if (Category == CompilerData.CompileCategory.Include)
             {
                 List<CompileValue> originalValues = CompilerData.Instance.GetCollection(Category);
-                List<IncludeViewerProxy> proxy = new List<IncludeViewerProxy>(originalValues.Count);
+
+                originalIncludeValues = new List<IncludeViewerProxy>(originalValues.Count);
 
                 foreach(CompileValue val in originalValues)
                 {
-                    proxy.Add(new IncludeViewerProxy(val));
+                    originalIncludeValues.Add(new IncludeViewerProxy(val));
                 }
 
-                ThreadUtils.Fork( async delegate { await PopulateProxyDataAsync(proxy); });
+                ThreadUtils.Fork( async delegate { await PopulateProxyDataAsync(originalIncludeValues); });
 
-                return proxy;
+                return originalIncludeValues;
             }
             else
             {
@@ -198,9 +228,19 @@ namespace CompileScore.Overview
             compileDataGrid.ItemsSource = dataView;
         }
 
+        private void RefreshSearch()
+        {
+            _ = SearchAsync(searchTextBox.Text, searchTextTarget.IsChecked.HasValue && searchTextTarget.IsChecked.Value);
+        }
+
         private void SearchTextChangedEventHandler(object sender, TextChangedEventArgs args)
         {
-            _ = SearchAsync(searchTextBox.Text);
+            RefreshSearch();
+        }
+
+        private void SearchTextTargetChangedEventHandler(object sender, RoutedEventArgs e)
+        {
+            RefreshSearch();
         }
 
         private CompileValue GetValueFromRowItem(DataGridRow row)
