@@ -147,7 +147,7 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Includee"      Binding="{Binding Includee.Name}" IsReadOnly="True" Width="300" x:Name="GridColumnIncludee"/>
                 <DataGridTextColumn Header="Includer"      Binding="{Binding IncluderName}"  IsReadOnly="True" Width="300" x:Name="GridColumnIncluder"/>
-                <DataGridTextColumn Header="Count"         Binding="{Binding Count}"         IsReadOnly="True" Width="75"/>
+                <DataGridTextColumn Header="Units"         Binding="{Binding Count}"         IsReadOnly="True" Width="75"/>
                 <DataGridTextColumn Header="Accumulated"   Binding="{Binding Accumulated,  Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="140"/>
                 <DataGridTextColumn Header="Max"           Binding="{Binding Max, Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>
                 <DataGridTextColumn Header="Avg"           Binding="{Binding Average, Converter={StaticResource uiTimeConverter}}" IsReadOnly="True" Width="80"/>

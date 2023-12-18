@@ -52,7 +52,7 @@ namespace CompileScore.Timeline
                                      +" (Self: " + Common.UIConverters.GetTimeStr(val.SelfMax) + ")"
                                      +" Min: "   + Common.UIConverters.GetTimeStr(val.Min)
                                      +" Avg: "   + Common.UIConverters.GetTimeStr(val.Average) 
-                                     +" Count: " + val.Count;
+                                     +" Units: " + val.Count;
                 }
                 else if (node.Value is UnitValue)
                 {
@@ -82,7 +82,7 @@ namespace CompileScore.Timeline
                                          + " Avg: " + Common.UIConverters.GetTimeStr(globalVal.Average)
                                          + " Acc: " + Common.UIConverters.GetTimeStr(globalVal.Accumulated)
                                          + " (Self: " + Common.UIConverters.GetTimeStr(globalVal.SelfAccumulated) + ")"
-                                         + " Count: " + globalVal.Count;
+                                         + " Units: " + globalVal.Count;
 
                         if (treeLink.Includee != null && treeLink.Value != null && treeLink.Value is IncludersInclValue)
                         {
@@ -91,7 +91,7 @@ namespace CompileScore.Timeline
                                                   + " Max: " + Common.UIConverters.GetTimeStr(thisVal.Max)
                                                   + " Avg: " + Common.UIConverters.GetTimeStr(thisVal.Average)
                                                   + " Acc: " + Common.UIConverters.GetTimeStr(thisVal.Accumulated)
-                                                  + " Count: " + thisVal.Count;
+                                                  + " Units: " + thisVal.Count;
 
                             detailsText.Text = thisDetailsTxt + "\n" + detailsText.Text;
                         }
