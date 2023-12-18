@@ -113,7 +113,7 @@ namespace CompileScore.Overview
             return result;
         }
 
-        private async System.Threading.Tasks.Task FilterEntriesAsync(string filterTextIncludee, string filterTextIncluder, System.Threading.CancellationToken token)
+        private async System.Threading.Tasks.Task FilterEntriesAsync(string filterTextIncludee, bool targetFullPathIncludee, string filterTextIncluder, bool targetFullPathIncluder, System.Threading.CancellationToken token)
         {
             HashSet<IncluderProxyValue> newSet = new HashSet<IncluderProxyValue>(OriginalValues.Count);
 
@@ -125,7 +125,8 @@ namespace CompileScore.Overview
                 {
                     token.ThrowIfCancellationRequested();
 
-                    if (!FilterText(value.Includee.Name, filterIncludeeWords) || !FilterText(value.IncluderName, filterIncluderWords))
+                    if (!FilterText(targetFullPathIncludee ? value.FullPathIncludee : value.Includee.Name, filterIncludeeWords) || 
+                        !FilterText(targetFullPathIncluder ? value.FullPathIncluder : value.IncluderName, filterIncluderWords))
                     {
                         newSet.Add(value);
                     }
@@ -144,7 +145,7 @@ namespace CompileScore.Overview
             }
         }
 
-        public async System.Threading.Tasks.Task SearchAsync(string filterTextIncludee, string filterTextIncluder)
+        public async System.Threading.Tasks.Task SearchAsync(string filterTextIncludee, bool targetFullPathIncludee, string filterTextIncluder, bool targetFullPathIncluder)
         {
             var newTokenSource = new System.Threading.CancellationTokenSource();
             var oldTokenSource = System.Threading.Interlocked.Exchange(ref TokenSource, newTokenSource);
@@ -156,7 +157,7 @@ namespace CompileScore.Overview
 
             try
             {
-                await ThreadUtils.ForkAsync(() => FilterEntriesAsync(filterTextIncludee, filterTextIncluder, newTokenSource.Token));
+                await ThreadUtils.ForkAsync(() => FilterEntriesAsync(filterTextIncludee, targetFullPathIncludee, filterTextIncluder, targetFullPathIncluder, newTokenSource.Token));
             }
             catch (System.OperationCanceledException)
             {
@@ -242,18 +243,23 @@ namespace CompileScore.Overview
             dataView.Filter = d => !FilterSet.Contains((IncluderProxyValue)d);
             compileDataGrid.ItemsSource = this.dataView;
         }
+        private void RefreshSearch()
+        {
+            bool includeeTargetFullPath = searchTextTargetIncludee.IsChecked.HasValue && searchTextTargetIncludee.IsChecked.Value;
+            bool includerTargetFullPath = searchTextTargetIncluder.IsChecked.HasValue && searchTextTargetIncluder.IsChecked.Value;
+            _ = SearchAsync(searchIncludeeTextBox.Text, includeeTargetFullPath, searchIncluderTextBox.Text, includerTargetFullPath);
+        }
 
         private void SearchTextChangedEventHandler(object sender, TextChangedEventArgs args)
         {
-            _ = SearchAsync(searchIncludeeTextBox.Text, searchIncluderTextBox.Text);
+            RefreshSearch();
         }
-        /*
-        private void DataGridCell_SizeChanged(object sender, SizeChangedEventArgs e)
+
+        private void SearchTextTargetChangedEventHandler(object sender, RoutedEventArgs e)
         {
-            //TODO ~ ramonv ~ refresh serach bar sizes
-            ColumnDefinition0.Width = GridColumnIncludee.Width;
+            RefreshSearch();
         }
-        */
+
         private void DataGridRow_DoubleClick(object sender, MouseButtonEventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();

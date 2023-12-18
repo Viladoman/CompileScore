@@ -144,7 +144,7 @@
                         </Style>
                     </TextBlock.Style>
                 </TextBlock>
-                <ToggleButton Grid.Column="1" x:Name="searchTextTarget" Click="SearchTextTargetChangedEventHandler" Content="P" ToolTip="Search Full Path instead of Name" />
+                <ToggleButton Grid.Column="1" x:Name="searchTextTarget" Click="SearchTextTargetChangedEventHandler" Content="P" ToolTip="Search Full Path instead of Name" Height="18"/>
             </Grid>
             
             <TextBlock Grid.Column="1" HorizontalAlignment="Center" Text="{Binding Path=Items.Count, ElementName=compileDataGrid, StringFormat='Count {0}'}" />

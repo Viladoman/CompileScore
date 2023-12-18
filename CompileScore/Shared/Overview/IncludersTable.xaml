@@ -14,6 +14,20 @@
         <Style TargetType="Label">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}"/>
         </Style>
+        <Style TargetType="ToggleButton">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}" />
+            <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.Background}}" />
+
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.Grid_CellSelectedBackground}}" />
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.ComboBox_MouseOverForeground}}" />
+                    <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.ComboBox_MouseOverBackground}}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
         <Style TargetType="TextBox">
             <Setter Property="Foreground" Value="{DynamicResource {x:Static common:ColorTheme.Foreground}}"/>
             <Setter Property="Background" Value="{DynamicResource {x:Static common:ColorTheme.Background}}"/>
@@ -112,34 +126,50 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="100" />
             </Grid.ColumnDefinitions>
-            <TextBox   Grid.Column="0" x:Name="searchIncludeeTextBox" TextChanged="SearchTextChangedEventHandler"/>
-            <TextBlock Grid.Column="0" IsHitTestVisible="False" Text="Search Includee" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="DarkGray">
-                <TextBlock.Style>
-                    <Style TargetType="{x:Type TextBlock}">
-                        <Setter Property="Visibility" Value="Collapsed"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Text, ElementName=searchIncludeeTextBox}" Value="">
-                                <Setter Property="Visibility" Value="Visible"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
 
-            <TextBox   Grid.Column="1" x:Name="searchIncluderTextBox" TextChanged="SearchTextChangedEventHandler"/>
-            <TextBlock Grid.Column="1" IsHitTestVisible="False" Text="Search Includer" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="DarkGray">
-                <TextBlock.Style>
-                    <Style TargetType="{x:Type TextBlock}">
-                        <Setter Property="Visibility" Value="Collapsed"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Text, ElementName=searchIncluderTextBox}" Value="">
-                                <Setter Property="Visibility" Value="Visible"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
+            <Grid Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
+                <TextBox   Grid.Column="0" x:Name="searchIncludeeTextBox" TextChanged="SearchTextChangedEventHandler"/>
+                <TextBlock Grid.Column="0" IsHitTestVisible="False" Text="Search Includee" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="DarkGray">
+                    <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=searchIncludeeTextBox}" Value="">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <ToggleButton Grid.Column="1" x:Name="searchTextTargetIncludee" Click="SearchTextTargetChangedEventHandler" Content="P" ToolTip="Search Full Path instead of Name" Height="18"/>
+            </Grid>
+
+            <Grid Grid.Column="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBox   Grid.Column="0" x:Name="searchIncluderTextBox" TextChanged="SearchTextChangedEventHandler"/>
+                <TextBlock Grid.Column="0" IsHitTestVisible="False" Text="Search Includer" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="DarkGray">
+                    <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=searchIncluderTextBox}" Value="">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <ToggleButton Grid.Column="1" x:Name="searchTextTargetIncluder" Click="SearchTextTargetChangedEventHandler" Content="P" ToolTip="Search Full Path instead of Name" Height="18"/>
+            </Grid>
 
             <TextBlock Grid.Column="3" HorizontalAlignment="Center" Text="{Binding Path=Items.Count, ElementName=compileDataGrid, StringFormat='Count {0}'}" />
         </Grid>
