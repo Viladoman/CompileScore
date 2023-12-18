@@ -2,9 +2,8 @@
 
 #define VC_EXTRALEAN
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <Windows.h> // Required because DbgHelp.h needs it ( bad dependency management there... )
 #include <DbgHelp.h>
-#include <chrono>
 #include <CppBuildInsights.hpp>
 
 #include "../fastl/algorithm.h"
@@ -14,9 +13,6 @@
 #include "../Common/IOStream.h"
 #include "../Common/ScoreDefinitions.h"
 #include "../Common/ScoreProcessor.h"
-#include "../Common/StringUtils.h"
-
-#include "../Common/CRC64.h"
 
 namespace MSVC
 { 

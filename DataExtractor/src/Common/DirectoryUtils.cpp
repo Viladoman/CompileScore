@@ -17,7 +17,7 @@ namespace IO
     { 
         using TTimestamp = fs::file_time_type::clock::time_point;
 
-        DirectoryScanner::Impl(const char* _extension, TTimestamp _timeThreshold)
+        Impl(const char* _extension, TTimestamp _timeThreshold)
             : extension(_extension)
             , timeThreshold(_timeThreshold)
         {}
