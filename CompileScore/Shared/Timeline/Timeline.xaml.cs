@@ -545,13 +545,13 @@ namespace CompileScore.Timeline
             {
                 var value = nodeValue as UnitValue;
 
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open File", (sender, e) => EditorUtils.OpenFile(value)));
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetText(CompilerData.Instance.Folders.GetUnitPathSafe(value))));
+
                 if (value.Name.Length > 0)
                 {
                     contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Name", (sender, e) => Clipboard.SetText(value.Name)));
                 }
-
-                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open File", (sender, e) => EditorUtils.OpenFile(value)));
-                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetText(CompilerData.Instance.Folders.GetUnitPathSafe(value))));
 
             }
             else if ((nodeValue is IncluderTreeLink))
@@ -559,12 +559,13 @@ namespace CompileScore.Timeline
                 var value = nodeValue as IncluderTreeLink;
                 if ( value.Value != null && value.Value is IncludersInclValue )
                 {
-                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Locate This Max Timeline", (a, b) => CompilerTimeline.Instance.DisplayTimeline(CompilerData.Instance.GetUnitByIndex((value.Value as IncludersInclValue).MaxId), value.Includee)));
+                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Locate Incl Max Timeline", (a, b) => CompilerTimeline.Instance.DisplayTimeline(CompilerData.Instance.GetUnitByIndex((value.Value as IncludersInclValue).MaxId), value.Includee)));
                 }
                 
                 if (value.Includer is UnitValue)
                 {
-                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Timeline", (a, b) => CompilerTimeline.Instance.DisplayTimeline(value.Includer as UnitValue) ) );
+                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Locate Incl Timeline", (a, b) => CompilerTimeline.Instance.DisplayTimeline(value.Includer as UnitValue, value.Includee) ) );
+                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Unit Timeline", (a, b) => CompilerTimeline.Instance.DisplayTimeline(value.Includer as UnitValue) ) );
                 }
 
                 AppendContextualMenuValue(contextMenuStrip, node, value.Includer);
