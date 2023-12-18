@@ -5,8 +5,6 @@
 
 #include "ParserDefinitions.h"
 
-#pragma optimize("",off) //TODO ~ Ramonv ~ remove 
-
 namespace IO
 {
 	enum { DATA_VERSION = 1 };

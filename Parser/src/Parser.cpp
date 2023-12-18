@@ -20,6 +20,9 @@
 //#pragma optimize("",off) //TODO ~ Ramonv ~ remove 
 
 //TODO List: 
+// Typedef type presence ( typedef CustomType NewType )
+// Typedef detection not working
+// 
 // = Gather invalid vardecl that it could not figure out
 //
 // Test std::shared_ptr, std::unique_ptr...
