@@ -34,21 +34,12 @@ namespace CompileScore.Overview
 
         private void AddTab(CompilerData.CompileCategory category)
         {
-            if (category == CompilerData.CompileCategory.Include && CompilerData.Instance.GetSession().Version >= 11)
+            if (category == CompilerData.CompileCategory.Include)
             {
-                {
-                    TabItem tab = new TabItem();
-                    tab.Header = "Include Global";
-                    tab.Content = new CompileDataTable(category);
-                    tabControl.Items.Add(tab);
-                }
-
-                {
-                    TabItem tab = new TabItem();
-                    tab.Header = "Include Single";
-                    tab.Content = new IncludersTable();
-                    tabControl.Items.Add(tab);
-                }
+                TabItem tab = new TabItem();
+                tab.Header = "Include Global";
+                tab.Content = new CompileDataTable(category);
+                tabControl.Items.Add(tab);
             }
             else
             {
@@ -59,12 +50,24 @@ namespace CompileScore.Overview
             }
         }
 
+        private void AddIncludeSingleTab()
+        {
+            TabItem tab = new TabItem();
+            tab.Header = "Include Single";
+            tab.Content = new IncludersTable();
+            tabControl.Items.Add(tab);
+        }
+
         private void RefreshTabs()
         {
+            bool validData = CompilerData.Instance.GetUnits().Count > 0;
+            unitsTab.Visibility = validData ? Visibility.Visible : Visibility.Collapsed;
+            includersTab.Visibility = validData && CompilerData.Instance.GetSession().Version >= 11 ? Visibility.Visible : Visibility.Collapsed;
+
+            //We assume the last tabs are the one for the categories
             int baseIndex = tabControl.Items.Count - (int)CompilerData.CompileThresholds.Gather;
             if (baseIndex >= 0)
             {
-                //We assume the last tabs are the one for the categories
                 for (CompilerData.CompileCategory category = 0; (int)category < (int)CompilerData.CompileThresholds.Gather; ++category)
                 {
                     int index = baseIndex + (int)category;

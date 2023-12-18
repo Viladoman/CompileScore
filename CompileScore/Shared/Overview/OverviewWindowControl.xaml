@@ -79,8 +79,11 @@
             <TabItem Header="Overview">
                 <local:OverviewTotalsTable/>
             </TabItem>
-            <TabItem Header="Units">
+            <TabItem Header="Units" x:Name="unitsTab">
                 <local:OverviewTable/>
+            </TabItem>
+            <TabItem Header="Include Single" x:Name="includersTab">
+                <local:IncludersTable/>
             </TabItem>
         </TabControl>
 
