@@ -162,6 +162,7 @@ namespace CompileScore.Overview
             if (dataView != null)
             {
                 dataView.Refresh();
+                RefreshSearch();
             }
         }
 
@@ -172,9 +173,9 @@ namespace CompileScore.Overview
             //create proxy structures for display
             List<UnitValue> units = CompilerData.Instance.GetUnits();
             originalValues = new List<UnitProxyValue>(units.Count);
-            foreach ( UnitValue value in units)
+            foreach (UnitValue value in units)
             {
-                originalValues.Add(new UnitProxyValue(value)); 
+                originalValues.Add(new UnitProxyValue(value));
             }
 
             ThreadUtils.Fork(async delegate { await PopulateProxyDataAsync(originalValues); });
@@ -182,6 +183,8 @@ namespace CompileScore.Overview
             this.dataView = CollectionViewSource.GetDefaultView(originalValues);
             dataView.Filter = d => !FilterSet.Contains(((UnitProxyValue)d).Unit);
             compileDataGrid.ItemsSource = this.dataView;
+
+            RefreshSearch();
         }
 
         private void RefreshSearch()

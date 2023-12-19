@@ -186,6 +186,7 @@ namespace CompileScore.Overview
             if (dataView != null)
             {
                 dataView.Refresh();
+                RefreshSearch();
             }
         }
 
@@ -226,6 +227,8 @@ namespace CompileScore.Overview
             }
 
             compileDataGrid.ItemsSource = dataView;
+
+            RefreshSearch();
         }
 
         private void RefreshSearch()

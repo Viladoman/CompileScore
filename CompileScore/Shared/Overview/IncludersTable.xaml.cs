@@ -186,6 +186,7 @@ namespace CompileScore.Overview
             if (dataView != null)
             {
                 dataView.Refresh();
+                RefreshSearch();
             }
         }
 
@@ -242,6 +243,8 @@ namespace CompileScore.Overview
             this.dataView = CollectionViewSource.GetDefaultView(OriginalValues);
             dataView.Filter = d => !FilterSet.Contains((IncluderProxyValue)d);
             compileDataGrid.ItemsSource = this.dataView;
+
+            RefreshSearch();
         }
         private void RefreshSearch()
         {
