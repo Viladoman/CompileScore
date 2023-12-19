@@ -31,7 +31,7 @@ namespace CompileScore.Timeline
 
                 if (Mode == Timeline.Mode.Includers)
                 {
-                    durationText.Text = "Paths: " + (node.Duration/CompileScore.Includers.CompilerIncluders.durationMultiplier).ToString();
+                    durationText.Text = "Stacks: " + (node.Duration/CompileScore.Includers.CompilerIncluders.durationMultiplier).ToString();
                     durationText.Visibility = node.Category == CompilerData.CompileCategory.Include? Visibility.Visible : Visibility.Collapsed;
                 }
                 else
