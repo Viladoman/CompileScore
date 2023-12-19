@@ -154,6 +154,15 @@ namespace CompileScore
             get { return optionNormalizedSeverities[3]; }
             set { bool hasChanged = optionNormalizedSeverities[3] != value; optionNormalizedSeverities[3] = Math.Max(Math.Min(value,100.0f),0.0f); if (hasChanged && optionNormalizedSeverity) { CompilerData.Instance.OnSettingsSeverityCriteriaChanged(); } }
         }
+
+        [Category("Viewers")]
+        [DisplayName("Default Includers Display Mode")]
+        [Description("Default value for the Includers viewer display mode")]
+        public Includers.IncludersDisplayMode OptionIncludersDefaultDisplayMode
+        {
+            get { return Timeline.Timeline.DefaultDisplayMode; }
+            set { Timeline.Timeline.DefaultDisplayMode = value; }
+        }
     }
 
 }

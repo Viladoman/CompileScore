@@ -5,6 +5,12 @@ using System.IO;
 
 namespace CompileScore.Includers
 {
+    public enum IncludersDisplayMode
+    {
+        Once,
+        Full
+    }
+
     class IncludersInclValue
     {
         public uint Index { get; set; }
@@ -58,7 +64,7 @@ namespace CompileScore.Includers
             Package = package;
         }
 
-        public Timeline.TimelineNode BuildIncludersTree(uint index)
+        public Timeline.TimelineNode BuildIncludersTree(uint index, IncludersDisplayMode mode)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -67,7 +73,7 @@ namespace CompileScore.Includers
                 return null;
             }
 
-            Timeline.TimelineNode root = BuildGraphRecursive(IncludersData.Includers, index);
+            Timeline.TimelineNode root = BuildGraphRecursive(IncludersData.Includers, mode, index);
             ClearVisited(IncludersData.Includers);
             InitializeTree(root);
             return root;
@@ -219,7 +225,7 @@ namespace CompileScore.Includers
             return null;
         }
 
-        private Timeline.TimelineNode BuildGraphRecursive(List<IncludersValue> includers, uint index, CompileValue includee = null, IncludersInclValue includerValue = null)
+        private Timeline.TimelineNode BuildGraphRecursive(List<IncludersValue> includers, IncludersDisplayMode mode, uint index, CompileValue includee = null, IncludersInclValue includerValue = null)
         {
             if (index > includers.Count)
             {
@@ -227,8 +233,6 @@ namespace CompileScore.Includers
             }
 
             IncludersValue value = includers[(int)index];
-
-            //TODO ~ ramonv ~ rethink this Visited...Visited is only valid within the current recursion stack 
 
             //Only add each element once to avoid cycles
             if (value.Visited)
@@ -251,7 +255,7 @@ namespace CompileScore.Includers
                 for (int i=0;i<value.Includes.Count;++i)
                 {
                     //Build all children 
-                    Timeline.TimelineNode child = BuildGraphRecursive(includers, value.Includes[i].Index, compileValue, value.Includes[i]);
+                    Timeline.TimelineNode child = BuildGraphRecursive(includers, mode, value.Includes[i].Index, compileValue, value.Includes[i]);
                     if (child != null)
                     {
                         node.Duration += child.Duration;
@@ -278,7 +282,13 @@ namespace CompileScore.Includers
             }
 
             //fix up node
-            node.Label = compileValue == null ? "-- Unknown --" : compileValue.Name + " ( " + (node.Duration/durationMultiplier) + " )";    
+            node.Label = compileValue == null ? "-- Unknown --" : compileValue.Name + " ( " + (node.Duration/durationMultiplier) + " )";
+
+            if (mode == IncludersDisplayMode.Full)
+            {
+                //allow this node to be reused in other stacks
+                value.Visited = false;
+            }
 
             return node;
         }

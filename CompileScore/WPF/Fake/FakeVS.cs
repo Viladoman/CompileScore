@@ -134,6 +134,8 @@ namespace CompileScore
         public List<uint> GetOptionValueSeverities() { return fakeSeveritiesValue; }
         public List<float> GetOptionNormalizedSeverities() { return fakeSeveritiesNormalized; }
 
+        public Includers.IncludersDisplayMode OptionIncludersDefaultDisplayMode { get { return Includers.IncludersDisplayMode.Once; } }
+
     };
 
     public class ThemeSettingsPageGrid

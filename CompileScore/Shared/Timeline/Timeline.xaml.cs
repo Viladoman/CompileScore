@@ -2,7 +2,9 @@
 using Microsoft.VisualStudio.Shell;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -144,6 +146,8 @@ namespace CompileScore.Timeline
         private ToolTip tooltip = new ToolTip { Content = new TimelineNodeTooltip(), Padding = new Thickness(0) };
         private DispatcherTimer tooltipTimer = new DispatcherTimer() { Interval = new TimeSpan(4000000) };
 
+        public static IncludersDisplayMode DefaultDisplayMode { set; get; } = IncludersDisplayMode.Once;
+
         private Mode CurrentMode { set; get; } = Mode.Timeline;
         private CompileValue IncludersValue { set; get; }
         private UnitValue Unit { set; get; }
@@ -169,6 +173,11 @@ namespace CompileScore.Timeline
             tooltipTimer.Tick += ShowTooltip;
 
             nodeSearchBox.SetPlaceholderText("Search Nodes");
+
+            GeneralSettingsPageGrid settings = CompilerData.Instance.GetGeneralSettings();
+            displayModeComboBox.ItemsSource = Enum.GetValues(typeof(IncludersDisplayMode)).Cast<IncludersDisplayMode>();
+            displayModeComboBox.SelectedIndex = (int)settings.OptionIncludersDefaultDisplayMode;
+            displayModeComboBox.Visibility = Visibility.Collapsed;
 
             scrollViewer.Loaded += OnScrollViewerLoaded;
             scrollViewer.ScrollChanged += OnScrollViewerScrollChanged;
@@ -207,7 +216,7 @@ namespace CompileScore.Timeline
             SourcePath = valuePath != null && IncludersValue != null? valuePath : CompilerData.Instance.Folders.GetValuePath(value);
 
             int index = CompilerData.Instance.GetIndexOf(CompilerData.CompileCategory.Include, value);
-            SetRoot(index >= 0 ? Includers.CompilerIncluders.Instance.BuildIncludersTree((uint)index) : null);
+            SetRoot(index >= 0 ? Includers.CompilerIncluders.Instance.BuildIncludersTree((uint)index, GetSelectedDisplayMode()) : null);
         }
 
         public void FocusNode(CompileValue value)
@@ -259,6 +268,8 @@ namespace CompileScore.Timeline
                 if (CurrentMode != Mode.Includers) { IncludersValue = null; }
 
                 RefrehsSearchUnitBox();
+
+                displayModeComboBox.Visibility = CurrentMode == Mode.Includers ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -496,6 +507,20 @@ namespace CompileScore.Timeline
             {
                 Point p = e.GetPosition(canvas);
                 FocusNodeInternal(GetNodeAtPosition(Root, PixelToTime(p.X), PixelToDepth(p.Y)));
+            }
+        }
+        public IncludersDisplayMode GetSelectedDisplayMode()
+        {
+            return displayModeComboBox.SelectedItem != null ? (IncludersDisplayMode)displayModeComboBox.SelectedItem : IncludersDisplayMode.Once;
+        }
+
+        private void DisplayModeComboBox_SelectionChanged(object sender, object e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if ( CurrentMode == Mode.Includers && IncludersValue != null )
+            {
+                SetIncluders(IncludersValue, SourcePath);
             }
         }
 
