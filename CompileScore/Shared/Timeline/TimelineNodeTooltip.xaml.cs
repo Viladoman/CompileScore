@@ -23,6 +23,33 @@ namespace CompileScore.Timeline
             InitializeComponent();
         }
 
+        private string GetThisIncludeDetailsText(TimelineNode node)
+        {
+            if ( node.Category == CompilerData.CompileCategory.Include && node.Value is CompileValue && node.Parent != null && 
+                 node.Parent.Category == CompilerData.CompileCategory.Include && node.Parent.Value is CompileValue)
+            {
+                CompileValue includeeValue = (node.Value as CompileValue);
+                CompileValue includerValue = (node.Parent.Value as CompileValue);
+
+                int includeeIndex = CompilerData.Instance.GetIndexOf(CompilerData.CompileCategory.Include, includeeValue);
+                int includerIndex = CompilerData.Instance.GetIndexOf(CompilerData.CompileCategory.Include, includerValue);
+
+                IncludersInclValue inclValue = CompilerIncluders.Instance.GetIncludeInclValue(includerIndex,includeeIndex);
+
+                if (inclValue  != null) 
+                {
+                    return includerValue.Name + " => " + includeeValue.Name + ":\n-"
+                           + " Max: " + Common.UIConverters.GetTimeStr(inclValue.Max)
+                           + " Avg: " + Common.UIConverters.GetTimeStr(inclValue.Average)
+                           + " Acc: " + Common.UIConverters.GetTimeStr(inclValue.Accumulated)
+                           + " Units: " + inclValue.Count;
+                }
+
+            }
+
+            return null; 
+        }
+
         private void OnNode()
         {
             if (node != null)
@@ -52,7 +79,15 @@ namespace CompileScore.Timeline
                                      +" (Self: " + Common.UIConverters.GetTimeStr(val.SelfMax) + ")"
                                      +" Min: "   + Common.UIConverters.GetTimeStr(val.Min)
                                      +" Avg: "   + Common.UIConverters.GetTimeStr(val.Average) 
+                                     +" Acc: "   + Common.UIConverters.GetTimeStr(val.Accumulated)
+                                     +" (Self: " + Common.UIConverters.GetTimeStr(val.SelfAccumulated) + ")"
                                      +" Units: " + val.Count;
+
+                    string thisDetailsTxt = GetThisIncludeDetailsText(node);
+                    if (thisDetailsTxt != null) 
+                    {
+                        detailsText.Text = thisDetailsTxt + "\nGlobal:\n- " + detailsText.Text;
+                    }
                 }
                 else if (node.Value is UnitValue)
                 {
