@@ -92,6 +92,9 @@ namespace CompileScore
 
         private void RefreshTags()
         {
+            if (_buffer.CurrentSnapshot == null || _buffer.CurrentSnapshot.Length <= 0)
+                return;
+
             CreateTrackingSpans();
             TagsChanged?.Invoke(this, new SnapshotSpanEventArgs(new SnapshotSpan(_buffer.CurrentSnapshot, new Span(0, _buffer.CurrentSnapshot.Length - 1))));
         }
@@ -105,7 +108,14 @@ namespace CompileScore
             CompilerData.Instance.Hydrate(CompilerData.HydrateFlag.Main);
 
             var currentSnapshot = _buffer.CurrentSnapshot;
-            MatchCollection matches = Regex.Matches(currentSnapshot.GetText(), EditorUtils.IncludeRegex);
+
+            if (currentSnapshot == null) return;
+
+            string currentSnapshotText = currentSnapshot.GetText();
+
+            if (currentSnapshotText == null) return;
+
+            MatchCollection matches = Regex.Matches(currentSnapshotText, EditorUtils.IncludeRegex);
             foreach (Match match in matches)
             {
                 if (match.Success)
