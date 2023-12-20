@@ -2,7 +2,7 @@
 
 #include "ParserDefinitions.h"
 
-#pragma optimize("",off) //TODO ~ ramonv ~ do not submit
+//#pragma optimize("",off) //TODO ~ ramonv ~ do not submit
 
 namespace CompileScore
 {

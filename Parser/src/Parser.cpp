@@ -18,7 +18,7 @@
 #include "ParserDefinitions.h"
 #include "Processor.h"
 
-#pragma optimize("",off) //TODO ~ Ramonv ~ remove 
+//#pragma optimize("",off) //TODO ~ Ramonv ~ remove 
 
 //TODO List: 
 // Typedef type presence ( typedef CustomType NewType )

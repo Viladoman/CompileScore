@@ -4,7 +4,7 @@
   "ScoreGenerator": {
     "Compiler": 0,
     "InputPath": "$(SolutionDir)CompileData\\$(Configuration)",
-    "OutputPath": "$(SolutionDir)CompileData\\$(Configuration)\\compileDataNEW.scor",
+    "OutputPath": "$(SolutionDir)CompileData\\$(Configuration)\\compileData.scor",
     "OverviewDetail": 3,
     "TimelineDetail": 3,
     "TimelinePacking": 100,
