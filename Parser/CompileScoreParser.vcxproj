@@ -22,11 +22,13 @@
     <ClCompile Include="src\IO.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Parser.cpp" />
+    <ClCompile Include="src\Processor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\IO.h" />
     <ClInclude Include="src\Parser.h" />
     <ClInclude Include="src\ParserDefinitions.h" />
+    <ClInclude Include="src\Processor.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

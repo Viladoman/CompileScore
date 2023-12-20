@@ -16,8 +16,9 @@
 
 #include "IO.h"
 #include "ParserDefinitions.h"
+#include "Processor.h"
 
-//#pragma optimize("",off) //TODO ~ Ramonv ~ remove 
+#pragma optimize("",off) //TODO ~ Ramonv ~ remove 
 
 //TODO List: 
 // Typedef type presence ( typedef CustomType NewType )
@@ -130,33 +131,6 @@ namespace CompileScore
         {
             CodeRequirement& requirement = GetCodeRequirement(requirements, clangPtr, name, defLocation, sourceManager);
             requirement.useLocations.emplace_back(CreateFileLocation(useLocation, sourceManager));
-        }
-
-        // -----------------------------------------------------------------------------------------------------------
-        void AddIncludeLink(const clang::FileID includer, const clang::FileID includee, const clang::SourceManager& sourceManager)
-        {
-            if (!includer.isValid() || !includee.isValid())
-            {
-                return;
-            }
-
-            std::optional<clang::StringRef> includerFileName = sourceManager.getNonBuiltinFilenameForID(includer);
-            std::optional<clang::StringRef> includeeFileName = sourceManager.getNonBuiltinFilenameForID(includee);
-
-            if (!includerFileName.has_value() || !includeeFileName.has_value())
-            {
-                return;
-            }
-
-            const int includerIndex = GetFileIndex(includer, includerFileName->data());
-            const int includeeIndex = GetFileIndex(includee, includeeFileName->data());
-
-            if (includerIndex < 0 || includeeIndex < 0)
-            {
-                return;
-            }
-
-            g_result.links.emplace_back(includerIndex, includeeIndex);
         }
     }
 
@@ -398,6 +372,7 @@ namespace CompileScore
 
         explicit PPIncludeTracer(const clang::SourceManager& sourceManager)
             : m_sourceManager(sourceManager)
+            , m_currentMainIncludee(kInvalidFileIndex)
         {}
 
     private:
@@ -406,7 +381,38 @@ namespace CompileScore
             if (FID.isValid() && Reason == LexedFileChangeReason::EnterFile)
             {
                 m_mainFileId = m_mainFileId.isValid() ? m_mainFileId : FID;
-                Helpers::AddIncludeLink(PrevFID, FID, m_sourceManager);
+
+                const clang::FileID includer = PrevFID;
+                const clang::FileID includee = FID;
+
+                if (!includer.isValid())
+                {
+                    return;
+                }
+
+                std::optional<clang::StringRef> includerFileName = m_sourceManager.getNonBuiltinFilenameForID(includer);
+                std::optional<clang::StringRef> includeeFileName = m_sourceManager.getNonBuiltinFilenameForID(includee);
+
+                if (!includerFileName.has_value() || !includeeFileName.has_value())
+                {
+                    return;
+                }
+
+                const int includerIndex = Helpers::GetFileIndex(includer, includerFileName->data());
+                const int includeeIndex = Helpers::GetFileIndex(includee, includeeFileName->data());
+
+                if (includerIndex < 0 || includeeIndex < 0)
+                {
+                    return;
+                }
+
+                if (includerIndex == 0)
+                {
+                    //we just entered a new main includee of the main file
+                    m_currentMainIncludee = includeeIndex;
+                }
+                
+                g_result.files[includeeIndex].mainIncludeeIndex = m_currentMainIncludee;
             }
         }
 
@@ -425,6 +431,7 @@ namespace CompileScore
     private:
         const clang::SourceManager& m_sourceManager;
         clang::FileID m_mainFileId;
+        int           m_currentMainIncludee;
     };
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -483,9 +490,8 @@ namespace Parser
 
         clang::tooling::ClangTool tool(optionsParser->getCompilations(), optionsParser->getSourcePathList());
         tool.run(clang::tooling::newFrontendActionFactory<CompileScore::Action>().get());
-
-        //TODO ~ ramonv ~ finalize result ( normalize paths - removing ../ and ./ from them )
-        //TODO ~ ramonv ~ remove empty non direct includes / remove root / add main filename entry / add extra file dependencies
+        
+        CompileScore::Finalize(CompileScore::g_result);
 
         const char* outputFileName = CommandLine::g_outputFilename.size() == 0 ? "output.cspbin" : CommandLine::g_outputFilename.c_str();
         

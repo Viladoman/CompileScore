@@ -60,7 +60,10 @@ namespace CompileScore
     // ----------------------------------------------------------------------------------------------------------
     struct IncludeLink
     {
-        IncludeLink(int _includer, int _includee) : includer(_includer), includee(_includee) {}
+        IncludeLink(int _includer, int _includee) 
+            : includer(_includer)
+            , includee(_includee) 
+        {}
 
         int includer;
         int includee;
@@ -72,7 +75,11 @@ namespace CompileScore
 
     struct FileLocation
     {
-        FileLocation(int r, int c) : row(r), column(c){}
+        FileLocation(int r, int c) 
+            : row(r)
+            , column(c)
+        {}
+
         int row; 
         int column; 
     };
@@ -82,7 +89,11 @@ namespace CompileScore
     // ----------------------------------------------------------------------------------------------------------
     struct CodeRequirement
     {
-        CodeRequirement(const void* ptr, const char* label, FileLocation definitonLoc) : clangPtr(ptr), name(label), defLocation(definitonLoc) {}
+        CodeRequirement(const void* ptr, const char* label, FileLocation definitonLoc) 
+            : clangPtr(ptr)
+            , name(label)
+            , defLocation(definitonLoc) 
+        {}
 
         const void* clangPtr; //pointer used to make sure we point to the same 
 
@@ -96,7 +107,11 @@ namespace CompileScore
     // ----------------------------------------------------------------------------------------------------------
     struct StructureRequirement
     {
-        StructureRequirement(const void* ptr, const char* label, FileLocation definitonLoc) : clangPtr(ptr), name(label), defLocation(definitonLoc) {}
+        StructureRequirement(const void* ptr, const char* label, FileLocation definitonLoc) 
+            : clangPtr(ptr)
+            , name(label)
+            , defLocation(definitonLoc) 
+        {}
 
         const void*    clangPtr; //pointer used to make sure we point to the same 
 
@@ -112,21 +127,35 @@ namespace CompileScore
     // ----------------------------------------------------------------------------------------------------------
     struct File
     {
-        File(const char* filename) : name(filename) {}
+        File(const char* filename) 
+            : name(filename)
+            , mainIncludeeIndex(kInvalidFileIndex)
+            , exportIndex(kInvalidFileIndex) 
+        {}
 
         std::string name;
+        int         mainIncludeeIndex; 
+        int         exportIndex; // filled by the Finalize process
 
         TRequirements          global[GlobalRequirementType::Count];
         TStructureRequirements structures;
+
     };
 
-    using TFiles = std::vector<File>;
+    using TFiles       = std::vector<File>;
+    using TFilePtrs    = std::vector<File*>;
+    using TFileIndices = std::vector<int>;
 
     // ----------------------------------------------------------------------------------------------------------
     struct Result
     {
+        //filled by parser
         TFiles          files;
-        TIncludeLinks   links;
+
+        //filled by processor
+        TFilePtrs       finalFiles;
+        TFileIndices    directIncludes;
+        TIncludeLinks   indirectIncludes;
     };
 
 

@@ -330,6 +330,23 @@ namespace CompileScore
                 }
             }
 
+
+            if (file.Includes != null && file.Includes.Count > 0) 
+            {
+                elements.Add(new ContainerElement(
+                   ContainerElementStyle.Wrapped,
+                   new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "Required Includes:")
+                   )));
+
+                foreach(ParserFileRequirements fileReq in file.Includes)
+                {
+                    elements.Add(new ContainerElement(
+                            ContainerElementStyle.Wrapped,
+                            new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, fileReq.Name)
+                            )));
+                }
+            }
+
             if (elements.Count == 0 )
             {
                 elements.Add(new ContainerElement(

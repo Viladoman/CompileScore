@@ -3,11 +3,12 @@
 #include <cstdio>
 #include <cstdarg>
 
+#include "Processor.h"
 #include "ParserDefinitions.h"
 
 namespace IO
 {
-	enum { DATA_VERSION = 1 };
+	enum { DATA_VERSION = 2 };
 
 	using TBuffer = FILE*;
 	using U8 = char;
@@ -117,13 +118,40 @@ namespace IO
         }
 
         // -----------------------------------------------------------------------------------------------------------
-        void BinarizeFiles(FILE* stream, const CompileScore::TFiles& files)
+        void BinarizeFiles(FILE* stream, const CompileScore::TFilePtrs& files)
         {
             Binarize(stream, static_cast<unsigned int>(files.size()));
-            for (const CompileScore::File& file : files)
+            for (const CompileScore::File* file : files)
             {
-                BinarizeFile(stream, file);
+                BinarizeFile(stream, *file);
             }
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeIncludes(FILE* stream, const CompileScore::TIncludeLinks& links)
+        {
+            Binarize(stream, static_cast<unsigned int>(links.size()));
+            for (CompileScore::IncludeLink link : links)
+            {
+                Binarize(stream, static_cast<unsigned int>(link.includer));
+                Binarize(stream, static_cast<unsigned int>(link.includee));
+            }
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeIncludes(FILE* stream, const CompileScore::TFileIndices& links)
+        {
+            Binarize(stream, static_cast<unsigned int>(links.size()));
+            for (int index : links)
+            {
+                Binarize(stream, static_cast<unsigned int>(index));
+            }
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
+        void BinarizeMain(FILE* stream, const CompileScore::Result& result)
+        {
+            BinarizeString(stream, result.files.empty()? "" : result.files[0].name);
         }
     }
 
@@ -133,30 +161,6 @@ namespace IO
 
     namespace PrintUtils
     {
-        // -----------------------------------------------------------------------------------------------------------
-        bool IsFileEmpty(const CompileScore::File& file)
-        {
-            for (int i = 0; i < CompileScore::GlobalRequirementType::Count; ++i)
-            {
-                if (!file.global[i].empty()) return false;
-            }
-            
-            for (const CompileScore::StructureRequirement& structure : file.structures)
-            {
-                for (int i = 0; i < CompileScore::StructureSimpleRequirementType::Count; ++i)
-                {
-                    if (!structure.simpleRequirements[i].empty()) return false;
-                }
-
-                for (int i = 0; i < CompileScore::StructureNamedRequirementType::Count; ++i)
-                {
-                    if (!structure.namedRequirements[i].empty()) return false;
-                }
-            }
-
-            return true;
-        }
-
         // -----------------------------------------------------------------------------------------------------------
         const char* GetGlobalRequirementName(CompileScore::GlobalRequirementType::Enumeration input)
         {
@@ -259,12 +263,14 @@ namespace IO
         }
 
         // -----------------------------------------------------------------------------------------------------------
-        void Print(const CompileScore::File& file, int tab = 0)
+        void Print(const CompileScore::Result& result, const CompileScore::File& file, int tab = 0)
         {
-            if (PrintUtils::IsFileEmpty(file))
-                return;
-
             Log("File %s:\n", file.name.empty() ? "?????" : file.name.c_str());
+
+            if (CompileScore::IsFileEmpty(file))
+            {
+                Log("\tNo File Requirements Found!");
+            }
 
             for (int i = 0; i < CompileScore::GlobalRequirementType::Count; ++i)
             {
@@ -274,6 +280,22 @@ namespace IO
             for (const CompileScore::StructureRequirement& structure : file.structures)
             {
                 Print(structure, tab + 1);
+            }
+
+            int numIncludesFound = 0;
+            for (CompileScore::IncludeLink link : result.indirectIncludes)
+            {
+                if (link.includer == file.exportIndex)
+                {
+                    if (numIncludesFound == 0)
+                    {
+                        Log("\tNeeded Includes:\n");
+                    }
+
+                    ++numIncludesFound;
+
+                    Log("\t\t%s\n", result.finalFiles[link.includee]->name.c_str());
+                }
             }
         }
     }
@@ -291,8 +313,11 @@ namespace IO
         }
 
         BinUtils::Binarize(stream, DATA_VERSION);
-    
-        BinUtils::BinarizeFiles(stream, result.files);
+
+        BinUtils::BinarizeMain(stream, result);
+        BinUtils::BinarizeFiles(stream, result.finalFiles);
+        BinUtils::BinarizeIncludes(stream, result.directIncludes);
+        BinUtils::BinarizeIncludes(stream, result.indirectIncludes);
 
         fclose(stream);
         return true;
@@ -303,12 +328,9 @@ namespace IO
     {
         Log("Dependency Requirements found: \n");
 
-        for( const CompileScore::File& file : result.files )
+        for( const CompileScore::File* file : result.finalFiles )
         {
-            if (!PrintUtils::IsFileEmpty(file))
-            {
-                PrintUtils::Print(file);
-            }
+            PrintUtils::Print(result, *file);
         }
     }
 

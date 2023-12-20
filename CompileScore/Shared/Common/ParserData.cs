@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
 
 namespace CompileScore
@@ -72,12 +73,14 @@ namespace CompileScore
         public string Name { set; get; }
         public List<ParserCodeRequirement>[] Global { set; get; } = new List<ParserCodeRequirement>[(int)ParserEnums.GlobalRequirement.Count];
         public List<ParserStructureRequirement> Structures { set; get; }
+        public List<ParserFileRequirements> Includes { set; get; }
     }
 
     public class ParserUnit
     {
         public string Filename { set; get; }
         public List<ParserFileRequirements> Files { set; get; }
+        public List<ParserFileRequirements> DirectIncludes { set; get; }
         public Dictionary<string, ParserFileRequirements> FilesMap { set; get; }
 
     }
@@ -87,7 +90,7 @@ namespace CompileScore
         private static readonly Lazy<ParserData> lazy = new Lazy<ParserData>(() => new ParserData());
         public static ParserData Instance { get { return lazy.Value; } }
 
-        public const uint VERSION = 1;
+        public const uint VERSION = 2;
 
         private Dictionary<string, ParserUnit> Units = new Dictionary<string, ParserUnit>();
 
@@ -102,11 +105,11 @@ namespace CompileScore
         }
 
         public ParserFileRequirements GetFileRequirements(string mainPath, string filename)
-        { 
+        {
             if (Units.ContainsKey(mainPath))
             {
                 ParserUnit unit = Units[mainPath];
-                if ( unit.FilesMap.ContainsKey(filename) )
+                if (unit.FilesMap.ContainsKey(filename))
                 {
                     return unit.FilesMap[filename];
                 }
@@ -130,7 +133,7 @@ namespace CompileScore
         }
         private static bool CheckVersion(uint version)
         {
-            if (version != VERSION )
+            if (version != VERSION)
             {
                 _ = OutputLog.ErrorGlobalAsync("Trying to load an unsupported file Version! Expected version " + VERSION + " - Found " + version + " - The Parser tool is out of sync.", OutputLog.PaneInstance.Parser);
                 return false;
@@ -152,17 +155,15 @@ namespace CompileScore
                     uint version = reader.ReadUInt32();
                     if (CheckVersion(version))
                     {
-                        //Read Files 
-                        uint filesLength = reader.ReadUInt32();
-                        chunk.Files = new List<ParserFileRequirements>((int)filesLength);
-                        chunk.FilesMap = new Dictionary<string, ParserFileRequirements>();
-                        for (uint i = 0; i < filesLength; ++i)
-                        {
-                            ReadFileRequirement(reader, version, chunk);
-                        }
+                        //Read Main data
+                        chunk.Filename = reader.ReadString();
+                        chunk.Filename = chunk.Filename.Length == 0 ? null : chunk.Filename;
 
-                        //first file processed is always the one processed
-                        chunk.Filename = chunk.Files.Count > 0 ? chunk.Files[0].Name : null; 
+                        //Read Files 
+                        ReadFilesRequirements(reader, version, chunk);
+
+                        //Read includes
+                        ReadIncludes(reader, version, chunk);
                     }
                 }
 
@@ -222,7 +223,7 @@ namespace CompileScore
             entry.Name = reader.ReadString();
 
             uint defLine = reader.ReadUInt32();
-            uint defCol  = reader.ReadUInt32();
+            uint defCol = reader.ReadUInt32();
             entry.DefinitionLocation = EncodeInnerFileLocation(defLine, defCol);
 
             for (int i = 0; i < (int)ParserEnums.StructureSimpleRequirement.Count; ++i)
@@ -276,7 +277,7 @@ namespace CompileScore
             }
 
             uint structsLength = reader.ReadUInt32();
-            if ( structsLength > 0) 
+            if (structsLength > 0)
             {
                 entry.Structures = new List<ParserStructureRequirement>((int)structsLength);
                 for (uint i = 0; i < structsLength; ++i)
@@ -288,10 +289,57 @@ namespace CompileScore
             unit.Files.Add(entry);
 
             string fileName = EditorUtils.GetFileNameSafe(entry.Name);
-            if (fileName != null )
+            if (fileName != null)
             {
                 unit.FilesMap[fileName.ToLower()] = entry;
             }
         }
+
+        private static void ReadFilesRequirements(BinaryReader reader, uint version, ParserUnit unit)
+        {
+            uint filesLength = reader.ReadUInt32();
+            unit.Files = new List<ParserFileRequirements>((int)filesLength);
+            unit.FilesMap = new Dictionary<string, ParserFileRequirements>();
+            for (uint i = 0; i < filesLength; ++i)
+            {
+                ReadFileRequirement(reader, version, unit);
+            } 
+        }
+
+        private static void ReadIncludes(BinaryReader reader, uint version, ParserUnit unit)
+        {
+            int numFiles = unit.Files.Count;
+
+            uint directIncludesLength = reader.ReadUInt32();
+            unit.DirectIncludes = new List<ParserFileRequirements>((int)directIncludesLength);
+            for (uint i = 0; i < directIncludesLength; ++i)
+            {
+                uint index = reader.ReadUInt32();
+                if (index < numFiles)
+                {
+                    unit.DirectIncludes.Add(unit.Files[(int)index]);
+                }
+            }
+
+            uint indirectIncludesLength = reader.ReadUInt32();
+            for (uint i = 0; i < indirectIncludesLength; ++i)
+            {
+                uint includerIndex = reader.ReadUInt32();
+                uint includeeIndex = reader.ReadUInt32();
+                if (includerIndex < numFiles && includeeIndex < numFiles)
+                {
+                    ParserFileRequirements includerFile = unit.Files[(int)includerIndex];
+
+                    if (includerFile.Includes == null)
+                    {
+                        includerFile.Includes = new List<ParserFileRequirements>();
+                    }
+
+                    includerFile.Includes.Add(unit.Files[(int)includeeIndex]);
+                }
+            }
+
+        }
+
     }
 }

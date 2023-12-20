@@ -1,11 +1,11 @@
 {
   "ScoreSource": 0,
-  "ScoreLocation": "$(SolutionDir)CompileData\\$(Configuration)\\compileData.scor",
+  "ScoreLocation": "$(SolutionDir)compileData.scor",
   "ScoreGenerator": {
     "Compiler": 0,
-    "InputPath": "$(SolutionDir)CompileData\\$(Configuration)",
-    "OutputPath": "$(SolutionDir)CompileData\\$(Configuration)\\compileDataNEW.scor",
-    "OverviewDetail": 3,
+    "InputPath": "$(SolutionDir)",
+    "OutputPath": "$(SolutionDir)BuildData/compileData.scor",
+    "OverviewDetail": 2,
     "TimelineDetail": 3,
     "TimelinePacking": 100,
     "ExtractIncluders": true,
