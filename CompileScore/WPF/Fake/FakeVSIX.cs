@@ -36,6 +36,18 @@ namespace CompileScore
         {
             OpenFile(CompilerData.Instance.Folders.GetValuePath(value));
         }
+
+        static public string GetFileNameSafe(string input)
+        {
+            try
+            {
+                return Path.GetFileName(input);
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+        }
     }
 
     public class SolutionSettings

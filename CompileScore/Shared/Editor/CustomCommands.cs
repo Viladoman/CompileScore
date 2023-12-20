@@ -16,6 +16,7 @@ namespace CompileScore
         public const int CommandId_OverviewWindow = 256;
         public const int CommandId_TimelineWindow = 257;
         public const int CommandId_IncludersWindow = 258;
+        public const int CommandId_RequirementsWindow = 259;
         public static readonly Guid CommandSet_Windows = new Guid("e5262ec1-fb68-442d-92f7-0b4a66774209");
 
         public const int CommandId_Build          = 256;
@@ -56,9 +57,10 @@ namespace CompileScore
             OleMenuCommandService commandService = await package.GetServiceAsync(typeof(IMenuCommandService)) as OleMenuCommandService;
             Assumes.Present(commandService);
 
-            commandService.AddCommand(new MenuCommand(Execute_OverviewWindow,   new CommandID(CommandSet_Windows, CommandId_OverviewWindow)));
-            commandService.AddCommand(new MenuCommand(Execute_TimelineWindow,   new CommandID(CommandSet_Windows, CommandId_TimelineWindow)));
-            commandService.AddCommand(new MenuCommand(Execute_IncludersWindow,  new CommandID(CommandSet_Windows, CommandId_IncludersWindow)));
+            commandService.AddCommand(new MenuCommand(Execute_OverviewWindow,     new CommandID(CommandSet_Windows, CommandId_OverviewWindow)));
+            commandService.AddCommand(new MenuCommand(Execute_TimelineWindow,     new CommandID(CommandSet_Windows, CommandId_TimelineWindow)));
+            commandService.AddCommand(new MenuCommand(Execute_IncludersWindow,    new CommandID(CommandSet_Windows, CommandId_IncludersWindow)));
+            commandService.AddCommand(new MenuCommand(Execute_RequirementsWindow, new CommandID(CommandSet_Windows, CommandId_RequirementsWindow)));
 
             commandService.AddCommand(new MenuCommand(Execute_ToggleTextHighlight,  new CommandID(CommandSet_Custom, CommandId_ToggleTextHighlight)));
 
@@ -195,13 +197,19 @@ namespace CompileScore
         private static void Execute_TimelineWindow(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            Timeline.CompilerTimeline.Instance.FocusTimelineWindow();
+            Timeline.CompilerTimeline.FocusTimelineWindow();
         }
 
         private static void Execute_IncludersWindow(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            Includers.CompilerIncluders.Instance.FocusIncludersWindow();
+            Includers.CompilerIncluders.FocusIncludersWindow();
+        }
+
+        private static void Execute_RequirementsWindow(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            ParserData.FocusRequirementsWindow();
         }
 
         private static void Execute_ShowTimeline(object sender, EventArgs e)

@@ -125,7 +125,7 @@ namespace CompileScore
             // Add this to the instance dictionary
             if (parserUnit.Filename == null)
             {
-                Parser.Log("Unable to figure out the source file path from the parser results.");
+                OutputLog.Log("Unable to figure out the source file path from the parser results.", OutputLog.PaneInstance.Parser);
                 return;
             }
 
@@ -339,6 +339,24 @@ namespace CompileScore
                 }
             }
 
+        }
+
+        public static Requirements.RequirementsWindow FocusRequirementsWindow()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            // Get the instance number 0 of this tool window. This window is single instance so this instance
+            // is actually the only one.
+            // The last flag is set to true so that if the tool window does not exists it will be created.
+            Requirements.RequirementsWindow window = CompilerData.Instance.Package.FindToolWindow(typeof(Requirements.RequirementsWindow), 0, true) as Requirements.RequirementsWindow;
+            if ((null == window) || (null == window.GetFrame()))
+            {
+                throw new NotSupportedException("Cannot create tool window");
+            }
+
+            window.ProxyShow();
+
+            return window;
         }
 
     }

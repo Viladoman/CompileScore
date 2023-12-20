@@ -1,0 +1,22 @@
+﻿<UserControl x:Class="CompileScore.Requirements.RequirementsWindowControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:CompileScore.Requirements"
+             xmlns:common="clr-namespace:CompileScore.Common"
+             Background="{DynamicResource {x:Static common:ColorTheme.Background}}"
+             Foreground="{DynamicResource {x:Static common:ColorTheme.Foreground}}"
+             mc:Ignorable="d"
+             Name="RequirementsWindow">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Label Content="Left" Grid.Column="0" />
+        <GridSplitter HorizontalAlignment="Right" VerticalAlignment="Stretch" Grid.Column="1" ResizeBehavior="PreviousAndNext" Width="3" Background="{DynamicResource {x:Static common:ColorTheme.Grid_Line}}"/>
+        <Label Content="Right" Grid.Column="2" />
+    </Grid>
+</UserControl>

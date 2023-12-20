@@ -63,6 +63,13 @@
 			<ButtonText>Compile Score Includers</ButtonText>
 		</Strings>
 	  </Button>
+	  <Button guid="guidCompileScorePackageCmdSet" id="cmdidRequirementsWindowCommand" priority="0x0100" type="Button">
+		<Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreWindowsGroup" />
+		<Icon guid="guidImages1" id="icon" />
+		<Strings>
+			<ButtonText>Compile Score Requirements</ButtonText>
+		</Strings>
+	  </Button>
 
 	  <Button guid="guidCompileScorePackageCmdSet" id="cmdIdOverviewWindowCommand" priority="0x0100" type="Button">
 	  	<Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuWindowsGroup" />
@@ -83,6 +90,13 @@
 	  	<Icon guid="guidImages1" id="icon" />
 	  	<Strings>
 	  		<ButtonText>Compile Score Includers</ButtonText>
+	  	</Strings>
+	  </Button>
+	  <Button guid="guidCompileScorePackageCmdSet" id="cmdidRequirementsWindowCommand" priority="0x0100" type="Button">
+	  	<Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuWindowsGroup" />
+	  	<Icon guid="guidImages1" id="icon" />
+	  	<Strings>
+	  		<ButtonText>Compile Score Requirements</ButtonText>
 	  	</Strings>
 	  </Button>
 
@@ -326,6 +340,7 @@
       <IDSymbol value="256" name="cmdIdOverviewWindowCommand" />
       <IDSymbol value="257" name="cmdidTimelineWindowCommand" />
       <IDSymbol value="258" name="cmdidIncludersWindowCommand" />
+      <IDSymbol value="259" name="cmdidRequirementsWindowCommand" />
     </GuidSymbol>
 
     <GuidSymbol name="guidImages" value="{0496400a-502d-409f-8b65-44fc403b3314}">

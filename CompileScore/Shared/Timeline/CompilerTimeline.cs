@@ -47,14 +47,7 @@ namespace CompileScore.Timeline
         const int TIMELINE_FILE_NUM_DIGITS = 4;
         private uint timelinePacking = 100;
 
-        private CompileScorePackage Package { get; set; }
-
         public uint TimelinePacking { get { return timelinePacking; } set { timelinePacking = Math.Max(1, value); } }
-
-        public void Initialize(CompileScorePackage package)
-        {
-            Package = package;
-        }
 
         public static CompilerTimeline Instance { get { return lazy.Value; } }
         public TimelineNode LoadTimeline(UnitValue unit)
@@ -252,14 +245,14 @@ namespace CompileScore.Timeline
             window.SetTimeline(unit,value);
         }
 
-        public TimelineWindow FocusTimelineWindow()
+        public static TimelineWindow FocusTimelineWindow()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             // Get the instance number 0 of this tool window. This window is single instance so this instance
             // is actually the only one.
             // The last flag is set to true so that if the tool window does not exists it will be created.
-            TimelineWindow window = Package.FindToolWindow(typeof(TimelineWindow), 0, true) as TimelineWindow;
+            TimelineWindow window = CompilerData.Instance.Package.FindToolWindow(typeof(TimelineWindow), 0, true) as TimelineWindow;
             if ((null == window) || (null == window.GetFrame()))
             {
                 throw new NotSupportedException("Cannot create tool window");

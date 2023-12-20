@@ -52,17 +52,11 @@ namespace CompileScore.Includers
     {
         public const uint durationMultiplier = 1000;
         const uint basePadding = 20;
-        private CompileScorePackage Package { get; set; }
 
         private static readonly Lazy<CompilerIncluders> lazy = new Lazy<CompilerIncluders>(() => new CompilerIncluders());
         public static CompilerIncluders Instance { get { return lazy.Value; } }
 
         private IncludersDataChunk IncludersData { get; set; }
-
-        public void Initialize(CompileScorePackage package)
-        {
-            Package = package;
-        }
 
         public Timeline.TimelineNode BuildIncludersTree(uint index, IncludersDisplayMode mode)
         {
@@ -349,14 +343,14 @@ namespace CompileScore.Includers
             window.SetIncluders(value);
         }
 
-        public IncludersWindow FocusIncludersWindow()
+        public static IncludersWindow FocusIncludersWindow()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             // Get the instance number 0 of this tool window. This window is single instance so this instance
             // is actually the only one.
             // The last flag is set to true so that if the tool window does not exists it will be created.
-            IncludersWindow window = Package.FindToolWindow(typeof(IncludersWindow), 0, true) as IncludersWindow;
+            IncludersWindow window = CompilerData.Instance.Package.FindToolWindow(typeof(IncludersWindow), 0, true) as IncludersWindow;
             if ((null == window) || (null == window.GetFrame()))
             {
                 throw new NotSupportedException("Cannot create tool window");

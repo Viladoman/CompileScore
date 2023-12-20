@@ -90,6 +90,11 @@ namespace CompileScore
                 return new Includers.IncludersWindow();
             }
             
+            if (toolWindowType == typeof(Requirements.RequirementsWindow))
+            {
+                return new Requirements.RequirementsWindow();
+            }
+
             //TODO ~ ramonv ~ fix here window management
 
             return null;

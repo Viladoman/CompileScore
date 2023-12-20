@@ -165,7 +165,7 @@ namespace CompileScore
             Globals = 2,
         }
 
-        private CompileScorePackage Package { set; get; }
+        public CompileScorePackage Package { get; private set; }
         private IServiceProvider ServiceProvider { set; get; }
 
         private string ScoreLocation { set; get; } = "";

@@ -14,9 +14,10 @@ namespace CompileScore
     [ProvideOptionPage(typeof(ThemeSettingsPageGrid),   "Compile Score", "Theme", 0, 0, true)]
     [ProvideOptionPage(typeof(ParserSettingsPageGrid),  "Compile Score", "Parser", 0, 0, true)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [ProvideToolWindow(typeof(CompileScore.Overview.OverviewWindow))]
-    [ProvideToolWindow(typeof(CompileScore.Timeline.TimelineWindow))]
-    [ProvideToolWindow(typeof(CompileScore.Includers.IncludersWindow))]
+    [ProvideToolWindow(typeof(Overview.OverviewWindow))]
+    [ProvideToolWindow(typeof(Timeline.TimelineWindow))]
+    [ProvideToolWindow(typeof(Includers.IncludersWindow))]
+    [ProvideToolWindow(typeof(Requirements.RequirementsWindow))]
     public sealed class CompileScorePackage : AsyncPackage
     {
         /// <summary>
@@ -49,8 +50,6 @@ namespace CompileScore
             CompilerData.Instance.Initialize(this, this);
             EditorUtils.Initialize(this,this);
             Profiler.Instance.Initialize(this);
-            Includers.CompilerIncluders.Instance.Initialize(this);
-            Timeline.CompilerTimeline.Instance.Initialize(this);
 
             EditorContext.Instance.Initialize(this);
 

@@ -9,7 +9,7 @@
     <Import_RootNamespace>Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)common\ParserData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requirements\ParserData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Editor\Adornment\TextEditorAdornment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Editor\Adornment\TextEditorAdornmentProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Editor\Adornment\TextEditorAdornmentTooltip.xaml.cs">
@@ -37,6 +37,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)editor\Parser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Editor\WindowProxy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompileScorePackage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requirements\RequirementsWindow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Requirements\RequirementsWindowControl.xaml.cs">
+      <DependentUpon>RequirementsWindowControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)settings\CompileScoreParserSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\CompileScoreSettings.cs">
       <SubType>Component</SubType>
@@ -67,7 +71,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Overview\OverviewTable.xaml.cs">
       <DependentUpon>OverviewTable.xaml</DependentUpon>
     </Compile>
-	<Compile Include="$(MSBuildThisFileDirectory)Overview\IncludersTable.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Overview\IncludersTable.xaml.cs">
       <DependentUpon>IncludersTable.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Overview\OverviewTotalsTable.xaml.cs">
@@ -108,6 +112,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Requirements\RequirementsWindowControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Includers\IncludersWindowControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -120,7 +128,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-	<Page Include="$(MSBuildThisFileDirectory)Overview\IncludersTable.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Overview\IncludersTable.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -35,6 +35,11 @@
   <ItemGroup>
     <Compile Include="..\Shared\Common\CompileFolders.cs" Link="Shared\Common\CompileFolders.cs" />
     <Compile Include="..\Shared\Common\Documentation.cs" Link="Shared\Common\Documentation.cs" />
+	<Compile Include="..\Shared\Requirements\ParserData.cs" Link="Shared\Requirements\ParserData.cs" />
+	<Compile Include="..\Shared\Requirements\RequirementsWindow.cs" Link="Shared\Requirements\RequirementsWindow.cs" />
+    <Compile Include="..\Shared\Requirements\RequirementsWindowControl.xaml.cs" Link="Shared\Requirements\RequirementsWindowControl.xaml.cs">
+      <DependentUpon>RequirementsWindowControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="..\Shared\Includers\CompilerIncluders.cs" Link="Shared\Includers\CompilerIncluders.cs" />
     <Compile Include="..\Shared\Includers\IncludersWindow.cs" Link="Shared\Includers\IncludersWindow.cs" />
     <Compile Include="..\Shared\Includers\IncludersWindowControl.xaml.cs" Link="Shared\Includers\IncludersWindowControl.xaml.cs">
@@ -52,6 +57,11 @@
     <Compile Include="..\Shared\Timeline\TimelineSearch.xaml.cs" Link="Shared\Timeline\TimelineSearch.xaml.cs">
       <DependentUpon>TimelineSearch.xaml</DependentUpon>
     </Compile>
+	<Page Include="..\Shared\Requirements\RequirementsWindowControl.xaml">
+      <Link>Shared\Requirements\RequirementsWindowControl.xaml</Link>
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="..\Shared\Includers\IncludersWindowControl.xaml">
       <Link>Shared\Includers\IncludersWindowControl.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
