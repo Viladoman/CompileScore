@@ -255,23 +255,14 @@ namespace CompileScore
             if (!declaration || IsDeclaredInMainFile(declaration->getLocation()))
                 return true;
 
-            const clang::RecordDecl* recordDecl = nullptr;
-            StructureNamedRequirementType::Enumeration requirementType = StructureNamedRequirementType::Count;
-            if (const clang::CXXMethodDecl* methodDecl = clang::dyn_cast<clang::CXXMethodDecl>(declaration))
-            {                        
-                recordDecl = methodDecl->getParent();
-                requirementType = StructureNamedRequirementType::MethodCall;
-            }
-            else if (const clang::FieldDecl* fieldDecl = clang::dyn_cast<clang::FieldDecl>(declaration))
+            if (const clang::FieldDecl* fieldDecl = clang::dyn_cast<clang::FieldDecl>(declaration))
             {
-                recordDecl = fieldDecl->getParent();
-                requirementType = StructureNamedRequirementType::FieldAccess;
-            }
-
-            if (recordDecl && requirementType < StructureNamedRequirementType::Count)
-            {
-                StructureRequirement& structure = Helpers::GetStructRequirement(recordDecl, m_sourceManager);
-                Helpers::AddCodeRequirement(structure.namedRequirements[requirementType], declaration, declaration->getQualifiedNameAsString().c_str(), declaration->getLocation(), expr->getBeginLoc(), m_sourceManager);
+                const clang::RecordDecl* recordDecl = fieldDecl->getParent();
+                if (recordDecl)
+                {
+                    StructureRequirement& structure = Helpers::GetStructRequirement(recordDecl, m_sourceManager);
+                    Helpers::AddCodeRequirement(structure.namedRequirements[StructureNamedRequirementType::FieldAccess], declaration, declaration->getQualifiedNameAsString().c_str(), declaration->getLocation(), expr->getBeginLoc(), m_sourceManager);
+                }
             }
 
             return true;
@@ -286,12 +277,24 @@ namespace CompileScore
             if (!callee || IsDeclaredInMainFile(callee->getLocation()))
                 return true;
 
-            //CXXMethodDecl handled by MemberExpr visitor ( avoid duplicate processing )
-            if (clang::dyn_cast<clang::CXXMethodDecl>(callee) != nullptr)
-                return true;
+            clang::CXXMethodDecl* methodDecl = clang::dyn_cast<clang::CXXMethodDecl>(callee);
+            if (methodDecl)
+            {
+                const clang::RecordDecl* recordDecl = methodDecl->getParent();
+                const StructureNamedRequirementType::Enumeration requirementType = methodDecl->isStatic() ? 
+                    StructureNamedRequirementType::StaticCall : StructureNamedRequirementType::MethodCall;
 
-            File& file = Helpers::GetFile(Helpers::GetFileIndex(callee->getLocation(), m_sourceManager));
-            Helpers::AddCodeRequirement(file.global[GlobalRequirementType::FreeFunctionCall], callee, callee->getQualifiedNameAsString().c_str(), callee->getLocation(), expr->getBeginLoc(), m_sourceManager);
+                if (recordDecl)
+                {
+                    StructureRequirement& structure = Helpers::GetStructRequirement(recordDecl, m_sourceManager);
+                    Helpers::AddCodeRequirement(structure.namedRequirements[requirementType], methodDecl, methodDecl->getQualifiedNameAsString().c_str(), methodDecl->getLocation(), expr->getBeginLoc(), m_sourceManager);
+                }
+            }
+            else
+            {
+                File& file = Helpers::GetFile(Helpers::GetFileIndex(callee->getLocation(), m_sourceManager));
+                Helpers::AddCodeRequirement(file.global[GlobalRequirementType::FreeFunctionCall], callee, callee->getQualifiedNameAsString().c_str(), callee->getLocation(), expr->getBeginLoc(), m_sourceManager);
+            }
 
             return true;
         }

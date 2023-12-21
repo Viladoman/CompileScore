@@ -201,6 +201,7 @@ namespace IO
             switch (input)
             {
             case CompileScore::StructureNamedRequirementType::MethodCall:  return "Method Call";
+            case CompileScore::StructureNamedRequirementType::StaticCall:  return "Static Call";
             case CompileScore::StructureNamedRequirementType::FieldAccess: return "Field Access";
             default: return "???";
             }
