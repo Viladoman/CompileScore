@@ -28,8 +28,6 @@
 //
 // Test std::shared_ptr, std::unique_ptr...
 // Test new delete
-// Test using, tempalted using and typedefs
-// Test constexpr functions on arrays
 
 namespace CompileScore
 {
@@ -215,6 +213,39 @@ namespace CompileScore
             return true;
         }
 
+        bool VisitCXXDeleteExpr(clang::CXXDeleteExpr* expr)
+        {
+            if (!IsDeclaredInMainFile(expr->getBeginLoc()))
+                return true;
+
+            if (clang::CXXRecordDecl* declaration = expr->getDestroyedType()->getAsCXXRecordDecl())
+            {
+                StructureRequirement& structure = Helpers::GetStructRequirement(declaration, m_sourceManager);
+                structure.simpleRequirements[StructureSimpleRequirementType::Destruction].emplace_back(Helpers::CreateFileLocation(expr->getBeginLoc(), m_sourceManager));
+            }
+
+            return true;
+        }
+
+        bool VisitExplicitCastExpr(clang::ExplicitCastExpr* expr)
+        {
+            if (!IsDeclaredInMainFile(expr->getBeginLoc()))
+                return true;
+
+            if (clang::dyn_cast<clang::CXXStaticCastExpr>(expr) || clang::dyn_cast<clang::CXXDynamicCastExpr>(expr))
+            {
+                RefineType(expr->getTypeAsWritten(), expr->getBeginLoc(), StructureSimpleRequirementType::Cast);             
+
+                const clang::Expr* castFromExpr = expr->getSubExprAsWritten();
+                if (castFromExpr)
+                {
+                    RefineType(castFromExpr->getType(), castFromExpr->getBeginLoc(), StructureSimpleRequirementType::Cast);
+                }
+            }
+
+            return true;
+        }
+
         bool VisitMemberExpr(clang::MemberExpr* expr)
         {
             if (!IsDeclaredInMainFile(expr->getBeginLoc()))
@@ -299,8 +330,9 @@ namespace CompileScore
             }
             else if (qualType->isPointerType() || qualType->isReferenceType())
             {
-                //doesn't matter the context, a pointer or reference will always be marked down as such
-                RefineType(qualType->getPointeeType(), location, StructureSimpleRequirementType::Reference);
+                //doesn't matter the context, a pointer or reference will always be marked down as such ( execept cast expressions )
+                const bool keepRequirementValue = requirement == StructureSimpleRequirementType::Cast;
+                RefineType(qualType->getPointeeType(), location, keepRequirementValue? requirement : StructureSimpleRequirementType::Reference);
                 return;
             }
 
