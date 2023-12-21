@@ -191,6 +191,17 @@ namespace CompileScore
             }
             else if (clang::VarDecl* varDecl = clang::dyn_cast<clang::VarDecl>(valueDecl))
             {
+                if (varDecl->isStaticDataMember())
+                {
+                    clang::RecordDecl* recordDecl = varDecl->getDeclContext()->getOuterLexicalRecordContext();
+                    if (recordDecl)
+                    {
+                        StructureRequirement& structure = Helpers::GetStructRequirement(recordDecl, m_sourceManager);
+                        Helpers::AddCodeRequirement(structure.namedRequirements[StructureNamedRequirementType::StaticAccess], varDecl, varDecl->getQualifiedNameAsString().c_str(), varDecl->getLocation(), expr->getBeginLoc(), m_sourceManager);
+                        return true;
+                    }
+                }
+
                 //check for global variable or similar
                 File& file = Helpers::GetFile(Helpers::GetFileIndex(varDecl->getLocation(), m_sourceManager));
                 Helpers::AddCodeRequirement(file.global[GlobalRequirementType::FreeVariable], varDecl, varDecl->getQualifiedNameAsString().c_str(), varDecl->getLocation(), expr->getBeginLoc(), m_sourceManager);

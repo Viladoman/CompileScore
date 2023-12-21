@@ -54,8 +54,9 @@ namespace CompileScore
         enum Enumeration
         {
             MethodCall,
-            StaticCall,
             FieldAccess,
+            StaticCall,
+            StaticAccess,
 
             Count
         };
