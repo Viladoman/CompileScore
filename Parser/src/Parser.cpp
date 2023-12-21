@@ -304,10 +304,27 @@ namespace CompileScore
                 return;
             }
 
+            //typedefs 
+            const clang::TypedefType* typedefType = qualType->getAs<clang::TypedefType>();
+            if (typedefType)
+            {
+                const clang::TypedefNameDecl* typedefDecl = typedefType->getDecl();
+
+                //this is a typedef or using
+                File& file = Helpers::GetFile(Helpers::GetFileIndex(typedefDecl->getLocation(), m_sourceManager));
+                Helpers::AddCodeRequirement(file.global[GlobalRequirementType::TypeDefinition], typedefDecl, typedefDecl->getQualifiedNameAsString().c_str(), typedefDecl->getLocation(), location, m_sourceManager);
+
+                //process the real type ( removing pointers, qualifiers and more typedefinitions )
+                RefineType(typedefDecl->getUnderlyingType(), location, requirement);
+
+                return;
+            }
+            
+            
             AddCleanType(qualType->getAsTagDecl(), location, requirement);
         }
 
-        void AddCleanType(clang::TagDecl* declaration, const clang::SourceLocation& location, StructureSimpleRequirementType::Enumeration requirement)
+        void AddCleanType(const clang::TagDecl* declaration, const clang::SourceLocation& location, StructureSimpleRequirementType::Enumeration requirement)
         {
             if (!declaration || IsDeclaredInMainFile(declaration->getLocation()))
                 return;
@@ -317,15 +334,6 @@ namespace CompileScore
             {
                 File& file = Helpers::GetFile(Helpers::GetFileIndex(declaration->getLocation(), m_sourceManager));
                 Helpers::AddCodeRequirement(file.global[GlobalRequirementType::ForwardDeclaration], declaration, declaration->getQualifiedNameAsString().c_str(), declaration->getLocation(), location, m_sourceManager);
-            }
-            else if (const clang::TypedefNameDecl* typedefDecl = clang::dyn_cast<clang::TypedefNameDecl>(declaration))
-            {
-                //this is a typedef or using
-                File& file = Helpers::GetFile(Helpers::GetFileIndex(declaration->getLocation(), m_sourceManager));
-                Helpers::AddCodeRequirement(file.global[GlobalRequirementType::TypeDefinition], declaration, declaration->getQualifiedNameAsString().c_str(), declaration->getLocation(), location, m_sourceManager);
-
-                //process the real type ( removing pointers, qualifiers and more typedefinitions )
-                RefineType( typedefDecl->getUnderlyingType(), location, requirement);
             }
             else if (const clang::EnumDecl* enumDecl = clang::dyn_cast<clang::EnumDecl>(declaration))
             {
