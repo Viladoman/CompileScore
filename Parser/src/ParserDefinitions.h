@@ -18,7 +18,6 @@ namespace CompileScore
         {
             MacroExpansion, 
             FreeFunctionCall, 
-            FreeConstExprFunctionCall,
             FreeVariable,
 
             EnumInstance, 

@@ -31,10 +31,12 @@ namespace CompileScore
             Instance = 0,
             Reference,
             Allocation,
+            Destruction,
             Inheritance,
             MemberField,
             FunctionArgument,
             FunctionReturn,
+            Cast,
 
             Count
         }
@@ -43,6 +45,8 @@ namespace CompileScore
         {
             MethodCall = 0,
             FieldAccess,
+            StaticCall,
+            StaticAccess,
 
             Count
         };
