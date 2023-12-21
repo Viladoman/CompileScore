@@ -185,8 +185,10 @@ namespace IO
             case CompileScore::StructureSimpleRequirementType::Instance:         return "Instances";
             case CompileScore::StructureSimpleRequirementType::Reference:        return "References";
             case CompileScore::StructureSimpleRequirementType::Allocation:       return "Allocation";
+            case CompileScore::StructureSimpleRequirementType::Destruction:      return "Destruction";
             case CompileScore::StructureSimpleRequirementType::Inheritance:      return "Inheritances";
             case CompileScore::StructureSimpleRequirementType::MemberField:      return "Member Field";
+            case CompileScore::StructureSimpleRequirementType::Cast:             return "Cast";
             case CompileScore::StructureSimpleRequirementType::FunctionArgument: return "Function Arguments";
             case CompileScore::StructureSimpleRequirementType::FunctionReturn:   return "Function Returns";
             default: return "???";
@@ -198,8 +200,10 @@ namespace IO
         {
             switch (input)
             {
-            case CompileScore::StructureNamedRequirementType::MethodCall:  return "Method Call";
-            case CompileScore::StructureNamedRequirementType::FieldAccess: return "Field Access";
+            case CompileScore::StructureNamedRequirementType::MethodCall:   return "Method Call";
+            case CompileScore::StructureNamedRequirementType::FieldAccess:  return "Field Access";
+            case CompileScore::StructureNamedRequirementType::StaticCall:   return "Static Call";
+            case CompileScore::StructureNamedRequirementType::StaticAccess: return "Static Access";
             default: return "???";
             }
         }

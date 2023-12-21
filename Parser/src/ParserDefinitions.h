@@ -18,6 +18,7 @@ namespace CompileScore
         {
             MacroExpansion, 
             FreeFunctionCall, 
+            FreeConstExprFunctionCall,
             FreeVariable,
 
             EnumInstance, 
@@ -37,10 +38,12 @@ namespace CompileScore
             Instance,
             Reference,
             Allocation,
+            Destruction,
             Inheritance,
             MemberField,
             FunctionArgument,
             FunctionReturn,
+            Cast,
 
             Count
         };
@@ -52,6 +55,8 @@ namespace CompileScore
         {
             MethodCall,
             FieldAccess,
+            StaticCall,
+            StaticAccess,
 
             Count
         };
