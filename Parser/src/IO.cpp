@@ -273,7 +273,7 @@ namespace IO
 
             if (CompileScore::IsFileEmpty(file))
             {
-                Log("\tNo File Requirements Found!");
+                Log("\tNo File Requirements Found!\n");
             }
 
             for (int i = 0; i < CompileScore::GlobalRequirementType::Count; ++i)
