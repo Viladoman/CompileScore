@@ -12,10 +12,10 @@ jobs:
     
     env:
       extractorDir: ./DataExtractor
-      extractorSolution: ./DataExtractor/ScoreDataExtractor.sln
       parserDir: ./Parser
-      parserSolution: ./Parser/CompileScoreParser.sln
       appsDir: ./CompileScore
+      extractorSolution: ScoreDataExtractor.sln
+      parserSolution: CompileScoreParser.sln
       appsSolution: CompileScore.sln
       NetPlatform: net8.0-windows
     
@@ -42,15 +42,18 @@ jobs:
         nuget-version: '5.x'
        
     - name: NuGet restore Score Data Extractor
+      working-directory: ${{env.extractorDir}}
       run: nuget restore ${{ env.extractorSolution }}
        
     - name: Build Score Data Extractor
-      run: msbuild /m /p:Configuration=${{matrix.buildconfig}} /p:Platform=x64 ${{ env.extractorSolution }}
+      working-directory: ${{env.extractorDir}}
+      run: msbuild /m /p:Configuration=Release /p:Platform=x64 ${{ env.extractorSolution }}
         
     - name: Build Parser
+      working-directory: ${{env.parserDir}}
       run: msbuild /m /p:Configuration=Release /p:Platform=x64 ${{ env.parserSolution }}
         
-    - name: NuGet restore ${{ env.appsSolutionName }}
+    - name: NuGet restore Compile Score
       working-directory: ${{env.appsDir}}
       run: nuget restore ${{ env.appsSolutionName }}
      
@@ -59,12 +62,14 @@ jobs:
       run: msbuild /m /p:Configuration=${{matrix.buildconfig}} ${{ env.appsSolutionName }}
       
     - name: Upload Extractor Artifact 1
+      if: ${{matrix.buildconfig == 'Release'}}
       uses: actions/upload-artifact@v3
       with:
         name: CompileScore-Extractor-${{matrix.buildconfig}}
         path: ${{env.extractorDir}}/bin/x64/${{matrix.buildconfig}}/*.exe  
         
     - name: Upload Extractor Artifact 2
+      if: ${{matrix.buildconfig == 'Release'}}
       uses: actions/upload-artifact@v3
       with:
         name: CompileScore-Extractor-${{matrix.buildconfig}}
