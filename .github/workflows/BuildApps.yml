@@ -56,6 +56,18 @@ jobs:
       working-directory: ${{env.appsDir}}
       run: msbuild /m /p:Configuration=${{matrix.buildconfig}} ${{ env.appsSolutionName }}
       
+    - name: Upload Extractor Artifact 1
+      uses: actions/upload-artifact@v3
+      with:
+        name: CompileScore-Extractor-${{matrix.buildconfig}}
+        path: ${{env.baseDir}}/bin/x64/${{matrix.buildconfig}}/*.exe  
+        
+    - name: Upload Extractor Artifact 2
+      uses: actions/upload-artifact@v3
+      with:
+        name: CompileScore-Extractor-${{matrix.buildconfig}}
+        path: ${{env.baseDir}}/bin/x64/${{matrix.buildconfig}}/*.dll  
+      
     - name: Upload VSIX 2019 Extension Artifacts
       uses: actions/upload-artifact@v3
       with:
