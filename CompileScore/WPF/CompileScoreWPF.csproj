@@ -40,6 +40,9 @@
     <Compile Include="..\Shared\Requirements\RequirementsWindowControl.xaml.cs" Link="Shared\Requirements\RequirementsWindowControl.xaml.cs">
       <DependentUpon>RequirementsWindowControl.xaml</DependentUpon>
     </Compile>
+	<Compile Include="..\Shared\Requirements\RequirementsGraph.xaml.cs" Link="Shared\Requirements\RequirementsGraph.xaml.cs">
+      <DependentUpon>RequirementsGraph.xaml</DependentUpon>
+    </Compile>
     <Compile Include="..\Shared\Includers\CompilerIncluders.cs" Link="Shared\Includers\CompilerIncluders.cs" />
     <Compile Include="..\Shared\Includers\IncludersWindow.cs" Link="Shared\Includers\IncludersWindow.cs" />
     <Compile Include="..\Shared\Includers\IncludersWindowControl.xaml.cs" Link="Shared\Includers\IncludersWindowControl.xaml.cs">
@@ -59,6 +62,11 @@
     </Compile>
 	<Page Include="..\Shared\Requirements\RequirementsWindowControl.xaml">
       <Link>Shared\Requirements\RequirementsWindowControl.xaml</Link>
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+	<Page Include="..\Shared\Requirements\RequirementsGraph.xaml">
+      <Link>Shared\Requirements\RequirementsGraph.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
