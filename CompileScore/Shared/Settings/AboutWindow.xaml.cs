@@ -34,9 +34,7 @@ namespace Company.Product
 
         public static VsixManifest GetManifest()
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            var assemblyUri = new UriBuilder(assembly.CodeBase);
-            var assemblyPath = Uri.UnescapeDataString(assemblyUri.Path);
+            var assemblyPath = Assembly.GetExecutingAssembly().Location;
             var assemblyDirectory = System.IO.Path.GetDirectoryName(assemblyPath);
             var vsixManifestPath = System.IO.Path.Combine(assemblyDirectory, "extension.vsixmanifest");
 

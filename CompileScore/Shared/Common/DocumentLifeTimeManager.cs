@@ -34,7 +34,9 @@ namespace CompileScore
             _documentEvents.DocumentSaved += OnDocumentSaved;
         }
 
+#if VS16 || VS17
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
+#endif
         public static void WatchFile(string path, string filename)
         {
             if (Directory.Exists(path))

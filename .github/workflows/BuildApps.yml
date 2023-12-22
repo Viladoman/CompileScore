@@ -15,6 +15,7 @@ jobs:
       parserSolution: ./Parser/CompileScoreParser.sln
       appsDir: ./CompileScore
       appsSolution: CompileScore.sln
+      NetPlatform: net8.0-windows
     
     strategy:
       matrix:
@@ -71,4 +72,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: CompileScore-App-${{matrix.buildconfig}}
-        path: ${{env.appsDir}}/WPF/bin/${{matrix.buildconfig}}/*
+        path: ${{env.appsDir}}/WPF/bin/${{matrix.buildconfig}}/${{ env.NetPlatform }}/*

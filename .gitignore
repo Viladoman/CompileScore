@@ -18,6 +18,7 @@
 *.vcxproj.user
 *.csproj.user
 *.cspbin
+launchSettings.json
 
 # Symlinks
 External
