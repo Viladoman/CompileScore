@@ -17,11 +17,12 @@ jobs:
       extractorSolution: ScoreDataExtractor.sln
       parserSolution: CompileScoreParser.sln
       appsSolution: CompileScore.sln
+      toolsBuildConfig: Release
       NetPlatform: net8.0-windows
     
     strategy:
       matrix:
-        buildconfig: [Debug, Release]
+        buildconfig: [Release]
     
     steps:
     - name: Checkout
@@ -47,11 +48,11 @@ jobs:
        
     - name: Build Score Data Extractor
       working-directory: ${{env.extractorDir}}
-      run: msbuild /m /p:Configuration=Release /p:Platform=x64 ${{ env.extractorSolution }}
+      run: msbuild /m /p:Configuration=${{ env.toolsBuildConfig }} /p:Platform=x64 ${{ env.extractorSolution }}
         
     - name: Build Parser
       working-directory: ${{env.parserDir}}
-      run: msbuild /m /p:Configuration=Release /p:Platform=x64 ${{ env.parserSolution }}
+      run: msbuild /m /p:Configuration=${{ env.toolsBuildConfig }} /p:Platform=x64 ${{ env.parserSolution }}
         
     - name: NuGet restore Compile Score
       working-directory: ${{env.appsDir}}
@@ -62,25 +63,25 @@ jobs:
       run: msbuild /m /p:Configuration=${{matrix.buildconfig}} ${{ env.appsSolutionName }}
       
     - name: Upload Extractor Artifact 1
-      if: ${{matrix.buildconfig == 'Release'}}
+      if: ${{matrix.buildconfig == env.toolsBuildConfig}}
       uses: actions/upload-artifact@v3
       with:
-        name: CompileScore-Extractor-${{matrix.buildconfig}}
-        path: ${{env.extractorDir}}/bin/x64/${{matrix.buildconfig}}/*.exe  
+        name: CompileScore-Extractor-${{ env.toolsBuildConfig }}
+        path: ${{env.extractorDir}}/bin/x64/${{ env.toolsBuildConfig }}/*.exe  
         
     - name: Upload Extractor Artifact 2
-      if: ${{matrix.buildconfig == 'Release'}}
+      if: ${{matrix.buildconfig == env.toolsBuildConfig}}
       uses: actions/upload-artifact@v3
       with:
-        name: CompileScore-Extractor-${{matrix.buildconfig}}
-        path: ${{env.extractorDir}}/bin/x64/${{matrix.buildconfig}}/*.dll  
+        name: CompileScore-Extractor-${{ env.toolsBuildConfig }}
+        path: ${{env.extractorDir}}/bin/x64/${{ env.toolsBuildConfig }}/*.dll  
     
     - name: Upload Parser Artifact
-      if: ${{matrix.buildconfig == 'Release'}}
+      if: ${{matrix.buildconfig == env.toolsBuildConfig}}
       uses: actions/upload-artifact@v3
       with:
-        name: CompileScore-Parser-${{matrix.buildconfig}}
-        path: ${{env.parserDir}}/bin/x64/${{matrix.buildconfig}}/CompileScoreParser.exe  
+        name: CompileScore-Parser-${{env.toolsBuildConfig}}
+        path: ${{env.parserDir}}/bin/x64/${{env.toolsBuildConfig}}/CompileScoreParser.exe  
 
     - name: Upload VSIX 2019 Extension Artifacts
       uses: actions/upload-artifact@v3
