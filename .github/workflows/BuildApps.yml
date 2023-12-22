@@ -11,7 +11,9 @@ jobs:
     runs-on: windows-latest
     
     env:
+      extractorDir: ./DataExtractor
       extractorSolution: ./DataExtractor/ScoreDataExtractor.sln
+      parserDir: ./Parser
       parserSolution: ./Parser/CompileScoreParser.sln
       appsDir: ./CompileScore
       appsSolution: CompileScore.sln
@@ -43,7 +45,7 @@ jobs:
       run: nuget restore ${{ env.extractorSolution }}
        
     - name: Build Score Data Extractor
-      run: msbuild /m /p:Configuration=Release /p:Platform=x64 ${{ env.extractorSolution }}
+      run: msbuild /m /p:Configuration=${{matrix.buildconfig}} /p:Platform=x64 ${{ env.extractorSolution }}
         
     - name: Build Parser
       run: msbuild /m /p:Configuration=Release /p:Platform=x64 ${{ env.parserSolution }}
@@ -60,14 +62,21 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: CompileScore-Extractor-${{matrix.buildconfig}}
-        path: ${{env.baseDir}}/bin/x64/${{matrix.buildconfig}}/*.exe  
+        path: ${{env.extractorDir}}/bin/x64/${{matrix.buildconfig}}/*.exe  
         
     - name: Upload Extractor Artifact 2
       uses: actions/upload-artifact@v3
       with:
         name: CompileScore-Extractor-${{matrix.buildconfig}}
-        path: ${{env.baseDir}}/bin/x64/${{matrix.buildconfig}}/*.dll  
-      
+        path: ${{env.extractorDir}}/bin/x64/${{matrix.buildconfig}}/*.dll  
+    
+    - name: Upload Parser Artifact
+      if: ${{matrix.buildconfig == 'Release'}}
+      uses: actions/upload-artifact@v3
+      with:
+        name: CompileScore-Parser-${{matrix.buildconfig}}
+        path: ${{env.parserDir}}/bin/x64/${{matrix.buildconfig}}/CompileScoreParser.exe  
+
     - name: Upload VSIX 2019 Extension Artifacts
       uses: actions/upload-artifact@v3
       with:
