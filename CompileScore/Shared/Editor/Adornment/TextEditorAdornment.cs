@@ -59,7 +59,7 @@ namespace CompileScore
 
         private void RefreshReference()
         {
-            Reference = EditorUtils.SeekObjectFromFullPath(fullPath);
+            Reference = CompilerData.Instance.SeekProfilerValueFromFullPath(fullPath);
         }
 
         private void CreateUI()

@@ -23,10 +23,59 @@ namespace CompileScore.Timeline
             InitializeComponent();
         }
 
-        private string GetThisIncludeDetailsText(TimelineNode node)
+        public static string GetDetailsText(object value, object includerValue = null, string includerName = "")
         {
-            if ( node.Category == CompilerData.CompileCategory.Include && node.Value is CompileValue && node.Parent != null && 
-                 node.Parent.Category == CompilerData.CompileCategory.Include && node.Parent.Value is CompileValue)
+            string ret = null;
+
+            if (value is CompileValue)
+            {
+                CompileValue val = (value as CompileValue);
+                ret = "Max: " + Common.UIConverters.GetTimeStr(val.Max)
+                                 + " (Self: " + Common.UIConverters.GetTimeStr(val.SelfMax) + ")"
+                                 + " Min: " + Common.UIConverters.GetTimeStr(val.Min)
+                                 + " Avg: " + Common.UIConverters.GetTimeStr(val.Average)
+                                 + " Acc: " + Common.UIConverters.GetTimeStr(val.Accumulated)
+                                 + " (Self: " + Common.UIConverters.GetTimeStr(val.SelfAccumulated) + ")"
+                                 + " Units: " + val.Count;
+
+                string thisDetailsTxt = GetIncluderDetailsText(includerValue, includerName, val.Name);
+                if (thisDetailsTxt != null)
+                {
+                    ret = thisDetailsTxt + "\nGlobal:\n- " + ret;
+                }
+            }
+
+            return ret;
+        }
+
+        private static string GetIncluderDetailsText(object includerValue, string includerName, string includeeName)
+        {
+            if (includerValue == null)
+                return null;
+
+            if (includerValue is IncludersInclValue)
+            {
+                IncludersInclValue inclValue = includerValue as IncludersInclValue;
+                return includerName + " => " + includeeName + ":\n-"
+                        + " Max: " + Common.UIConverters.GetTimeStr(inclValue.Max)
+                        + " Avg: " + Common.UIConverters.GetTimeStr(inclValue.Average)
+                        + " Acc: " + Common.UIConverters.GetTimeStr(inclValue.Accumulated)
+                        + " Units: " + inclValue.Count;
+            }
+            else if (includerValue is IncludersUnitValue)
+            {
+                IncludersUnitValue inclValue = includerValue as IncludersUnitValue;
+                return includerName + " => " + includeeName + ":\n-"
+                           + " Duration: " + Common.UIConverters.GetTimeStr(inclValue.Duration);
+            }
+
+            return null;
+        }
+
+        private IncludersInclValue GetIncluderData(TimelineNode node)
+        {
+            if (node.Category == CompilerData.CompileCategory.Include && node.Value is CompileValue && node.Parent != null &&
+                node.Parent.Category == CompilerData.CompileCategory.Include && node.Parent.Value is CompileValue)
             {
                 CompileValue includeeValue = (node.Value as CompileValue);
                 CompileValue includerValue = (node.Parent.Value as CompileValue);
@@ -34,20 +83,10 @@ namespace CompileScore.Timeline
                 int includeeIndex = CompilerData.Instance.GetIndexOf(CompilerData.CompileCategory.Include, includeeValue);
                 int includerIndex = CompilerData.Instance.GetIndexOf(CompilerData.CompileCategory.Include, includerValue);
 
-                IncludersInclValue inclValue = CompilerIncluders.Instance.GetIncludeInclValue(includerIndex,includeeIndex);
-
-                if (inclValue  != null) 
-                {
-                    return includerValue.Name + " => " + includeeValue.Name + ":\n-"
-                           + " Max: " + Common.UIConverters.GetTimeStr(inclValue.Max)
-                           + " Avg: " + Common.UIConverters.GetTimeStr(inclValue.Average)
-                           + " Acc: " + Common.UIConverters.GetTimeStr(inclValue.Accumulated)
-                           + " Units: " + inclValue.Count;
-                }
-
+                return CompilerIncluders.Instance.GetIncludeInclValue(includerIndex, includeeIndex);
             }
 
-            return null; 
+            return null;
         }
 
         private void OnNode()
@@ -73,21 +112,11 @@ namespace CompileScore.Timeline
                     detailsBorder.Visibility = Visibility.Visible;
                     detailsPanel.Visibility = Visibility.Visible;
 
+                    string parentName = node.Parent.Value != null && node.Parent.Value is CompileValue ? (node.Parent.Value as CompileValue).Name : "??";
+
                     CompileValue val = (node.Value as CompileValue);
                     descriptionText.Text = val.Name;
-                    detailsText.Text = "Max: "   + Common.UIConverters.GetTimeStr(val.Max)
-                                     +" (Self: " + Common.UIConverters.GetTimeStr(val.SelfMax) + ")"
-                                     +" Min: "   + Common.UIConverters.GetTimeStr(val.Min)
-                                     +" Avg: "   + Common.UIConverters.GetTimeStr(val.Average) 
-                                     +" Acc: "   + Common.UIConverters.GetTimeStr(val.Accumulated)
-                                     +" (Self: " + Common.UIConverters.GetTimeStr(val.SelfAccumulated) + ")"
-                                     +" Units: " + val.Count;
-
-                    string thisDetailsTxt = GetThisIncludeDetailsText(node);
-                    if (thisDetailsTxt != null) 
-                    {
-                        detailsText.Text = thisDetailsTxt + "\nGlobal:\n- " + detailsText.Text;
-                    }
+                    detailsText.Text = GetDetailsText(val, GetIncluderData(node), parentName);
                 }
                 else if (node.Value is UnitValue)
                 {

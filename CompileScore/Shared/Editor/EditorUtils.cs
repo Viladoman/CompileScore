@@ -359,48 +359,6 @@ namespace CompileScore
             return null;
         }
 
-        static public object SeekObjectFromFullPath(string rawPath)
-        {
-            string path = rawPath.ToLower();
-            string filename = Path.GetFileName(path);
-
-            var compilerData = CompilerData.Instance;
-            var unit = compilerData.Folders.GetUnitByPath(path);
-            if (unit == null)
-            {
-                //TODO ~ ramonv ~ improve searches with partial folders 
-                unit = compilerData.GetUnitByName(filename); //fallback to just match by name 
-            }
-            if ( unit != null )
-            {
-                return unit;
-            }
-
-            var value = compilerData.Folders.GetValueByPath(CompilerData.CompileCategory.Include, path);
-            if (value == null)
-            {
-                //TODO ~ ramonv ~ improve searches with partial folders 
-                value = compilerData.GetValueByName(CompilerData.CompileCategory.Include, filename); //fallback to just match by name 
-            }
-            if (value != null)
-            {
-                return value;
-            }
-
-            //Clang can export the unit files without extension ( as a last resort try to find the entry without the extension )
-            string extension = Path.GetExtension(path);
-            if (extension == ".cpp" || extension == ".c" || extension == ".cxx")
-            {
-                unit = compilerData.GetUnitByName(Path.GetFileNameWithoutExtension(path)); 
-                if (unit != null )
-                {
-                    return unit;
-                }
-            }
-
-            return null;
-        }
-
         static public void ShowActiveTimeline()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -412,7 +370,7 @@ namespace CompileScore
                 return;
             }
 
-            object found = SeekObjectFromFullPath(doc.FullName);
+            object found = CompilerData.Instance.SeekProfilerValueFromFullPath(doc.FullName);
 
             if (found is UnitValue)
             {

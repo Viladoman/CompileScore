@@ -764,6 +764,47 @@ namespace CompileScore
             });
         }
 
+        public object SeekProfilerValueFromFullPath(string rawPath)
+        {
+            string path = rawPath.ToLower();
+            string filename = Path.GetFileName(path);
+
+            var unit = Folders.GetUnitByPath(path);
+            if (unit == null)
+            {
+                //TODO ~ ramonv ~ improve searches with partial folders 
+                unit = GetUnitByName(filename); //fallback to just match by name 
+            }
+            if (unit != null)
+            {
+                return unit;
+            }
+
+            var value = Folders.GetValueByPath(CompilerData.CompileCategory.Include, path);
+            if (value == null)
+            {
+                //TODO ~ ramonv ~ improve searches with partial folders 
+                value = GetValueByName(CompilerData.CompileCategory.Include, filename); //fallback to just match by name 
+            }
+            if (value != null)
+            {
+                return value;
+            }
+
+            //Clang can export the unit files without extension ( as a last resort try to find the entry without the extension )
+            string extension = Path.GetExtension(path);
+            if (extension == ".cpp" || extension == ".c" || extension == ".cxx")
+            {
+                unit = GetUnitByName(Path.GetFileNameWithoutExtension(path));
+                if (unit != null)
+                {
+                    return unit;
+                }
+            }
+
+            return null;
+        }
+
         public string GetSeverityCriteria()
         {
             string propertyName = GetGeneralSettings().OptionSeverityCriteria.ToString();

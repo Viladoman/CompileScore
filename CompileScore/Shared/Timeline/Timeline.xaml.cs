@@ -30,6 +30,7 @@ namespace CompileScore.Timeline
 
         public event MouseWheelEventHandler OnControlMouseWheel;
         public event Mouse2DScrollEventHandler On2DMouseScroll;
+        public event MouseButtonEventHandler OnMouseLeftClick;
 
         protected override void OnMouseWheel(MouseWheelEventArgs e)
         {
@@ -70,6 +71,10 @@ namespace CompileScore.Timeline
             {
                 Is2DScolling = true;
                 lastScrollingPosition = e.GetPosition(this);
+            }
+            else if ( e.ChangedButton == MouseButton.Left && e.ButtonState == MouseButtonState.Pressed)
+            {
+                OnMouseLeftClick.Invoke(this, e);
             }
         }
 

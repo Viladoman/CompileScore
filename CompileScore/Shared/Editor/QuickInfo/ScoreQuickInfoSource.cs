@@ -53,7 +53,7 @@ namespace CompileScore
             if (IncludeeIndex < 0)
                 return null; 
 
-            var thisDocCompilerData = EditorUtils.SeekObjectFromFullPath(documentPath);
+            var thisDocCompilerData = CompilerData.Instance.SeekProfilerValueFromFullPath(documentPath);
             if (thisDocCompilerData is UnitValue)
             {
                 int includerIndex = CompilerData.Instance.GetIndexOf(thisDocCompilerData as UnitValue);

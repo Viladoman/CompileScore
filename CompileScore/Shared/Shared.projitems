@@ -44,6 +44,9 @@
 	<Compile Include="$(MSBuildThisFileDirectory)Requirements\RequirementsGraph.xaml.cs">
       <DependentUpon>RequirementsGraph.xaml</DependentUpon>
     </Compile>
+	<Compile Include="$(MSBuildThisFileDirectory)Requirements\RequirementsGraphTooltip.xaml.cs">
+      <DependentUpon>RequirementsGraphTooltip.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)settings\CompileScoreParserSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Settings\CompileScoreSettings.cs">
       <SubType>Component</SubType>
@@ -120,6 +123,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
 	<Page Include="$(MSBuildThisFileDirectory)Requirements\RequirementsGraph.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+	<Page Include="$(MSBuildThisFileDirectory)Requirements\RequirementsGraphTooltip.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
