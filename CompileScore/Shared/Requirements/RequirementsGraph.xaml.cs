@@ -96,12 +96,16 @@ namespace CompileScore.Requirements
         //private DispatcherTimer tooltipTimer = new DispatcherTimer() { Interval = new TimeSpan(4000000) };
 
         const double CanvasPadding = 5.0;
+        const double RootWidth = 20.0;
+        const double RootWidthSeparation = 10.0;
         const double NodeWidth = 200.0;
         const double NodeHeight = 40.0;
+        const double NodeWidthSeparation = 10.0;
+        const double NodeHeightSeparation = 10.0;
+        const double IndirectExtraSeparation = 10.0;
 
         private double restoreScrollX = -1.0;
         private double restoreScrollY = -1.0;
-        //private bool zoomSliderLock = false; //used to avoid slider event feedback on itself 
         private Timeline.VisualHost baseVisual = new Timeline.VisualHost();
         private Timeline.VisualHost overlayVisual = new Timeline.VisualHost();
         private Brush overlayBrush = Brushes.White.Clone();
@@ -131,14 +135,10 @@ namespace CompileScore.Requirements
             scrollViewer.Loaded += OnScrollViewerLoaded;
             scrollViewer.ScrollChanged += OnScrollViewerScrollChanged;
             scrollViewer.On2DMouseScroll += OnScrollView2DMouseScroll;
-            //scrollViewer.OnControlMouseWheel += OnScrollViewerControlMouseWheel;
             scrollViewer.MouseMove += OnScrollViewerMouseMove;
             scrollViewer.MouseLeave += OnScrollViewerMouseLeave;
             //scrollViewer.MouseDoubleClick += OnScrollViewerDoubleClick;
             //scrollViewer.MouseRightButtonDown += OnScrollViewerContextMenu;
-            //scrollViewer.SizeChanged += OnScrollViewerSizeChanged;
-
-            //sliderZoom.ValueChanged += OnSliderZoomChanged;
         }
 
         public void SetUnit(ParserUnit unit)
@@ -179,9 +179,11 @@ namespace CompileScore.Requirements
         {
             if (Root != null)
             {
-                //TODO ~ Ramovn ~ add inner node paddings
-                canvas.Width = (Root.MaxColumn * NodeWidth) + 2 * CanvasPadding;
-                canvas.Height = (Root.Nodes.Count * NodeHeight) + 2 * CanvasPadding;
+                int numVisalCells = Math.Max(Root.Nodes.Count, 1); //At least one cell to show the root node
+
+                double extraWidth = Root.MaxColumn > 0 ? IndirectExtraSeparation : 0; 
+                canvas.Width = RootWidth + RootWidthSeparation + extraWidth + (Root.MaxColumn * (NodeWidth + NodeWidthSeparation) ) + 2 * CanvasPadding;
+                canvas.Height = (numVisalCells * ( NodeHeight + NodeHeightSeparation ) ) + ( 2 * CanvasPadding ) - NodeHeightSeparation;
 
                 if (restoreScrollX >= 0)
                 {
@@ -275,9 +277,10 @@ namespace CompileScore.Requirements
 
                 using (DrawingContext drawingContext = baseVisual.Visual.RenderOpen())
                 {
-                    //TODO ~ ramonv ~ add root node render
+                    //TODO ~ Ramonv~ placeholderCOLOR
+                    RenderRootNode(drawingContext, Common.Colors.FrontEndBrush);
 
-                    foreach(RequirementGraphNode node in Root.Nodes)
+                    foreach (RequirementGraphNode node in Root.Nodes)
                     {
                         RenderNodeRow(drawingContext, node);
                     }
@@ -301,8 +304,8 @@ namespace CompileScore.Requirements
                         RenderNodeSingle(drawingContext, HoverNode, GetColumnLocation(HoverNode.Column), GetRowLocation(HoverNode.Row), overlayBrush);
                     }
                     else if (Hover is RequirementGraphRoot) 
-                    { 
-                        //TODO ~ ramonv ~ overlay root
+                    {
+                        RenderRootNode(drawingContext, overlayBrush);
                     }
                 }
             }
@@ -312,32 +315,54 @@ namespace CompileScore.Requirements
 
         private double GetRowLocation(int row)
         {
-            //TODO ~ Ramovn ~ add inner node paddings
-            return CanvasPadding + row * NodeHeight; 
+            double initialOffset = CanvasPadding;
+            double cellSize = NodeHeight + NodeHeightSeparation;
+            return initialOffset + row * cellSize; 
         }
 
         private double GetColumnLocation(int column)
         {
-            //TODO ~ Ramovn ~ add inner node paddings
-            return CanvasPadding + column * NodeWidth;
+            double initialOffset = CanvasPadding + RootWidth + RootWidthSeparation + (column > 0 ? IndirectExtraSeparation : 0);
+            double cellSize = NodeWidth + NodeWidthSeparation;
+            return initialOffset + column * cellSize;
         }
 
         private int GetColumn(double x)
         {
-            //TODO ~ Ramovn ~ add inner node paddings
-            return (int)((x - CanvasPadding) / NodeWidth);
+            double initialOffset = CanvasPadding + RootWidth + RootWidthSeparation;
+            if (x < initialOffset)
+                return -1;
+            
+            double initialIndirectOffset = initialOffset + NodeWidth + NodeWidthSeparation + IndirectExtraSeparation;
+            if (x < initialIndirectOffset)
+                return 0;
+
+            return (int)((x - ( initialOffset + IndirectExtraSeparation ) ) / (NodeWidth + NodeWidthSeparation) );
         }
 
         private int GetRow(double y)
         {
-            //TODO ~ Ramovn ~ add inner node paddings
-            return (int)((y - CanvasPadding) / NodeHeight); 
+            double initialOffset = CanvasPadding;
+            double cellSize = NodeHeight + NodeHeightSeparation;
+            return (int)((y - initialOffset) / cellSize); 
         }
 
         private object GetElementAtPosition(double x, double y)
         {
-            //TODO ~ ramonv ~ return root if checked against root
+            RequirementGraphRoot foundRoot = GetRootNodeAtPosition(x, y); 
+            if (foundRoot != null)
+            {
+                return foundRoot;
+            }
             return GetGraphNodeAtPosition(x, y);
+        }
+
+        private RequirementGraphRoot GetRootNodeAtPosition(double x, double y)
+        {
+            double localX = x - CanvasPadding; 
+            double localY = y - CanvasPadding;
+            double rootHeight = canvas.Height - ((2.0 * CanvasPadding));
+            return localX < 0 || localY < 0 || localX > RootWidth || localY > rootHeight ? null : Root;
         }
 
         private RequirementGraphNode GetGraphNodeAtPosition(double x, double y)
@@ -401,6 +426,9 @@ namespace CompileScore.Requirements
             drawingContext.DrawRectangle(brush, borderPen, new Rect(posX, posY, NodeWidth, NodeHeight));
 
             //TODO ~ Ramonv ~ improve this for a multitext block ( node subgrid )
+            //Render Line connecting previous node
+            //drawingContext.DrawLine()
+
 
             //Render text
             var UIText = new FormattedText(node.Label, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, Font, 12, Common.Colors.GetCategoryForeground(), VisualTreeHelper.GetDpi(this).PixelsPerDip);
@@ -411,6 +439,12 @@ namespace CompileScore.Requirements
             double textPosY = posY + (NodeHeight - UIText.Height) * 0.5;
 
             drawingContext.DrawText(UIText, new Point(textPosX, textPosY));
+        }
+
+        private void RenderRootNode(DrawingContext drawingContext, Brush brush)
+        {
+            double rootHeight = canvas.Height - ( ( 2.0 * CanvasPadding) );
+            drawingContext.DrawRectangle(brush, borderPen, new Rect(CanvasPadding, CanvasPadding, RootWidth, rootHeight));
         }
 
     }
