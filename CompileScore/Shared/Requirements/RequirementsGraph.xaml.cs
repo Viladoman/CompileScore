@@ -1,4 +1,428 @@
-﻿/*
+﻿using Microsoft.VisualStudio.Shell;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Shapes;
+
+namespace CompileScore.Requirements
+{
+    public class RequirementGraphNode
+    {
+        public ParserFileRequirements Value { set; get; }
+
+        public RequirementGraphNode ChildNode { set; get; }
+
+        public string Label { set; get; }
+
+        public int Row { set; get; } = -1;
+        public int Column { set; get; } = -1;
+
+        //Dimensions
+        //precomputed requirement icons
+        //CompileValue + accumulated 'this'
+    }
+
+    public class RequirementGraphRoot
+    {
+        public ParserUnit Value { get; set; }
+
+        public List<RequirementGraphNode> Nodes { set; get; }
+
+        public string Label {  get; set; }
+
+        public int MaxColumn { set; get; } = 0;
+    }
+
+    public static class RequirementGraphGenerator
+    {
+        public static RequirementGraphNode BuildGraphNode(ParserFileRequirements file)
+        {
+            RequirementGraphNode node = new RequirementGraphNode();
+            node.Value = file;
+            node.Label = GetFileNameSafe(file.Name);
+            return node;
+        }
+
+        public static RequirementGraphRoot BuildGraph(ParserUnit parserUnit)
+        {
+            if (parserUnit == null) return null;
+
+            RequirementGraphRoot root = new RequirementGraphRoot();
+            root.Value = parserUnit;
+            root.Label = GetFileNameSafe(parserUnit.Filename);
+            root.Nodes = new List<RequirementGraphNode>(parserUnit.DirectIncludes.Count);
+            foreach (ParserFileRequirements file in parserUnit.DirectIncludes ?? Enumerable.Empty<ParserFileRequirements>())
+            {
+                int column = 0;
+
+                RequirementGraphNode newNode = BuildGraphNode(file);
+                newNode.Row = root.Nodes.Count;
+                newNode.Column = column++;
+
+                RequirementGraphNode lastInclude = newNode;
+                foreach (ParserFileRequirements indirectFile in file.Includes ?? Enumerable.Empty<ParserFileRequirements>())
+                {
+                    RequirementGraphNode indirectNode = BuildGraphNode(indirectFile);
+                    indirectNode.Row = newNode.Row;
+                    indirectNode.Column = column++;
+
+                    lastInclude.ChildNode = indirectNode;
+                    lastInclude = indirectNode;
+                }
+
+                root.MaxColumn = Math.Max(root.MaxColumn, column);
+
+                root.Nodes.Add(newNode);
+            }
+
+            return root;
+        }
+
+        private static string GetFileNameSafe(string path)
+        {
+            string ret = EditorUtils.GetFileNameSafe(path);
+            return ret == null ? "<Unknown>" : ret;
+        }
+    }
+
+    public partial class RequirementsGraph : UserControl
+    {
+        //private ToolTip tooltip = new ToolTip { Content = new TimelineNodeTooltip(), Padding = new Thickness(0) };
+        //private DispatcherTimer tooltipTimer = new DispatcherTimer() { Interval = new TimeSpan(4000000) };
+
+        const double CanvasPadding = 5.0;
+        const double NodeWidth = 200.0;
+        const double NodeHeight = 40.0;
+
+        private double restoreScrollX = -1.0;
+        private double restoreScrollY = -1.0;
+        //private bool zoomSliderLock = false; //used to avoid slider event feedback on itself 
+        private Timeline.VisualHost baseVisual = new Timeline.VisualHost();
+        private Timeline.VisualHost overlayVisual = new Timeline.VisualHost();
+        private Brush overlayBrush = Brushes.White.Clone();
+        private Pen borderPen = new Pen(Brushes.Black, 1);
+        private Typeface Font = new Typeface("Verdana");
+
+        private ParserUnit Unit { set; get; }
+        private RequirementGraphRoot Root { set; get; }
+        private object Hover { set; get; }
+
+        public RequirementsGraph()
+        {
+            InitializeComponent();
+
+            this.DataContext = this;
+
+            CompilerData compilerData = CompilerData.Instance;
+            compilerData.Hydrate(CompilerData.HydrateFlag.Main);
+
+            compilerData.ScoreDataChanged += OnScoreDataChanged;
+            //TODO ~ ramonv ~ add parser data changed 
+
+            overlayBrush.Opacity = 0.3;
+
+            //tooltipTimer.Tick += ShowTooltip;
+
+            scrollViewer.Loaded += OnScrollViewerLoaded;
+            scrollViewer.ScrollChanged += OnScrollViewerScrollChanged;
+            scrollViewer.On2DMouseScroll += OnScrollView2DMouseScroll;
+            //scrollViewer.OnControlMouseWheel += OnScrollViewerControlMouseWheel;
+            scrollViewer.MouseMove += OnScrollViewerMouseMove;
+            scrollViewer.MouseLeave += OnScrollViewerMouseLeave;
+            //scrollViewer.MouseDoubleClick += OnScrollViewerDoubleClick;
+            //scrollViewer.MouseRightButtonDown += OnScrollViewerContextMenu;
+            //scrollViewer.SizeChanged += OnScrollViewerSizeChanged;
+
+            //sliderZoom.ValueChanged += OnSliderZoomChanged;
+        }
+
+        public void SetUnit(ParserUnit unit)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            Unit = unit;
+            SetRoot(RequirementGraphGenerator.BuildGraph(Unit));
+        }
+
+        private void SetRoot(RequirementGraphRoot root)
+        {
+            Root = root;
+
+            restoreScrollX = -1.0;
+            restoreScrollY = -1.0;
+            SetupCanvas();
+            RefreshAll();
+        }
+
+        //private void ShowTooltip(Object a, object b)
+        //{
+        //TODO ~ ramovn ~ figure out tooltip stuff
+
+        //tooltipTimer.Stop();
+        //(tooltip.Content as TimelineNodeTooltip).ReferenceNode = Hover;
+        //tooltip.Placement = System.Windows.Controls.Primitives.PlacementMode.Mouse;
+        //tooltip.IsOpen = true;
+        //tooltip.PlacementTarget = this;
+        //}
+
+        private void OnScoreDataChanged()
+        {
+            //TODO ~ ramonv ~ update costs of nodes - refresh view
+            //Rebuild the graph with the same parseUnit;
+        }
+
+        private void SetupCanvas()
+        {
+            if (Root != null)
+            {
+                //TODO ~ Ramovn ~ add inner node paddings
+                canvas.Width = (Root.MaxColumn * NodeWidth) + 2 * CanvasPadding;
+                canvas.Height = (Root.Nodes.Count * NodeHeight) + 2 * CanvasPadding;
+
+                if (restoreScrollX >= 0)
+                {
+                    scrollViewer.ScrollToHorizontalOffset(restoreScrollX);
+                }
+
+                if (restoreScrollY >= 0)
+                {
+                    scrollViewer.ScrollToVerticalOffset(restoreScrollY);
+                }
+            }
+        }
+        private void SetHoverNode(object node)
+        {
+            if (node != Hover)
+            {
+                //Close Tooltip 
+                //tooltip.IsOpen = false;
+                //tooltipTimer.Stop();
+
+                Hover = node;
+
+                //Start Tooltip if applicable
+                //if (Hover != null)
+                //{
+                //    tooltipTimer.Start();
+                //}
+
+                RenderOverlay();
+            }
+        }
+
+        private void OnScrollViewerLoaded(object sender, RoutedEventArgs e)
+        {
+            //Fix the issue with the colored corner square
+            ((Rectangle)scrollViewer.Template.FindName("Corner", scrollViewer)).Fill = scrollViewer.Background;
+
+            SetupCanvas();
+            //FocusNodeInternal(FocusPending == null ? Root : FocusPending);
+            //FocusPending = null;
+            RefreshAll();
+        }
+
+        private void OnScrollViewerScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            restoreScrollX = scrollViewer.HorizontalOffset;
+            restoreScrollY = scrollViewer.VerticalOffset;
+            RefreshAll();
+        }
+
+        private void OnScrollView2DMouseScroll(object sender, Timeline.Mouse2DScrollEventArgs e)
+        {
+            scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset - e.Delta.X);
+            scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta.Y);
+        }
+
+        private void OnScrollViewerMouseMove(object sender, MouseEventArgs e)
+        {
+            Point p = e.GetPosition(canvas);
+            SetHoverNode(Root == null ? null : GetElementAtPosition(p.X, p.Y));
+        }
+
+        private void OnScrollViewerMouseLeave(object sender, MouseEventArgs e)
+        {
+            SetHoverNode(null);
+        }
+
+        private void RefreshCanvasVisual(Timeline.VisualHost visual)
+        {
+            canvas.Children.Remove(visual);
+            canvas.Children.Add(visual);
+        }
+
+        private void RefreshAll()
+        {
+            RenderBase();
+            RenderOverlay();
+        }
+
+        private void RenderBase()
+        {
+            if (Root == null)
+            {
+                //Clear the canvas
+                using (DrawingContext drawingContext = baseVisual.Visual.RenderOpen()) { }
+                RefreshCanvasVisual(baseVisual);
+            }
+            else
+            {
+                borderPen.Brush = this.Foreground;
+
+                using (DrawingContext drawingContext = baseVisual.Visual.RenderOpen())
+                {
+                    //TODO ~ ramonv ~ add root node render
+
+                    foreach(RequirementGraphNode node in Root.Nodes)
+                    {
+                        RenderNodeRow(drawingContext, node);
+                    }
+
+                }
+
+                //force a canvas redraw
+                RefreshCanvasVisual(baseVisual);
+            }
+        }
+
+        private void RenderOverlay()
+        {
+            using (DrawingContext drawingContext = overlayVisual.Visual.RenderOpen())
+            {
+                if (Hover != null)
+                {
+                    if ( Hover is RequirementGraphNode)
+                    {
+                        RequirementGraphNode HoverNode = Hover as RequirementGraphNode;
+                        RenderNodeSingle(drawingContext, HoverNode, GetColumnLocation(HoverNode.Column), GetRowLocation(HoverNode.Row), overlayBrush);
+                    }
+                    else if (Hover is RequirementGraphRoot) 
+                    { 
+                        //TODO ~ ramonv ~ overlay root
+                    }
+                }
+            }
+
+            RefreshCanvasVisual(overlayVisual);
+        }
+
+        private double GetRowLocation(int row)
+        {
+            //TODO ~ Ramovn ~ add inner node paddings
+            return CanvasPadding + row * NodeHeight; 
+        }
+
+        private double GetColumnLocation(int column)
+        {
+            //TODO ~ Ramovn ~ add inner node paddings
+            return CanvasPadding + column * NodeWidth;
+        }
+
+        private int GetColumn(double x)
+        {
+            //TODO ~ Ramovn ~ add inner node paddings
+            return (int)((x - CanvasPadding) / NodeWidth);
+        }
+
+        private int GetRow(double y)
+        {
+            //TODO ~ Ramovn ~ add inner node paddings
+            return (int)((y - CanvasPadding) / NodeHeight); 
+        }
+
+        private object GetElementAtPosition(double x, double y)
+        {
+            //TODO ~ ramonv ~ return root if checked against root
+            return GetGraphNodeAtPosition(x, y);
+        }
+
+        private RequirementGraphNode GetGraphNodeAtPosition(double x, double y)
+        {
+            if (Root == null) 
+                return null;
+
+            int column = GetColumn(x);
+            int row    = GetRow(y);
+            if (row < 0 || column < 0 || row >= Root.Nodes.Count) 
+                return null;
+
+            double localX = x - GetColumnLocation(column);
+            double localY = y - GetRowLocation(row);
+            if ( localX > NodeWidth || localY > NodeHeight) 
+                return null;
+
+            RequirementGraphNode node = Root.Nodes[row];
+            for( int col = 0; node != null && col < column; ++col )
+            {
+                node = node.ChildNode;
+            }
+
+            return node;
+        }
+
+        private void RenderNodeRow(DrawingContext drawingContext, RequirementGraphNode node)
+        {
+            //Clipping based on Row
+            double nodePositionY = GetRowLocation(node.Row);
+            double clipRowStart = scrollViewer.VerticalOffset;
+            double clipRowEnd = scrollViewer.VerticalOffset + scrollViewer.ViewportHeight;
+            if (nodePositionY > clipRowEnd || (nodePositionY + NodeHeight) < clipRowStart )
+            {
+                return;
+            }
+
+            RenderNodeRowRecursive(drawingContext, node, nodePositionY);
+        }
+
+        private void RenderNodeRowRecursive(DrawingContext drawingContext, RequirementGraphNode node, double nodePositionY)
+        {
+            //Check for Column Clipping
+            double nodePositionX = GetColumnLocation(node.Column);
+            double clipColumnStart = scrollViewer.HorizontalOffset;
+            double clipColumnEnd = scrollViewer.HorizontalOffset + scrollViewer.ViewportWidth;
+            if (nodePositionX <= clipColumnEnd && (nodePositionX + NodeWidth) >= clipColumnStart)
+            {
+                //TODO ~ ramonv ~ placeholder color
+                RenderNodeSingle(drawingContext, node, nodePositionX, nodePositionY, Common.Colors.InstantiateFuncBrush);
+            }
+
+            if (node.ChildNode != null) 
+            {
+                RenderNodeRowRecursive(drawingContext, node.ChildNode, nodePositionY);
+            }
+        }
+
+        private void RenderNodeSingle(DrawingContext drawingContext, RequirementGraphNode node, double posX, double posY, Brush brush)
+        {
+            drawingContext.DrawRectangle(brush, borderPen, new Rect(posX, posY, NodeWidth, NodeHeight));
+
+            //TODO ~ Ramonv ~ improve this for a multitext block ( node subgrid )
+
+            //Render text
+            var UIText = new FormattedText(node.Label, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, Font, 12, Common.Colors.GetCategoryForeground(), VisualTreeHelper.GetDpi(this).PixelsPerDip);
+            UIText.MaxTextWidth = Math.Min(NodeWidth, UIText.Width);
+            UIText.MaxTextHeight = NodeHeight;
+
+            double textPosX = posX + (NodeWidth - UIText.Width) * 0.5;
+            double textPosY = posY + (NodeHeight - UIText.Height) * 0.5;
+
+            drawingContext.DrawText(UIText, new Point(textPosX, textPosY));
+        }
+
+    }
+}
+
+
+
+
+
+
+
+/*
 using CompileScore.Includers;
 using Microsoft.VisualStudio.Shell;
 using System;

@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
              xmlns:local="clr-namespace:CompileScore.Requirements"
+             xmlns:timeline="clr-namespace:CompileScore.Timeline"
              xmlns:common="clr-namespace:CompileScore.Common"
              Background="{DynamicResource {x:Static common:ColorTheme.Background}}"
              Foreground="{DynamicResource {x:Static common:ColorTheme.Foreground}}"
@@ -116,9 +117,9 @@
             <local:TimelineSearch Grid.Column="1" x:Name="nodeSearchBox" />
             <ComboBox Grid.Column="2" x:Name="displayModeComboBox" Width="65" SelectionChanged="DisplayModeComboBox_SelectionChanged" Margin="10,0,10,0"/>
             <Slider Grid.Column="3" x:Name="sliderZoom" Maximum="1" Width="150"/>
-        </Grid>
-        <local:CustomScrollViewer Grid.Row="1" x:Name="scrollViewer" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
+        </Grid-->
+        <timeline:CustomScrollViewer Grid.Row="1" x:Name="scrollViewer" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
             <Canvas x:Name="canvas" VerticalAlignment="Top" HorizontalAlignment="Left" Focusable="True"/>
-        </local:CustomScrollViewer-->
+        </timeline:CustomScrollViewer>
     </Grid>
 </UserControl>

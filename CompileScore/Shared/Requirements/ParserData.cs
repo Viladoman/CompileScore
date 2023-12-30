@@ -134,6 +134,7 @@ namespace CompileScore
 
             Units[parserUnit.Filename.ToLower()] = parserUnit;
         }
+
         private static bool CheckVersion(uint version)
         {
             if (version != VERSION)
@@ -144,7 +145,7 @@ namespace CompileScore
             return true;
         }
 
-        private static ParserUnit ReadUnitFile(string fullPath)
+        public static ParserUnit ReadUnitFile(string fullPath)
         {
             ParserUnit chunk = new ParserUnit();
             if (File.Exists(fullPath))

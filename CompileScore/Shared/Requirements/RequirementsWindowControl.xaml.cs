@@ -25,7 +25,7 @@ namespace CompileScore.Requirements
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            //TODO ~ ramonv ~ to be implemented - pipe the data to the different views 
+            graph.SetUnit(parserUnit);
         }
     }
 }
