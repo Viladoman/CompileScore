@@ -9,6 +9,7 @@
     <Import_RootNamespace>Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Editor\MonikerProxy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Requirements\ParserData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Editor\Adornment\TextEditorAdornment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Editor\Adornment\TextEditorAdornmentProvider.cs" />
@@ -41,10 +42,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Requirements\RequirementsWindowControl.xaml.cs">
       <DependentUpon>RequirementsWindowControl.xaml</DependentUpon>
     </Compile>
-	<Compile Include="$(MSBuildThisFileDirectory)Requirements\RequirementsGraph.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Requirements\RequirementsGraph.xaml.cs">
       <DependentUpon>RequirementsGraph.xaml</DependentUpon>
     </Compile>
-	<Compile Include="$(MSBuildThisFileDirectory)Requirements\RequirementsGraphTooltip.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)Requirements\RequirementsGraphTooltip.xaml.cs">
       <DependentUpon>RequirementsGraphTooltip.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)settings\CompileScoreParserSettings.cs" />
@@ -122,11 +123,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-	<Page Include="$(MSBuildThisFileDirectory)Requirements\RequirementsGraph.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Requirements\RequirementsGraph.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-	<Page Include="$(MSBuildThisFileDirectory)Requirements\RequirementsGraphTooltip.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Requirements\RequirementsGraphTooltip.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

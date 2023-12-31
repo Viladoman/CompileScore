@@ -1,6 +1,7 @@
-﻿using CompileScore.Includers;
+﻿using CompileScore.Common;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace CompileScore.Requirements
 {
@@ -20,6 +21,25 @@ namespace CompileScore.Requirements
             InitializeComponent();
         }
 
+        private void SetScore(object value)
+        {
+            if (value == null )
+                return;
+
+            if ( value is CompileValue)
+            {
+                float severity = (value as CompileValue).Severity;
+
+                score0.SetMoniker(severity > 0 ? MonikerType.ScoreOn : MonikerType.ScoreOff);
+                score1.SetMoniker(severity > 1 ? MonikerType.ScoreOn : MonikerType.ScoreOff);
+                score2.SetMoniker(severity > 2 ? MonikerType.ScoreOn : MonikerType.ScoreOff);
+                score3.SetMoniker(severity > 3 ? MonikerType.ScoreOn : MonikerType.ScoreOff);
+                score4.SetMoniker(severity > 4 ? MonikerType.ScoreOn : MonikerType.ScoreOff);
+            }
+            
+            scoreGrid.Visibility = value is CompileValue ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         private void OnNode()
         {
             if (node == null)
@@ -31,6 +51,7 @@ namespace CompileScore.Requirements
                 headerText.Text = root.Label;
                 descriptionText.Text = root.Value.Filename;
                 detailsText.Text = Timeline.TimelineNodeTooltip.GetDetailsText(root.ProfilerValue);
+                SetScore(root.ProfilerValue);
             }
             else if (node is RequirementGraphNode)
             {
@@ -38,20 +59,14 @@ namespace CompileScore.Requirements
                 headerText.Text = graphNode.Label;
                 descriptionText.Text = graphNode.Value.Name;
                 detailsText.Text = Timeline.TimelineNodeTooltip.GetDetailsText(graphNode.ProfilerValue, graphNode.IncluderValue, RootNode == null ? "??" : RootNode.Label);
+                SetScore(graphNode.ProfilerValue);
             }
 
-            if (detailsText.Text.Length == 0)
-            {
-                detailsBorder.Visibility = Visibility.Collapsed;
-                detailsPanel.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                detailsBorder.Visibility = Visibility.Visible;
-                detailsPanel.Visibility = Visibility.Visible;
-            }
+            profilerGrid.Visibility = detailsText.Text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
+            profilerBorder.Visibility = detailsText.Text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
 
             //TODO ~ ramonv ~ add requirements info 
+
         }
     }
 }
