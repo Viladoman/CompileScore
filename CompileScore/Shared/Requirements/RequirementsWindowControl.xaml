@@ -17,6 +17,6 @@
         </Grid.ColumnDefinitions>
         <local:RequirementsGraph x:Name="graph" Grid.Column="0"/>
         <GridSplitter HorizontalAlignment="Right" VerticalAlignment="Stretch" Grid.Column="1" ResizeBehavior="PreviousAndNext" Width="3" Background="{DynamicResource {x:Static common:ColorTheme.Grid_Line}}"/>
-        <Label Content="Right" Grid.Column="2" />
+        <local:RequirementsDetails x:Name="details" Grid.Column="2"/>
     </Grid>
 </UserControl>

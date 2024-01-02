@@ -77,6 +77,12 @@ namespace CompileScore
         public List<ParserCodeRequirement>[] Global { set; get; } = new List<ParserCodeRequirement>[(int)ParserEnums.GlobalRequirement.Count];
         public List<ParserStructureRequirement> Structures { set; get; }
         public List<ParserFileRequirements> Includes { set; get; }
+
+        //public int LinkStrength { set; get; } = 0;
+
+
+
+        //some sort of storage of types ( flags )
     }
 
     public class ParserUnit
@@ -187,12 +193,12 @@ namespace CompileScore
             return ((ulong)line << 32) | (ulong)col;
         }
 
-        private static uint DecodeInnerFileLine(ulong location)
+        public static uint DecodeInnerFileLine(ulong location)
         {
             return (uint)(location >> 32);
         }
 
-        private static uint DecodeInnerFileColumn(ulong location)
+        public static uint DecodeInnerFileColumn(ulong location)
         {
             return (uint)(location & 0xffff);
         }

@@ -105,19 +105,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <!--Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
 
-            <local:TimelineSearch Grid.Column="0" x:Name="unitSearchBox" />
-            <local:TimelineSearch Grid.Column="1" x:Name="nodeSearchBox" />
-            <ComboBox Grid.Column="2" x:Name="displayModeComboBox" Width="65" SelectionChanged="DisplayModeComboBox_SelectionChanged" Margin="10,0,10,0"/>
-            <Slider Grid.Column="3" x:Name="sliderZoom" Maximum="1" Width="150"/>
-        </Grid-->
         <timeline:CustomScrollViewer Grid.Row="1" x:Name="scrollViewer" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
             <Canvas x:Name="canvas" VerticalAlignment="Top" HorizontalAlignment="Left" Focusable="True"/>
         </timeline:CustomScrollViewer>
