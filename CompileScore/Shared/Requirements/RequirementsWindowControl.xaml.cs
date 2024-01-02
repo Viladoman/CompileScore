@@ -22,6 +22,7 @@ namespace CompileScore.Requirements
             ThreadHelper.ThrowIfNotOnUIThread();
 
             graph.SetUnit(parserUnit);
+            details.RootFullPath = parserUnit == null ? null : parserUnit.Filename;
         }
 
         private void OnGraphNodeSelected(object graphNode)

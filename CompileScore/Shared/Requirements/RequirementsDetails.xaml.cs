@@ -15,8 +15,12 @@ namespace CompileScore.Requirements
         { 
             public System.Windows.Media.Brush Foreground {  get; set; }
             public System.Windows.Media.Brush Background { get; set; }
+
+            public string RootFullPath { get; set; }
+            public string FileFullPath { get; set; }
         }
 
+        public string RootFullPath { set; get; }
 
         public RequirementsDetails()
         {
@@ -53,11 +57,15 @@ namespace CompileScore.Requirements
 
         private static UIElement BuildSimpleRequirement(UIBuilderContext context, string name, ulong? nameLocation, List<ulong> locations)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             TextBlock block = new TextBlock();
 
             if (nameLocation.HasValue)
             {
-                block.Inlines.Add(CreateHyperlink(name, (sender, e) => Clipboard.SetText("hola.txt") ) );
+                uint line = ParserData.DecodeInnerFileLine(nameLocation.Value);
+                uint column = ParserData.DecodeInnerFileColumn(nameLocation.Value);
+                block.Inlines.Add(CreateHyperlink(name, (sender, e) => EditorUtils.OpenFileAtLocation(context.FileFullPath,line,column) ) );
             }
             else
             {
@@ -70,7 +78,8 @@ namespace CompileScore.Requirements
             {
                 if ( locCount > 0 ) block.Inlines.Add(", ");
                 uint line = ParserData.DecodeInnerFileLine(loc);
-                block.Inlines.Add(CreateHyperlink($"{line}", (sender, e) => Clipboard.SetText("hola.txt")));
+                uint column = ParserData.DecodeInnerFileColumn(loc);
+                block.Inlines.Add(CreateHyperlink($"{line}", (sender, e) => EditorUtils.OpenFileAtLocation(context.RootFullPath, line, column)));
                 ++locCount;
             }
 
@@ -79,11 +88,15 @@ namespace CompileScore.Requirements
 
         private static UIElement BuildCodeRequirement(UIBuilderContext context, ParserCodeRequirement code)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             return BuildSimpleRequirement(context, code.Name, code.DefinitionLocation, code.UseLocations);
         }
 
         private static void BuildCodeRequirements(UIBuilderContext context, StackPanel panel, List<ParserCodeRequirement> codes)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             foreach (ParserCodeRequirement code in codes)
             {
                 panel.Children.Add(BuildCodeRequirement(context, code));
@@ -92,6 +105,8 @@ namespace CompileScore.Requirements
 
         private static void BuildGlobals(StackPanel panel, UIBuilderContext context, List<ParserCodeRequirement>[] global)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             for (int i = 0; i < (int)ParserEnums.GlobalRequirement.Count; ++i)
             {
                 if (global[i] == null)
@@ -106,6 +121,8 @@ namespace CompileScore.Requirements
 
         private static UIElement BuildStructure(UIBuilderContext context, ParserStructureRequirement structure)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             Expander mainExpander = new Expander();
             StackPanel mainPanel = InitExpander(context, mainExpander, structure.Name);
 
@@ -133,7 +150,9 @@ namespace CompileScore.Requirements
 
         private static void BuildStructures(StackPanel panel, UIBuilderContext context, List<ParserStructureRequirement> structures)
         {
-            foreach(ParserStructureRequirement structure in structures ?? Enumerable.Empty<ParserStructureRequirement>())
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            foreach (ParserStructureRequirement structure in structures ?? Enumerable.Empty<ParserStructureRequirement>())
             {
                 UIElement structElement = BuildStructure(context, structure);
                 if ( structElement != null )
@@ -174,7 +193,13 @@ namespace CompileScore.Requirements
                 return;
             }
 
-            UIBuilderContext context = new UIBuilderContext() { Foreground = this.Foreground, Background = this.Background };
+            UIBuilderContext context = new UIBuilderContext()
+            {
+                Foreground = this.Foreground,
+                Background = this.Background,
+                FileFullPath = file.Name,
+                RootFullPath = RootFullPath
+            };
 
             BuildGlobals(globalsPanel, context, file.Global);
             if (globalsPanel.Children.Count > 0) 
