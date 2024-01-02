@@ -27,6 +27,11 @@ namespace CompileScore
             }
         }
 
+        static public void OpenFileByName(string fullPath, string fileName = null)
+        {
+            OpenFile(fullPath);
+        }
+
         static public void OpenFile(UnitValue unit) 
         {
             OpenFile(CompilerData.Instance.Folders.GetUnitPath(unit));
@@ -35,6 +40,11 @@ namespace CompileScore
         static public void OpenFile(CompileValue value)
         {
             OpenFile(CompilerData.Instance.Folders.GetValuePath(value));
+        }
+
+        static public void OpenFileAtLocation(string fullPath, uint line, uint column)
+        {
+            OpenFile(fullPath);
         }
 
         static public string GetFileNameSafe(string input)

@@ -3,7 +3,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>CompileScore</RootNamespace>
     <AssemblyName>CompileScore</AssemblyName>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <AssemblyTitle>CompileScore</AssemblyTitle>

@@ -3,14 +3,8 @@ using System.Windows.Controls;
 
 namespace CompileScore.Requirements
 {
-    /// <summary>
-    /// Interaction logic for TimelineWindowControl.
-    /// </summary>
     public partial class RequirementsWindowControl : UserControl
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RequirementsWindowControl"/> class.
-        /// </summary>
         public RequirementsWindowControl()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -19,6 +13,8 @@ namespace CompileScore.Requirements
             compilerData.Hydrate(CompilerData.HydrateFlag.Main);
 
             this.InitializeComponent();
+
+            graph.OnGraphNodeSelected += OnGraphNodeSelected;
         }
 
         public void SetRequirements(ParserUnit parserUnit)
@@ -27,5 +23,13 @@ namespace CompileScore.Requirements
 
             graph.SetUnit(parserUnit);
         }
+
+        private void OnGraphNodeSelected(object graphNode)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            details.SetRequirements(graphNode);
+        }   
+
     }
 }

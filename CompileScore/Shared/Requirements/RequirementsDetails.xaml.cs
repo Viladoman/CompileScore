@@ -1,15 +1,11 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.Shell;
 using System.Collections.Generic;
-using System.Drawing;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using System.Windows.Documents.DocumentStructures;
-using System.Windows.Media;
 using System.Windows.Navigation;
-using System.Xaml.Schema;
-using System.Xml.Linq;
-using static System.Net.Mime.MediaTypeNames;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace CompileScore.Requirements
 {
@@ -24,10 +20,14 @@ namespace CompileScore.Requirements
 
         public RequirementsDetails()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             InitializeComponent();
+
+            SetRequirements(null);
         }
 
-        public static StackPanel InitExpander(UIBuilderContext context, Expander expander, object header )
+        private static StackPanel InitExpander(UIBuilderContext context, Expander expander, object header )
         {
             expander.Header = header;
             expander.IsExpanded = true;
@@ -43,19 +43,26 @@ namespace CompileScore.Requirements
             return panel;
         }
 
-        public static Hyperlink CreateHyperlink( string text, RequestNavigateEventHandler callback)
+        private static Hyperlink CreateHyperlink( string text, RoutedEventHandler callback)
         {
             var h = new Hyperlink();
             h.Inlines.Add(text);
-            h.RequestNavigate += callback;
+            h.Click += callback;
             return h; 
         }
 
-        public static UIElement BuildSimpleRequirement(UIBuilderContext context,  string name, List<ulong> locations)
+        private static UIElement BuildSimpleRequirement(UIBuilderContext context, string name, ulong? nameLocation, List<ulong> locations)
         {
-            TextBlock block = new TextBlock() { Foreground = context.Foreground, Background = context.Background };
+            TextBlock block = new TextBlock();
 
-            block.Inlines.Add(CreateHyperlink(name, (sender, e) => Clipboard.SetText("hola.txt") ) );
+            if (nameLocation.HasValue)
+            {
+                block.Inlines.Add(CreateHyperlink(name, (sender, e) => Clipboard.SetText("hola.txt") ) );
+            }
+            else
+            {
+                block.Inlines.Add(name);
+            }
             block.Inlines.Add($" : Found {locations.Count} at ");
 
             int locCount = 0;
@@ -70,12 +77,12 @@ namespace CompileScore.Requirements
             return block; 
         }
 
-        public static UIElement BuildCodeRequirement(UIBuilderContext context, ParserCodeRequirement code)
+        private static UIElement BuildCodeRequirement(UIBuilderContext context, ParserCodeRequirement code)
         {
-            return BuildSimpleRequirement(context, code.Name, code.UseLocations);
+            return BuildSimpleRequirement(context, code.Name, code.DefinitionLocation, code.UseLocations);
         }
 
-        public static void BuildCodeRequirements(UIBuilderContext context, StackPanel panel, List<ParserCodeRequirement> codes)
+        private static void BuildCodeRequirements(UIBuilderContext context, StackPanel panel, List<ParserCodeRequirement> codes)
         {
             foreach (ParserCodeRequirement code in codes)
             {
@@ -83,11 +90,8 @@ namespace CompileScore.Requirements
             }
         }
 
-        public static UIElement BuildGlobals(UIBuilderContext context, List<ParserCodeRequirement>[] global)
+        private static void BuildGlobals(StackPanel panel, UIBuilderContext context, List<ParserCodeRequirement>[] global)
         {
-            Expander globalsExpander = new Expander();
-            StackPanel globalsPanel = InitExpander(context, globalsExpander, "Globals");
-
             for (int i = 0; i < (int)ParserEnums.GlobalRequirement.Count; ++i)
             {
                 if (global[i] == null)
@@ -96,13 +100,11 @@ namespace CompileScore.Requirements
                 Expander subExpander = new Expander();
                 StackPanel subPanel = InitExpander(context, subExpander, ((ParserEnums.GlobalRequirement)i).ToString());
                 BuildCodeRequirements(context,subPanel,global[i]);
-                globalsPanel.Children.Add(subExpander);
-            }
-
-            return globalsExpander;
+                panel.Children.Add(subExpander);
+            }           
         }
 
-        public static UIElement BuildStructure(UIBuilderContext context, ParserStructureRequirement structure)
+        private static UIElement BuildStructure(UIBuilderContext context, ParserStructureRequirement structure)
         {
             Expander mainExpander = new Expander();
             StackPanel mainPanel = InitExpander(context, mainExpander, structure.Name);
@@ -112,7 +114,7 @@ namespace CompileScore.Requirements
                 if (structure.Simple[i] == null)
                     continue;
                 
-                mainPanel.Children.Add(BuildSimpleRequirement(context, ((ParserEnums.GlobalRequirement)i).ToString(), structure.Simple[i]));
+                mainPanel.Children.Add(BuildSimpleRequirement(context, ((ParserEnums.StructureSimpleRequirement)i).ToString(), null, structure.Simple[i]));
             }
 
             for (int i = 0; i < (int)ParserEnums.StructureNamedRequirement.Count; ++i)
@@ -126,38 +128,121 @@ namespace CompileScore.Requirements
                 mainPanel.Children.Add(subExpander);
             }
 
-            return mainExpander;
+            return mainPanel.Children.Count == 0 ? null : mainExpander;
         }
 
-        public static UIElement BuildStructures(UIBuilderContext context, List<ParserStructureRequirement> structures)
+        private static void BuildStructures(StackPanel panel, UIBuilderContext context, List<ParserStructureRequirement> structures)
         {
-            Expander globalsExpander = new Expander();
-            StackPanel globalsPanel = InitExpander(context, globalsExpander, "Structures");
-
-            foreach(ParserStructureRequirement structure in structures)
+            foreach(ParserStructureRequirement structure in structures ?? Enumerable.Empty<ParserStructureRequirement>())
             {
-                globalsPanel.Children.Add(BuildStructure(context, structure));
+                UIElement structElement = BuildStructure(context, structure);
+                if ( structElement != null )
+                {
+                    panel.Children.Add(structElement);
+                }
+            }
+        }
+
+        private static void BuildIncludes(StackPanel panel, List<ParserFileRequirements> includes)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            foreach (ParserFileRequirements file in includes ?? Enumerable.Empty<ParserFileRequirements>())
+            {
+                TextBlock text = new TextBlock();
+                text.Inlines.Add(CreateHyperlink(EditorUtils.GetFileNameSafe(file.Name), (sender, e) => EditorUtils.OpenFileByName(file.Name)));
+                text.ToolTip = file.Name;
+                panel.Children.Add(text);
+            }
+        }
+
+        private void BuildRequirementsUI(ParserFileRequirements file)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            globalsPanel.Children.Clear();
+            structsPanel.Children.Clear();
+            includesPanel.Children.Clear();
+
+            headerNothing.Visibility = Visibility.Collapsed;
+            headerGlobals.Visibility = Visibility.Collapsed;
+            headerStructs.Visibility = Visibility.Collapsed;
+            headerIncludes.Visibility = Visibility.Collapsed;
+
+            if (file == null)
+            {
+                return;
             }
 
-            return globalsExpander;
-        }
-
-        public static void BuildTree(UIBuilderContext context, StackPanel panel, ParserFileRequirements file)
-        {
-            if (file == null)
-                return;
-
-            panel.Children.Add(BuildGlobals(context, file.Global));
-            panel.Children.Add(BuildStructures(context, file.Structures));
-            //TODO ~ ramonv ~ add indirect includes 
-        }
-
-        public void SetRequirements(ParserFileRequirements file)
-        {
-            detailsMainPanel.Children.Clear();
-
             UIBuilderContext context = new UIBuilderContext() { Foreground = this.Foreground, Background = this.Background };
-            BuildTree(context, detailsMainPanel,file);
+
+            BuildGlobals(globalsPanel, context, file.Global);
+            if (globalsPanel.Children.Count > 0) 
+            {
+                headerGlobals.Visibility = Visibility.Visible;
+            }
+
+            BuildStructures(structsPanel, context, file.Structures);
+            if (structsPanel.Children.Count > 0)
+            {
+                headerStructs.Visibility = Visibility.Visible;
+            }
+
+            if (headerGlobals.Visibility == Visibility.Collapsed && headerStructs.Visibility == Visibility.Collapsed)
+            {
+                headerNothing.Visibility = Visibility.Visible;
+            }
+
+            BuildIncludes(includesPanel, file.Includes);
+            if (includesPanel.Children.Count > 0)
+            {
+                headerIncludes.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void BuildProfilerUI(object value, object includerValue)
+        {
+            headerProfiler.Visibility = Visibility.Collapsed; 
+
+            if (value == null)
+                return;
+            
+
+            if (value is CompileValue)
+            {
+                headerProfiler.Visibility = Visibility.Visible;
+
+                //TODO ~ ramonv ~ to be implemented add file name, full path, score, values 
+            }
+            else if ( value is UnitValue)
+            {
+                //TODO ~ ramonv ~ to be implemented
+            }
+        }
+
+        public void SetRequirements(object graphNode)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (graphNode == null)
+            {
+                BuildProfilerUI(null, null);
+                BuildRequirementsUI(null);
+            }
+            else if (graphNode is RequirementGraphNode)
+            {
+                RequirementGraphNode node = graphNode as RequirementGraphNode;
+
+                BuildProfilerUI(node.ProfilerValue, node.IncluderValue);
+                BuildRequirementsUI(node.Value);
+            }
+            else if (graphNode is RequirementGraphRoot)
+            {
+                RequirementGraphRoot node = graphNode as RequirementGraphRoot;
+
+                BuildProfilerUI(node.ProfilerValue, null);
+                BuildRequirementsUI(null);
+            }
         }
 
     }

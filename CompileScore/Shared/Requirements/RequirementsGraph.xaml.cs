@@ -12,6 +12,8 @@ using System.Windows.Threading;
 
 namespace CompileScore.Requirements
 {
+    public delegate void NotifyGraphNodeSelected(object graphNode);  // delegate ( root or node )
+
     public class RequirementGraphNode
     {
         public ParserFileRequirements Value { set; get; }
@@ -156,6 +158,8 @@ namespace CompileScore.Requirements
         private object Hover { set; get; }
         private object Active { set; get; }
 
+        public event NotifyGraphNodeSelected OnGraphNodeSelected;
+
         public RequirementsGraph()
         {
             InitializeComponent();
@@ -234,7 +238,7 @@ namespace CompileScore.Requirements
             {
                 Active = node;
 
-                //TODO ~ ramonv ~ send event so we can display this node's information in the other windows
+                OnGraphNodeSelected?.Invoke(Active);
 
                 RenderOverlay();
             }

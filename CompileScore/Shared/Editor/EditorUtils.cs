@@ -8,9 +8,7 @@ using Microsoft.VisualStudio.TextManager.Interop;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Configuration;
 using System.Text.RegularExpressions;
-using System.Windows.Controls;
 
 namespace CompileScore
 {
@@ -130,7 +128,7 @@ namespace CompileScore
             return null;
         }
 
-        static private void OpenFileSearch(string filename)
+        static private Window OpenFileSearch(string filename)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             var item = FindFilenameInProject(filename);
@@ -141,11 +139,35 @@ namespace CompileScore
                 {
                     win.Activate();
                 }
+                else
+                {
+                    MessageWindow.Display(new MessageContent("Unable to open file: " + filename));
+                }
+
+                return win;
             }
-            else
+            
+            MessageWindow.Display(new MessageContent("Unable to find the file: " + filename));
+            return null;
+        }
+
+        static public Window OpenFileByName(string fullPath, string fileName = null)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (fullPath != null && File.Exists(fullPath))
             {
-                MessageWindow.Display(new MessageContent("Unable to find the file: " + filename));
+                var applicationObject = ServiceProvider.GetService(typeof(DTE)) as EnvDTE80.DTE2;
+                Assumes.Present(applicationObject);
+                return applicationObject.ItemOperations.OpenFile(fullPath.Replace('/', '\\'));
             }
+            else if ( fileName != null )
+            {
+                //Fallback to try to find this document in the solution
+                OpenFileSearch(fileName);
+            }
+
+            return null;
         }
 
         static public void OpenFile(UnitValue unit)
@@ -153,18 +175,37 @@ namespace CompileScore
             ThreadHelper.ThrowIfNotOnUIThread();
 
             string fullPath = CompilerData.Instance.Folders.GetUnitPath(unit);
-            if (fullPath != null && File.Exists(fullPath))
+            OpenFileByName(fullPath, unit.Name);
+        }
+
+        static public void OpenFileAtLocation(string fullPath, uint line, uint column)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            string filename = GetFileNameSafe(fullPath);
+
+            Document doc = null;
+            Window window = OpenFileByName(fullPath, filename );
+            if (window == null)
             {
-                var applicationObject = EditorUtils.ServiceProvider.GetService(typeof(DTE)) as EnvDTE80.DTE2;
-                Assumes.Present(applicationObject);
-                applicationObject.ItemOperations.OpenFile(fullPath);
+                //sometimes it opens but it does not give a window element ( check if opened already )
+                Document activeDoc = GetActiveDocument();
+                if (activeDoc != null && GetFileNameSafe(activeDoc.FullName) == filename)
+                {
+                    doc = activeDoc;
+                }
             }
             else
             {
-                //Fallback to try to find this document in the solution
-                OpenFileSearch(unit.Name);
+                window.Activate();
+                doc = window.Document;
             }
 
+            if (doc != null)
+            {
+                TextSelection sel = (TextSelection)doc.Selection;
+                sel.MoveTo((int)line, (int)column);
+            }
         }
 
         static public void OpenFile(CompileValue value)
@@ -172,18 +213,9 @@ namespace CompileScore
             ThreadHelper.ThrowIfNotOnUIThread();
 
             string fullPath = CompilerData.Instance.Folders.GetValuePath(value);
-            if (fullPath != null && File.Exists(fullPath))
-            {
-                var applicationObject = ServiceProvider.GetService(typeof(DTE)) as EnvDTE80.DTE2;
-                Assumes.Present(applicationObject);
-                applicationObject.ItemOperations.OpenFile(fullPath);
-            }
-            else
-            {
-                //Fallback to try to find this document in the solution
-                OpenFileSearch(value.Name);
-            }
+            OpenFileByName(fullPath, value.Name);
         }
+
         static public string GetSolutionPath()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
