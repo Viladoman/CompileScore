@@ -236,25 +236,37 @@ namespace CompileScore.Requirements
                 headerIncludes.Visibility = Visibility.Visible;
             }
         }
+        private void SetScore(object value)
+        {
+            if (value == null)
+                return;
+
+            if (value is CompileValue)
+            {
+                float severity = (value as CompileValue).Severity;
+
+                score0.SetMoniker(severity > 0 ? Common.MonikerType.ScoreOn : Common.MonikerType.ScoreOff);
+                score1.SetMoniker(severity > 1 ? Common.MonikerType.ScoreOn : Common.MonikerType.ScoreOff);
+                score2.SetMoniker(severity > 2 ? Common.MonikerType.ScoreOn : Common.MonikerType.ScoreOff);
+                score3.SetMoniker(severity > 3 ? Common.MonikerType.ScoreOn : Common.MonikerType.ScoreOff);
+                score4.SetMoniker(severity > 4 ? Common.MonikerType.ScoreOn : Common.MonikerType.ScoreOff);
+            }
+
+            scoreGrid.Visibility = value is CompileValue ? Visibility.Visible : Visibility.Collapsed;
+        }
 
         private void BuildProfilerUI(object value, object includerValue)
         {
             headerProfiler.Visibility = Visibility.Collapsed; 
+            profilerPanel.Visibility = Visibility.Collapsed;
 
             if (value == null)
                 return;
-            
 
-            if (value is CompileValue)
-            {
-                headerProfiler.Visibility = Visibility.Visible;
-
-                //TODO ~ ramonv ~ to be implemented add file name, full path, score, values 
-            }
-            else if ( value is UnitValue)
-            {
-                //TODO ~ ramonv ~ to be implemented
-            }
+            SetScore(value);
+            profilerText.Text = Timeline.TimelineNodeTooltip.GetDetailsText(value, includerValue, EditorUtils.GetFileNameSafe(RootFullPath));
+            headerProfiler.Visibility = Visibility.Visible;
+            profilerPanel.Visibility = Visibility.Visible;
         }
 
         public void BuildMainUI(string fileName)
