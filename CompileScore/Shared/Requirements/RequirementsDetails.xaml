@@ -38,8 +38,9 @@
     
     <Grid>
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-            <Grid>
+            <Grid Margin="5,10,5,10">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -51,68 +52,72 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0" x:Name="headerProfiler" >
+                <TextBlock Grid.Column="1" Text="Inspecting None" Margin="5 10 0 10"  FontSize="16" FontFamily="Verdana" FontWeight="UltraBold" x:Name="headerMainText"/>
+
+                <Grid Grid.Row="1" x:Name="headerProfiler" >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="30"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Separator Grid.Column="0" Margin="5 0 0 0"/>
-                    <TextBlock Grid.Column="1" Text="Profiler Data" Margin="5 0 0 0"/>
+                    <TextBlock Grid.Column="1" Text="Profiler Data" Margin="5 0 0 0"  FontSize="13" FontWeight="UltraBold"/>
                     <Separator Grid.Column="2" Margin="5 0 0 0"/>
                 </Grid>
 
-                <!-- Add here compileValue Data -->
-                
-                <Grid Grid.Row="2" x:Name="headerGlobals" >
+                <Border Grid.Row="2" Padding="20 0 0 0 ">
+                    <StackPanel x:Name="profilerPanel"/>
+                </Border>
+
+                <Grid Grid.Row="3" x:Name="headerGlobals" >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="30"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Separator Grid.Column="0" Margin="5 0 0 0"/>
-                    <TextBlock Grid.Column="1" Text="Required Globals" Margin="5 0 0 0"/>
+                    <TextBlock Grid.Column="1" Text="Required Globals" Margin="5 0 0 0" FontSize="13" FontWeight="UltraBold"/>
                     <Separator Grid.Column="2" Margin="5 0 0 0"/>
                 </Grid>
 
-                <StackPanel Grid.Row="3" x:Name="globalsPanel" />
+                <StackPanel Grid.Row="4" x:Name="globalsPanel" />
 
-                <Grid Grid.Row="4" x:Name="headerStructs" >
+                <Grid Grid.Row="5" x:Name="headerStructs" >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="30"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Separator Grid.Column="0" Margin="5 0 0 0"/>
-                    <TextBlock Grid.Column="1" Text="Required Structures" Margin="5 0 0 0"/>
+                    <TextBlock Grid.Column="1" Text="Required Structures" Margin="5 0 0 0" FontSize="13" FontWeight="UltraBold"/>
                     <Separator Grid.Column="2" Margin="5 0 0 0"/>
                 </Grid>
 
-                <StackPanel Grid.Row="5" x:Name="structsPanel" />
+                <StackPanel Grid.Row="6" x:Name="structsPanel" />
 
-                <Grid Grid.Row="6" x:Name="headerNothing" >
+                <Grid Grid.Row="7" x:Name="headerNothing" >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="30"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Separator Grid.Column="0" Margin="5 0 0 0"/>
-                    <TextBlock Grid.Column="1" Text="No Direct Requirements Found" Margin="5 0 0 0"/>
+                    <TextBlock Grid.Column="1" Text="No Direct Requirements Found" Margin="5 0 0 0" FontSize="13" FontWeight="Bold"/>
                     <Separator Grid.Column="2" Margin="5 0 0 0"/>
                 </Grid>
 
-                <Grid Grid.Row="7" x:Name="headerIncludes" >
+                <Grid Grid.Row="8" x:Name="headerIncludes" >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="30"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Separator Grid.Column="0" Margin="5 0 0 0"/>
-                    <TextBlock Grid.Column="1" Text="Required Indirect Includes" Margin="5 0 0 0"/>
+                    <TextBlock Grid.Column="1" Text="Required Indirect Includes" Margin="5 0 0 0" FontSize="13" FontWeight="UltraBold"/>
                     <Separator Grid.Column="2" Margin="5 0 0 0"/>
                 </Grid>
 
-                <Border Grid.Row="8" Padding="20 0 0 0 ">
+                <Border Grid.Row="9" Padding="20 0 0 0 ">
                     <StackPanel x:Name="includesPanel"/>
                 </Border>
 

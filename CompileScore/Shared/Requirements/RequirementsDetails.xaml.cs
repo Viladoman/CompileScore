@@ -1,10 +1,14 @@
 ﻿using Microsoft.VisualStudio.Shell;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Navigation;
+using System.Windows.Shapes;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ExplorerBar;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace CompileScore.Requirements
@@ -31,9 +35,9 @@ namespace CompileScore.Requirements
             SetRequirements(null);
         }
 
-        private static StackPanel InitExpander(UIBuilderContext context, Expander expander, object header )
+        private static StackPanel InitExpander(UIBuilderContext context, Expander expander, UIElement headerElement )
         {
-            expander.Header = header;
+            expander.Header = headerElement;
             expander.IsExpanded = true;
             expander.Foreground = context.Foreground;
             expander.Background = context.Background;
@@ -45,6 +49,10 @@ namespace CompileScore.Requirements
             grid.Children.Add(panel);
             expander.Content = grid;
             return panel;
+        }
+        private static StackPanel InitExpander(UIBuilderContext context, Expander expander, string header)
+        {
+            return InitExpander(context, expander, new TextBlock() { Text = header, FontWeight = FontWeights.Bold });
         }
 
         private static Hyperlink CreateHyperlink( string text, RoutedEventHandler callback)
@@ -124,7 +132,11 @@ namespace CompileScore.Requirements
             ThreadHelper.ThrowIfNotOnUIThread();
 
             Expander mainExpander = new Expander();
-            StackPanel mainPanel = InitExpander(context, mainExpander, structure.Name);
+            TextBlock mainExpanderHeader = new TextBlock() { FontWeight = FontWeights.Bold, FontSize = 12 };
+            uint line = ParserData.DecodeInnerFileLine(structure.DefinitionLocation);
+            uint column = ParserData.DecodeInnerFileColumn(structure.DefinitionLocation);
+            mainExpanderHeader.Inlines.Add(CreateHyperlink(structure.Name, (sender, e) => EditorUtils.OpenFileAtLocation(context.FileFullPath, line, column)));
+            StackPanel mainPanel = InitExpander(context, mainExpander, mainExpanderHeader);
 
             for (int i = 0; i < (int)ParserEnums.StructureSimpleRequirement.Count; ++i)
             {
@@ -245,12 +257,28 @@ namespace CompileScore.Requirements
             }
         }
 
+        public void BuildMainUI(string fileName)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            headerMainText.Visibility = Visibility.Collapsed; 
+
+            if (fileName == null)
+                return;
+
+            headerMainText.Visibility = Visibility.Visible; 
+            headerMainText.Inlines.Clear();
+            headerMainText.Inlines.Add(CreateHyperlink(EditorUtils.GetFileNameSafe(fileName), (sender, e) => EditorUtils.OpenFileByName(fileName)));
+            headerMainText.ToolTip = fileName;
+        }
+
         public void SetRequirements(object graphNode)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if (graphNode == null)
             {
+                BuildMainUI(null);
                 BuildProfilerUI(null, null);
                 BuildRequirementsUI(null);
             }
@@ -258,6 +286,7 @@ namespace CompileScore.Requirements
             {
                 RequirementGraphNode node = graphNode as RequirementGraphNode;
 
+                BuildMainUI(node.Value.Name);
                 BuildProfilerUI(node.ProfilerValue, node.IncluderValue);
                 BuildRequirementsUI(node.Value);
             }
@@ -265,6 +294,7 @@ namespace CompileScore.Requirements
             {
                 RequirementGraphRoot node = graphNode as RequirementGraphRoot;
 
+                BuildMainUI(node.Value.Filename);
                 BuildProfilerUI(node.ProfilerValue, null);
                 BuildRequirementsUI(null);
             }
