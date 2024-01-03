@@ -128,6 +128,33 @@ namespace CompileScore
             return null;
         }
 
+        static public string RemapFullPath(string fullPath)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (fullPath == null)
+                return null;
+
+            if (File.Exists(fullPath))
+            {
+                return fullPath.Replace('/', '\\');
+            }
+
+            string filename = GetFileNameSafe(fullPath);
+
+            if ( filename != null )
+            {
+                ProjectItem item = FindFilenameInProject(filename);
+                if ( item != null)
+                {
+                    string finalPath = item.Properties.Item("FullPath").Value.ToString();
+                    return finalPath == null ? fullPath.Replace('/', '\\') : finalPath; 
+                }
+            }
+
+            return fullPath.Replace('/', '\\');
+        }
+
         static private Window OpenFileSearch(string filename)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -178,7 +205,7 @@ namespace CompileScore
             OpenFileByName(fullPath, unit.Name);
         }
 
-        static public void OpenFileAtLocation(string fullPath, uint line, uint column)
+        static public bool OpenFileAtLocation(string fullPath, uint line, uint column)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -206,6 +233,8 @@ namespace CompileScore
                 TextSelection sel = (TextSelection)doc.Selection;
                 sel.MoveTo((int)line, (int)column);
             }
+
+            return doc != null;
         }
 
         static public void OpenFile(CompileValue value)

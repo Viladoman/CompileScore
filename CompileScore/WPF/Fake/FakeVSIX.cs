@@ -19,6 +19,8 @@ namespace CompileScore
     {
         static public string NormalizePath(string input) { return input; }
 
+        static public string RemapFullPath(string input) { return input; }
+
         static private void OpenFile(string fullPath)
         {
             if (fullPath != null && File.Exists(fullPath))
@@ -42,9 +44,10 @@ namespace CompileScore
             OpenFile(CompilerData.Instance.Folders.GetValuePath(value));
         }
 
-        static public void OpenFileAtLocation(string fullPath, uint line, uint column)
+        static public bool OpenFileAtLocation(string fullPath, uint line, uint column)
         {
             OpenFile(fullPath);
+            return true;
         }
 
         static public string GetFileNameSafe(string input)
@@ -117,5 +120,11 @@ namespace CompileScore
 
         public void DummyFunction() { ModeChanged?.Invoke(); ConfigurationChanged?.Invoke(); }
 
+    }
+
+    public class ParserProcessor
+    {
+        public static void OpenAndParsePath(string fullPath) { }
+        public static void ParseActiveDocument() { }
     }
 }

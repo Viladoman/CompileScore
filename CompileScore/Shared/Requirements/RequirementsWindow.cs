@@ -31,11 +31,11 @@
             this.Content = new RequirementsWindowControl();
         }
 
-        public void SetRequirements(ParserUnit parserUnit)
+        public void SetRequirements(string fullPath)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
         
-            (this.Content as RequirementsWindowControl).SetRequirements(parserUnit); 
+            (this.Content as RequirementsWindowControl).SetRequirements(fullPath); 
         }
 
     }

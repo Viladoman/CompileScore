@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using VSLangProj;
 using EnvDTE;
 using Newtonsoft.Json;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace CompileScore
 {
@@ -223,7 +224,25 @@ namespace CompileScore
 
         static public ParserSettingsPageGrid GetParserSettings() { return (ParserSettingsPageGrid)EditorUtils.Package.GetDialogPage(typeof(ParserSettingsPageGrid)); }
 
-        public async System.Threading.Tasks.Task ParseAtCurrentLocationAsync()
+        public static void OpenAndParsePath(string fullPath)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (!EditorUtils.OpenFileAtLocation(fullPath, 0, 0))
+            {
+                MessageWindow.Display(new MessageContent("Unable to open file: " + fullPath));
+                return;
+            }
+
+            ParseActiveDocument();
+        }
+
+        public static void ParseActiveDocument()
+        {
+            _ = Instance.ParseAtCurrentLocationAsync();
+        }
+
+        private async System.Threading.Tasks.Task ParseAtCurrentLocationAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -247,6 +266,9 @@ namespace CompileScore
 
             string outputFilePath = await Parser.ParseClangAsync(properties, activeDocument.FullName, GetParserOutputDirectory());
             ParserData.Instance.LoadUnitFile(outputFilePath);
+
+            Requirements.RequirementsWindow window = ParserData.FocusRequirementsWindow();
+            window.SetRequirements(activeDocument.FullName);
         }
 
         private string GetParserOutputDirectory()

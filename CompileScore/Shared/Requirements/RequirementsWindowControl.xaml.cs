@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.Shell;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace CompileScore.Requirements
@@ -15,14 +16,44 @@ namespace CompileScore.Requirements
             this.InitializeComponent();
 
             graph.OnGraphNodeSelected += OnGraphNodeSelected;
+
+            SetRequirements(null);
         }
 
-        public void SetRequirements(ParserUnit parserUnit)
+        public void SetRequirements(string fullPath)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            string realFullPath = EditorUtils.RemapFullPath(fullPath);
+            realFullPath = realFullPath == null ? null : realFullPath.ToLower(); 
+            SetRequirements(ParserData.Instance.GetParserUnit(realFullPath), realFullPath);
+        }
+
+        private void SetRequirements(ParserUnit parserUnit, string fullPath)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             graph.SetUnit(parserUnit);
-            details.RootFullPath = parserUnit == null ? null : parserUnit.Filename;
+            details.RootFullPath = fullPath;
+
+            if ( fullPath == null )
+            {
+                StatusText.Text = "Inspecting: <None>";
+                StatusText.ToolTip = null;
+                buttonParse.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                StatusText.Text = $"Inspecting: {EditorUtils.GetFileNameSafe(fullPath)}";
+
+                if (parserUnit == null )
+                {
+                    StatusText.Text += " (No data found)";
+                }
+
+                StatusText.ToolTip = fullPath;
+                buttonParse.Visibility = Visibility.Visible;
+            }
         }
 
         private void OnGraphNodeSelected(object graphNode)
@@ -30,7 +61,21 @@ namespace CompileScore.Requirements
             ThreadHelper.ThrowIfNotOnUIThread();
 
             details.SetRequirements(graphNode);
-        }   
+        }
+
+        public void ButtonParse_OnClick(object sender, object e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            ParserProcessor.OpenAndParsePath(details.RootFullPath);
+        }
+
+        public void ButtonParseActiveDocument_OnClick(object sender, object e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            ParserProcessor.ParseActiveDocument();
+        }
 
     }
 }

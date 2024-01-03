@@ -142,7 +142,7 @@
         <Parent guid="guidCompileScorePackageCmdSet1" id="EditorContextMenuGroupMain" />
         <Icon guid="guidImages1" id="icon" />
         <Strings>
-          <ButtonText>Perform Requirement Analysis (Experimental)</ButtonText>
+          <ButtonText>Perform Requirement Analysis</ButtonText>
         </Strings>
       </Button>
 
@@ -162,6 +162,13 @@
         </Strings>
       </Button>
 
+      <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdTriggerParser" priority="0x0100" type="Button">
+        <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuActionsGroup" />
+        <Strings>
+          <ButtonText>Perform Requirement Analysis on Active Document</ButtonText>
+        </Strings>
+      </Button>
+      
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdGenerate" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuActionsGroup" />
         <Strings>

@@ -106,7 +106,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <timeline:CustomScrollViewer Grid.Row="1" x:Name="scrollViewer" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
+        <timeline:CustomScrollViewer Grid.Row="1" x:Name="scrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
             <Canvas x:Name="canvas" VerticalAlignment="Top" HorizontalAlignment="Left" Focusable="True"/>
         </timeline:CustomScrollViewer>
     </Grid>

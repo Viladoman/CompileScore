@@ -241,7 +241,7 @@ namespace CompileScore
         private static void Execute_TriggerParser(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            _ = ParserProcessor.Instance.ParseAtCurrentLocationAsync();
+            ParserProcessor.ParseActiveDocument();
         }
 
         private static void Execute_Build(object sender, EventArgs e)

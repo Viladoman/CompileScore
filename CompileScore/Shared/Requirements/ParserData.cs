@@ -107,10 +107,18 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            //TODO ~ ramonv ~ fork here ( but first figure out how to avoid another request to stomp the tmpresult file while doing this )
             ParserUnit parserUnit = ReadUnitFile(fullPath);
             LinkUnit(parserUnit);
-            //TODO ~ NotifyUnitLoaded
+        }
+
+        public ParserUnit GetParserUnit(string mainPath)
+        {
+            if (mainPath != null && Units.ContainsKey(mainPath))
+            {
+                return Units[mainPath];
+            }
+
+            return null;
         }
 
         public ParserFileRequirements GetFileRequirements(string mainPath, string filename)

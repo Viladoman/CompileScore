@@ -134,7 +134,8 @@ namespace CompileScore.Requirements
         private ToolTip tooltip = new ToolTip { Content = new RequirementsGraphTooltip(), Padding = new Thickness(0) };
         private DispatcherTimer tooltipTimer = new DispatcherTimer() { Interval = new TimeSpan(4000000) };
 
-        const double CanvasPadding = 5.0;
+        const double CanvasPaddingY = 10.0;
+        const double CanvasPaddingX = 5.0;
         const double RootWidth = 20.0;
         const double RootWidthSeparation = 10.0;
         const double NodeWidth = 200.0;
@@ -184,7 +185,7 @@ namespace CompileScore.Requirements
             scrollViewer.MouseMove += OnScrollViewerMouseMove;
             scrollViewer.MouseLeave += OnScrollViewerMouseLeave;
             scrollViewer.OnMouseLeftClick += OnScrollViewerMouseLeftClick;
-            //scrollViewer.MouseDoubleClick += OnScrollViewerDoubleClick;
+            scrollViewer.MouseDoubleClick += OnScrollViewerDoubleClick;
             //scrollViewer.MouseRightButtonDown += OnScrollViewerContextMenu;
         }
 
@@ -205,6 +206,8 @@ namespace CompileScore.Requirements
         private void SetRoot(RequirementGraphRoot root)
         {
             Root = root;
+
+            SetActiveNode(null);
 
             restoreScrollX = -1.0;
             restoreScrollY = -1.0;
@@ -261,8 +264,8 @@ namespace CompileScore.Requirements
                 int numVisalCells = Math.Max(Root.Nodes.Count, 1); //At least one cell to show the root node
 
                 double extraWidth = Root.MaxColumn > 0 ? IndirectExtraSeparation : 0; 
-                canvas.Width = RootWidth + RootWidthSeparation + extraWidth + (Root.MaxColumn * (NodeWidth + NodeWidthSeparation) ) + 2 * CanvasPadding;
-                canvas.Height = (numVisalCells * ( NodeHeight + NodeHeightSeparation ) ) + ( 2 * CanvasPadding ) - NodeHeightSeparation;
+                canvas.Width = RootWidth + RootWidthSeparation + extraWidth + (Root.MaxColumn * (NodeWidth + NodeWidthSeparation) ) + 2 * CanvasPaddingX;
+                canvas.Height = (numVisalCells * ( NodeHeight + NodeHeightSeparation ) ) + ( 2 * CanvasPaddingY ) - NodeHeightSeparation;
 
                 if (restoreScrollX >= 0)
                 {
@@ -318,6 +321,35 @@ namespace CompileScore.Requirements
 
             Point p = e.GetPosition(canvas);
             SetActiveNode(Root == null ? null : GetElementAtPosition(p.X, p.Y));
+        }
+
+        private void OnScrollViewerDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (Root == null)
+                return;
+
+            Point p = e.GetPosition(canvas);
+            SetActiveNode(Root == null ? null : GetElementAtPosition(p.X, p.Y));
+            OpenFileByNode(Active);
+        }
+
+        private void OpenFileByNode(object node)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (node == null)
+                return;
+            
+            if (node is RequirementGraphNode)
+            {
+                EditorUtils.OpenFileByName((node as RequirementGraphNode).Value.Name);
+            }
+            else if (node is RequirementGraphRoot)
+            {
+                EditorUtils.OpenFileByName((node as RequirementGraphRoot).Value.Filename);
+            }
         }
 
         private void RefreshCanvasVisual(Timeline.VisualHost visual)
@@ -400,21 +432,21 @@ namespace CompileScore.Requirements
 
         private double GetRowLocation(int row)
         {
-            double initialOffset = CanvasPadding;
+            double initialOffset = CanvasPaddingY;
             double cellSize = NodeHeight + NodeHeightSeparation;
             return initialOffset + row * cellSize; 
         }
 
         private double GetColumnLocation(int column)
         {
-            double initialOffset = CanvasPadding + RootWidth + RootWidthSeparation + (column > 0 ? IndirectExtraSeparation : 0);
+            double initialOffset = CanvasPaddingX + RootWidth + RootWidthSeparation + (column > 0 ? IndirectExtraSeparation : 0);
             double cellSize = NodeWidth + NodeWidthSeparation;
             return initialOffset + column * cellSize;
         }
 
         private int GetColumn(double x)
         {
-            double initialOffset = CanvasPadding + RootWidth + RootWidthSeparation;
+            double initialOffset = CanvasPaddingX + RootWidth + RootWidthSeparation;
             if (x < initialOffset)
                 return -1;
             
@@ -427,7 +459,7 @@ namespace CompileScore.Requirements
 
         private int GetRow(double y)
         {
-            double initialOffset = CanvasPadding;
+            double initialOffset = CanvasPaddingY;
             double cellSize = NodeHeight + NodeHeightSeparation;
             return (int)((y - initialOffset) / cellSize); 
         }
@@ -444,9 +476,9 @@ namespace CompileScore.Requirements
 
         private RequirementGraphRoot GetRootNodeAtPosition(double x, double y)
         {
-            double localX = x - CanvasPadding; 
-            double localY = y - CanvasPadding;
-            double rootHeight = canvas.Height - ((2.0 * CanvasPadding));
+            double localX = x - CanvasPaddingX; 
+            double localY = y - CanvasPaddingY;
+            double rootHeight = canvas.Height - ((2.0 * CanvasPaddingY));
             return localX < 0 || localY < 0 || localX > RootWidth || localY > rootHeight ? null : Root;
         }
 
@@ -525,8 +557,8 @@ namespace CompileScore.Requirements
 
         private void RenderRootNode(DrawingContext drawingContext, Brush brush)
         {
-            double rootHeight = canvas.Height - ( ( 2.0 * CanvasPadding) );
-            drawingContext.DrawRectangle(brush, borderPen, new Rect(CanvasPadding, CanvasPadding, RootWidth, rootHeight));
+            double rootHeight = canvas.Height - ( ( 2.0 * CanvasPaddingY) );
+            drawingContext.DrawRectangle(brush, borderPen, new Rect(CanvasPaddingX, CanvasPaddingY, RootWidth, rootHeight));
         }
 
     }
