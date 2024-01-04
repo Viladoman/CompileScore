@@ -121,7 +121,7 @@ namespace CompileScore.Requirements
                     continue;
 
                 Expander subExpander = new Expander();
-                StackPanel subPanel = InitExpander(context, subExpander, ((ParserEnums.GlobalRequirement)i).ToString());
+                StackPanel subPanel = InitExpander(context, subExpander, Common.RequirementLabel.GetLabel((ParserEnums.GlobalRequirement)i));
                 BuildCodeRequirements(context,subPanel,global[i]);
                 panel.Children.Add(subExpander);
             }           
@@ -143,7 +143,7 @@ namespace CompileScore.Requirements
                 if (structure.Simple[i] == null)
                     continue;
                 
-                mainPanel.Children.Add(BuildSimpleRequirement(context, ((ParserEnums.StructureSimpleRequirement)i).ToString(), null, structure.Simple[i]));
+                mainPanel.Children.Add(BuildSimpleRequirement(context, Common.RequirementLabel.GetLabel((ParserEnums.StructureSimpleRequirement)i), null, structure.Simple[i]));
             }
 
             for (int i = 0; i < (int)ParserEnums.StructureNamedRequirement.Count; ++i)
@@ -152,7 +152,7 @@ namespace CompileScore.Requirements
                     continue;
 
                 Expander subExpander = new Expander();
-                StackPanel subPanel = InitExpander(context, subExpander, ((ParserEnums.StructureNamedRequirement)i).ToString());
+                StackPanel subPanel = InitExpander(context, subExpander, Common.RequirementLabel.GetLabel((ParserEnums.StructureNamedRequirement)i));
                 BuildCodeRequirements(context, subPanel, structure.Named[i]);
                 mainPanel.Children.Add(subExpander);
             }

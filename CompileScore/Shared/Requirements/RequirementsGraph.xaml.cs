@@ -538,7 +538,7 @@ namespace CompileScore.Requirements
             {
                 double nodePositionX = GetColumnLocation(node.Column);
                 RenderConnectingLine(drawingContext, node, nodePositionX, nodePositionY);
-                RenderNodeSingle(drawingContext, node, nodePositionX, nodePositionY, Common.Colors.InstantiateFuncBrush);
+                RenderNodeSingle(drawingContext, node, nodePositionX, nodePositionY);
                 node = node.ChildNode;
             }
         }
@@ -562,14 +562,14 @@ namespace CompileScore.Requirements
             }
         }
 
-        private void RenderNodeProfilerChunk(DrawingContext drawingContext, CompileValue value, double posX, double posY)
+        private void RenderNodeProfilerChunk(DrawingContext drawingContext, CompileValue value, double posX, double posY, Pen pen)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if ( value != null)
             {
                 Brush severityColor = Common.Colors.GetSeverityBrush((uint)value.Severity);
-                drawingContext.DrawRectangle(severityColor, borderPen, new Rect(posX+5, posY+NodeBaseHeight, NodeWidth-10, NodeProfilerHeight));
+                drawingContext.DrawRectangle(severityColor, pen, new Rect(posX+5, posY+NodeBaseHeight, NodeWidth-10, NodeProfilerHeight));
 
                 double iconPosX = posX + (NodeWidth * 0.5) - (ScoreIconSize * 2.5) - (ScoreIconSpacing * 2.0);
                 double iconPosY = posY + NodeBaseHeight + (NodeProfilerHeight * 0.5) - (ScoreIconSize * 0.5);
@@ -583,11 +583,14 @@ namespace CompileScore.Requirements
             }
         }
 
-        private void RenderNodeSingle(DrawingContext drawingContext, RequirementGraphNode node, double posX, double posY, Brush brush)
+        private void RenderNodeSingle(DrawingContext drawingContext, RequirementGraphNode node, double posX, double posY)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            drawingContext.DrawRoundedRectangle(brush, borderPen, new Rect(posX, posY, NodeWidth, NodeBaseHeight), 5, 5);
+            Brush strengthBRush = Common.Colors.GetRequirementStrengthBrush(node.Value.Strength);
+            Pen strengthPen = node.Value.Strength == ParserEnums.LinkStrength.None ? dashedPen : borderPen;
+
+            drawingContext.DrawRoundedRectangle(strengthBRush, strengthPen, new Rect(posX, posY, NodeWidth, NodeBaseHeight), 5, 5);
 
             //Render text
             var UIText = new FormattedText(node.Label, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, Font, 12, Common.Colors.GetCategoryForeground(), VisualTreeHelper.GetDpi(this).PixelsPerDip);
@@ -599,7 +602,7 @@ namespace CompileScore.Requirements
 
             drawingContext.DrawText(UIText, new Point(textPosX, textPosY));
 
-            RenderNodeProfilerChunk(drawingContext, node.ProfilerValue, posX, posY);
+            RenderNodeProfilerChunk(drawingContext, node.ProfilerValue, posX, posY, strengthPen);
         }
 
         private void RenderOverlayedNodeGraph(DrawingContext drawingContext, RequirementGraphNode node, double posX, double posY, Brush brush, Pen pen)

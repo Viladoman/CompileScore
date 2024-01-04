@@ -225,137 +225,76 @@ namespace CompileScore
 
         private ContainerElement CreateParserElement(ParserFileRequirements file)
         {
-            if ( file == null)  
+            //TODO ~ Ramonv ~ add option in settings to display or not this information 
+
+            if ( file == null )  
                 return null;
 
-            List< ContainerElement > elements = new List< ContainerElement >();
-            for (int i = 0; i < (int)ParserEnums.GlobalRequirement.Count; ++i)
-            {
-                List<ParserCodeRequirement> requirements = file.Global[i];
-                if (requirements != null && requirements.Count > 0) 
-                {
-                    List<ContainerElement> reqElems = new List<ContainerElement>();
+            string globalsTxt         = Requirements.RequirementsGraphTooltip.GetGlobalsRequirementRecap(file);
+            string structureUsageTxt  = Requirements.RequirementsGraphTooltip.GetStructureUsageRequirementRecap(file);
+            string structureAccessTxt = Requirements.RequirementsGraphTooltip.GetStructureAccessRequirementRecap(file);
 
-                    string categoryName = ((ParserEnums.GlobalRequirement)i).ToString();
+            List<ContainerElement> elements = new List<ContainerElement>();
 
-                    reqElems.Add(new ContainerElement(ContainerElementStyle.Wrapped, new ClassifiedTextElement( new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, $"{categoryName}: "))));
-
-                    foreach (ParserCodeRequirement req in requirements)
-                    {
-                        string tag = req.UseLocations.Count > 1 ? $"{req.Name} ({req.UseLocations.Count}) " : $"{req.Name} ";
-//#if VS17
-//ClassifiedTextElement text = new ClassifiedTextElement( ClassifiedTextElement.CreateHyperlink(tag, null,  => Parser.Log(loc.ToString()) ) );
-//#else
-                        ClassifiedTextElement text = new ClassifiedTextElement( new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, tag) );
-//#endif
-
-                        reqElems.Add( new ContainerElement( ContainerElementStyle.Wrapped, text ));
-                    }
-
-                    elements.Add(new ContainerElement(ContainerElementStyle.Wrapped, reqElems));
-                }
-            }
-
-            if (elements.Count > 0)
-            {
-                elements.Insert(0, new ContainerElement(
-                    ContainerElementStyle.Wrapped,
-                    new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "Required Globals:")
-                    )));
-            }
-
-            if (file.Structures != null && file.Structures.Count > 0)
+            if (globalsTxt.Length > 0)
             {
                 elements.Add(new ContainerElement(
-                   ContainerElementStyle.Wrapped,
-                   new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "Required Structures:")
-                   )));
-
-                foreach (ParserStructureRequirement structReq in file.Structures)
-                {
-                    elements.Add(new ContainerElement(
-                            ContainerElementStyle.Wrapped,
-                            new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, $"{structReq.Name}:")
-                            )));
-
-                    {
-                        List<ContainerElement> reqElems = new List<ContainerElement>();
-                        for (int i = 0; i < (int)ParserEnums.StructureSimpleRequirement.Count; ++i)
-                        {
-                            List<ulong> simpleReq = structReq.Simple[i];
-                            if (simpleReq != null && simpleReq.Count > 0)
-                            {
-                                string categoryName = ((ParserEnums.StructureSimpleRequirement)i).ToString();
-
-                                reqElems.Add(new ContainerElement(
                                     ContainerElementStyle.Wrapped,
                                     new ClassifiedTextElement(
-                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, categoryName),
-                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, $": {simpleReq.Count} ")
+                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "Required Globals:"),
+                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, globalsTxt)
                                    )));
-                            }
-                        }
-
-                        if (reqElems.Count > 0)
-                        {
-                            reqElems.Insert(0, new ContainerElement(
-                               ContainerElementStyle.Wrapped,
-                               new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "- ")
-                               )));
-                            elements.Add(new ContainerElement(ContainerElementStyle.Wrapped, reqElems));
-                        }
-                    }
-
-                    for (int i = 0; i < (int)ParserEnums.StructureNamedRequirement.Count; ++i)
-                    {
-                        List<ParserCodeRequirement> named = structReq.Named[i];
-                        if (named != null && named.Count > 0)
-                        {
-                            List<ContainerElement> reqElems = new List<ContainerElement>();
-
-                            string categoryName = ((ParserEnums.StructureNamedRequirement)i).ToString();
-
-                            reqElems.Add(new ContainerElement(ContainerElementStyle.Wrapped, new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, $"- {categoryName}: "))));
-
-                            foreach (ParserCodeRequirement req in named)
-                            {
-                                string tag = req.UseLocations.Count > 1 ? $"{req.Name} ({req.UseLocations.Count}) " : $"{req.Name} ";
-                                ClassifiedTextElement text = new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, tag));
-                                reqElems.Add(new ContainerElement(ContainerElementStyle.Wrapped, text));
-                            }
-
-                            elements.Add(new ContainerElement(ContainerElementStyle.Wrapped, reqElems));
-                        }
-                    }
-                }
             }
 
+            if (structureUsageTxt.Length > 0)
+            {
+                elements.Add(new ContainerElement(
+                                   ContainerElementStyle.Wrapped,
+                                   new ClassifiedTextElement(
+                                       new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "Required Structure Usage:"),
+                                       new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, structureUsageTxt)
+                                  )));
+            }
 
-            if (file.Includes != null && file.Includes.Count > 0) 
+            if (structureAccessTxt.Length > 0)
+            {
+                elements.Add(new ContainerElement(
+                                  ContainerElementStyle.Wrapped,
+                                  new ClassifiedTextElement(
+                                      new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "Required Structure Access:"),
+                                      new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, structureAccessTxt)
+                                 )));
+            }
+
+            if (elements.Count == 0 ) 
+            {
+                elements.Add(new ContainerElement(ContainerElementStyle.Wrapped, new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, "-- No Direct Requirements Found --"))));
+            }
+
+            if (file.Includes != null && file.Includes.Count > 0)
             {
                 elements.Add(new ContainerElement(
                    ContainerElementStyle.Wrapped,
                    new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "Required Includes:")
                    )));
 
-                foreach(ParserFileRequirements fileReq in file.Includes)
+                foreach (ParserFileRequirements fileReq in file.Includes)
                 {
                     elements.Add(new ContainerElement(
                             ContainerElementStyle.Wrapped,
-                            new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, fileReq.Name)
+                            new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, fileReq.Name)
                             )));
                 }
             }
 
-            if (elements.Count == 0 )
-            {
-                elements.Add(new ContainerElement(
-                    ContainerElementStyle.Wrapped,
-                    new ClassifiedTextElement(
-                        new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "No requirements")
-                    )));
-            }
-            
+            //TODO ~ Ramonv ~ add option to open requirement window from here on VS17
+
+            //#if VS17
+            //ClassifiedTextElement text = new ClassifiedTextElement( ClassifiedTextElement.CreateHyperlink(tag, null,  => Parser.Log(loc.ToString()) ) );
+            //#else
+            //ClassifiedTextElement text = new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, tag));
+            //#endif
+
             return new ContainerElement(ContainerElementStyle.Stacked, elements);
 
         }

@@ -40,6 +40,81 @@ namespace CompileScore.Requirements
             scoreGrid.Visibility = value is CompileValue ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        public static string GetGlobalsRequirementRecap(ParserFileRequirements fileReq)
+        {
+            string globalsTxt = "";
+            for (int i = 0; i < (int)ParserEnums.GlobalRequirement.Count; ++i)
+            {
+                if (ParserData.HasLinkFlag(fileReq, (ParserEnums.GlobalRequirement)i))
+                {
+                    globalsTxt += (globalsTxt.Length > 0 ? "," : "") + " " + RequirementLabel.GetLabel((ParserEnums.GlobalRequirement)i);
+                }
+            }
+            return globalsTxt;
+        }
+
+        public static string GetStructureUsageRequirementRecap(ParserFileRequirements fileReq)
+        {
+            string structureUsageTxt = "";
+            for (int i = 0; i < (int)ParserEnums.StructureSimpleRequirement.Count; ++i)
+            {
+                if (ParserData.HasLinkFlag(fileReq, (ParserEnums.StructureSimpleRequirement)i))
+                {
+                    structureUsageTxt += (structureUsageTxt.Length > 0 ? "," : "") + " " + RequirementLabel.GetLabel((ParserEnums.StructureSimpleRequirement)i);
+                }
+            }
+            return structureUsageTxt;
+        }
+
+        public static string GetStructureAccessRequirementRecap(ParserFileRequirements fileReq)
+        {
+            string structureAccessTxt = "";
+            for (int i = 0; i < (int)ParserEnums.StructureNamedRequirement.Count; ++i)
+            {
+                if (ParserData.HasLinkFlag(fileReq, (ParserEnums.StructureNamedRequirement)i))
+                {
+                    structureAccessTxt += (structureAccessTxt.Length > 0 ? "," : "") + " " + RequirementLabel.GetLabel((ParserEnums.StructureNamedRequirement)i);
+                }
+            }
+            return structureAccessTxt;
+        }
+
+        private void SetRequirements(object value)
+        {
+            requirementPanel.Children.Clear();
+            requirementBorder.Visibility = Visibility.Collapsed;
+
+            if ( value == null || !(value is ParserFileRequirements) )
+                return;
+
+            requirementBorder.Visibility = Visibility.Visible;
+
+            ParserFileRequirements fileReq = value as ParserFileRequirements;
+
+            string globalsTxt = GetGlobalsRequirementRecap(fileReq);
+            if (globalsTxt.Length > 0)
+            {
+                requirementPanel.Children.Add(new TextBlock() { Text = "Globals:" + globalsTxt });
+            }
+
+            string structureUsageTxt = GetStructureUsageRequirementRecap(fileReq);
+            if (structureUsageTxt.Length > 0)
+            {
+                requirementPanel.Children.Add(new TextBlock() { Text = "Structure Usage:" + structureUsageTxt });
+            }
+
+            string structureAccessTxt = GetStructureAccessRequirementRecap(fileReq);
+            if (structureAccessTxt.Length > 0)
+            {
+                requirementPanel.Children.Add(new TextBlock() { Text = "Structure Access:" + structureAccessTxt });
+            }
+
+            if ( requirementPanel.Children.Count == 0 ) 
+            {
+                requirementPanel.Children.Add(new TextBlock(){ Text = "-- No Direct Requirements Found --" });
+            }
+        }
+
         private void OnNode()
         {
             if (node == null)
@@ -52,6 +127,7 @@ namespace CompileScore.Requirements
                 descriptionText.Text = root.Value.Filename;
                 detailsText.Text = Timeline.TimelineNodeTooltip.GetDetailsText(root.ProfilerValue);
                 SetScore(root.ProfilerValue);
+                SetRequirements(root.Value);
             }
             else if (node is RequirementGraphNode)
             {
@@ -60,6 +136,7 @@ namespace CompileScore.Requirements
                 descriptionText.Text = graphNode.Value.Name;
                 detailsText.Text = Timeline.TimelineNodeTooltip.GetDetailsText(graphNode.ProfilerValue, graphNode.IncluderValue, RootNode == null ? "??" : RootNode.Label);
                 SetScore(graphNode.ProfilerValue);
+                SetRequirements(graphNode.Value);
             }
 
             profilerGrid.Visibility = detailsText.Text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;

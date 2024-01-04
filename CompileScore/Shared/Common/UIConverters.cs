@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -54,6 +55,58 @@ namespace CompileScore.Common
                     break;
                 }
             }
+        }
+    }
+
+    public class BasicUILabel : Attribute
+    { 
+        public string Label { set; get; }
+
+        private static BasicUILabel GetBasicUILabelAttribute(Enum value)
+        {
+            Type type = value.GetType();
+            string name = Enum.GetName(type, value);
+            if (name != null)
+            {
+                FieldInfo field = type.GetField(name);
+                return field != null ? Attribute.GetCustomAttribute(field, typeof(BasicUILabel)) as BasicUILabel : null;
+            }
+            return null;
+        }
+        public static string GetLabel(Enum value)
+        {
+            BasicUILabel attr = GetBasicUILabelAttribute(value);
+            return attr != null && attr.Label != null ? attr.Label : value.ToString();
+        }
+    }
+
+    public class RequirementLabel : BasicUILabel
+    {
+        public string Short { set; get; }
+        public ParserEnums.LinkStrength Strength { set; get; } = ParserEnums.LinkStrength.None;
+
+        public static RequirementLabel GetAttribute(Enum value)
+        {
+            Type type = value.GetType();
+            string name = Enum.GetName(type, value);
+            if (name != null)
+            {
+                FieldInfo field = type.GetField(name);
+                return field != null ? Attribute.GetCustomAttribute(field, typeof(RequirementLabel)) as RequirementLabel : null;
+            }
+            return null;
+        }      
+
+        public static string GetShort(Enum value)
+        {
+            RequirementLabel attr = GetAttribute(value);
+            return attr != null && attr.Short != null ? attr.Short : "?";
+        }
+
+        public static ParserEnums.LinkStrength GetStrength(Enum value)
+        {
+            RequirementLabel attr = GetAttribute(value);
+            return attr != null ? attr.Strength : ParserEnums.LinkStrength.None;
         }
     }
 

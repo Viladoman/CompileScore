@@ -47,6 +47,9 @@
                     <TextBlock x:Name="detailsText"  FontStyle="Italic" />
                 </WrapPanel>
             </Grid>
+            <Border x:Name="requirementBorder" BorderBrush="Silver" BorderThickness="0,1,0,0" Margin="0,8" />
+            <StackPanel x:Name="requirementPanel"/>
+
         </StackPanel>
     </Grid>
 </UserControl>

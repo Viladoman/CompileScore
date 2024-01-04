@@ -71,5 +71,11 @@ namespace CompileScore.Common
             return new SolidColorBrush(Color.FromArgb((byte)255, (byte)0, (byte)0, (byte)0));
         }
 
+        public static Brush GetRequirementStrengthBrush(ParserEnums.LinkStrength strength)
+        {
+            //TODO ~ ramonv ~ placeholder
+            return GetSeverityBrush(((uint)strength) + 1);
+        }
+
     }
 }
