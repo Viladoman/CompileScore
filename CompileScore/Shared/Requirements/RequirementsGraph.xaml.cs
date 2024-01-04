@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.Shell;
+﻿using CompileScore.Common;
+using Microsoft.VisualStudio.Shell;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -139,10 +140,13 @@ namespace CompileScore.Requirements
         const double RootWidth = 20.0;
         const double RootWidthSeparation = 10.0;
         const double NodeWidth = 200.0;
-        const double NodeHeight = 40.0;
+        const double NodeBaseHeight = 40.0;
+        const double NodeProfilerHeight = 20.0;
         const double NodeWidthSeparation = 10.0;
         const double NodeHeightSeparation = 10.0;
         const double IndirectExtraSeparation = 20.0;
+
+        private double NodeHeight = NodeBaseHeight;
 
         private double restoreScrollX = -1.0;
         private double restoreScrollY = -1.0;
@@ -152,6 +156,7 @@ namespace CompileScore.Requirements
         private Brush activeBrush  = Brushes.White.Clone();
         private Pen borderPen = new Pen(Brushes.Black, 1);
         private Pen dashedPen = new Pen(Brushes.Black, 1);
+        private Pen transparentPen = new Pen(Brushes.Transparent, 1);
         private Typeface Font = new Typeface("Verdana");
 
         private ParserUnit Unit { set; get; }
@@ -263,6 +268,8 @@ namespace CompileScore.Requirements
             {
                 int numVisalCells = Math.Max(Root.Nodes.Count, 1); //At least one cell to show the root node
 
+                NodeHeight = NodeBaseHeight + ( Root.ProfilerValue != null ? NodeProfilerHeight : 0 ); 
+
                 double extraWidth = Root.MaxColumn > 0 ? IndirectExtraSeparation : 0; 
                 canvas.Width = RootWidth + RootWidthSeparation + extraWidth + (Root.MaxColumn * (NodeWidth + NodeWidthSeparation) ) + 2 * CanvasPaddingX;
                 canvas.Height = (numVisalCells * ( NodeHeight + NodeHeightSeparation ) ) + ( 2 * CanvasPaddingY ) - NodeHeightSeparation;
@@ -285,8 +292,6 @@ namespace CompileScore.Requirements
             ((Rectangle)scrollViewer.Template.FindName("Corner", scrollViewer)).Fill = scrollViewer.Background;
 
             SetupCanvas();
-            //FocusNodeInternal(FocusPending == null ? Root : FocusPending);
-            //FocusPending = null;
             RefreshAll();
         }
 
@@ -379,8 +384,7 @@ namespace CompileScore.Requirements
 
                 using (DrawingContext drawingContext = baseVisual.Visual.RenderOpen())
                 {
-                    //TODO ~ Ramonv~ placeholderCOLOR
-                    RenderRootNode(drawingContext, Common.Colors.FrontEndBrush);
+                    RenderRootNode(drawingContext, Root.ProfilerValue is UnitValue ? Common.Colors.ExecuteCompilerBrush : Common.Colors.IncludeBrush);
 
                     if ( Root.Nodes.Count > 0 )
                     {
@@ -525,34 +529,51 @@ namespace CompileScore.Requirements
 
         private void RenderConnectingLine(DrawingContext drawingContext, RequirementGraphNode node, double posX, double posY)
         {
+            double lineHeight = NodeBaseHeight * 0.5;
+
             if (node.Column == 0)
             {
-                drawingContext.DrawLine(borderPen, new Point(posX, posY + (NodeHeight * 0.5)), new Point(posX - RootWidthSeparation, posY + (NodeHeight * 0.5)));
+                drawingContext.DrawLine(borderPen, new Point(posX, posY + lineHeight), new Point(posX - RootWidthSeparation, posY + lineHeight));
             }
             else if (node.Column == 1)
             {
                 double separation = RootWidthSeparation + IndirectExtraSeparation;
-                drawingContext.DrawLine(dashedPen, new Point(posX, posY + (NodeHeight * 0.5)), new Point(posX - separation, posY + (NodeHeight * 0.5)));
+                drawingContext.DrawLine(dashedPen, new Point(posX, posY + lineHeight), new Point(posX - separation, posY + lineHeight));
             }
             else
             {
-                drawingContext.DrawLine(dashedPen, new Point(posX, posY + (NodeHeight * 0.5)), new Point(posX - NodeWidthSeparation, posY + (NodeHeight * 0.5)));
+                drawingContext.DrawLine(dashedPen, new Point(posX, posY + lineHeight), new Point(posX - NodeWidthSeparation, posY + lineHeight));
+            }
+        }
+
+        private void RenderNodeProfilerChunk(DrawingContext drawingContext, CompileValue value, double posX, double posY)
+        {
+            if ( value != null)
+            {
+                Brush severityColor = Common.Colors.GetSeverityBrush((uint)value.Severity);
+                drawingContext.DrawRoundedRectangle(severityColor, transparentPen, new Rect(posX, posY+NodeBaseHeight, NodeWidth, NodeProfilerHeight), 5, 5);
+
+                //MonikerProxy.DrawTo(drawingContext);
+
+                //drawingContext.DrawImage(,);
             }
         }
 
         private void RenderNodeSingle(DrawingContext drawingContext, RequirementGraphNode node, double posX, double posY, Brush brush)
         {
-            drawingContext.DrawRectangle(brush, borderPen, new Rect(posX, posY, NodeWidth, NodeHeight));
+            drawingContext.DrawRoundedRectangle(brush, borderPen, new Rect(posX, posY, NodeWidth, NodeHeight), 5, 5);
 
             //Render text
             var UIText = new FormattedText(node.Label, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, Font, 12, Common.Colors.GetCategoryForeground(), VisualTreeHelper.GetDpi(this).PixelsPerDip);
             UIText.MaxTextWidth = Math.Min(NodeWidth, UIText.Width);
-            UIText.MaxTextHeight = NodeHeight;
+            UIText.MaxTextHeight = NodeBaseHeight;
 
             double textPosX = posX + (NodeWidth - UIText.Width) * 0.5;
-            double textPosY = posY + (NodeHeight - UIText.Height) * 0.5;
+            double textPosY = posY + (NodeBaseHeight - UIText.Height) * 0.5;
 
             drawingContext.DrawText(UIText, new Point(textPosX, textPosY));
+
+            RenderNodeProfilerChunk(drawingContext, node.ProfilerValue, posX, posY);
         }
 
         private void RenderRootNode(DrawingContext drawingContext, Brush brush)

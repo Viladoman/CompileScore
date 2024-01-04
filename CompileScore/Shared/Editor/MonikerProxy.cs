@@ -14,6 +14,14 @@ namespace CompileScore.Common
     {
         private CrispImage Shape {  get; set; } = new CrispImage();
 
+        //private static
+
+        //store bitmaps here on demand
+        //store image sources here on demand
+        //Add stuff for fake VS too but just drawing a quad
+
+        //Add monikers for the requirement levels
+
         public double MonikerSize 
         {
             get { return Math.Max(Shape.Width, Shape.Height); }
@@ -35,6 +43,41 @@ namespace CompileScore.Common
                 Children.Add(Shape);
             }
         }
-
     }
+
+    /*
+    public static BitmapSource CreateBitmapSourceFromGdiBitmap(Bitmap bitmap)
+    {
+        if (bitmap == null)
+            throw new ArgumentNullException("bitmap");
+
+        var rect = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
+
+        var bitmapData = bitmap.LockBits(
+            rect,
+            ImageLockMode.ReadWrite,
+            PixelFormat.Format32bppArgb);
+
+        try
+        {
+            var size = (rect.Width * rect.Height) * 4;
+
+            return BitmapSource.Create(
+                bitmap.Width,
+                bitmap.Height,
+                bitmap.HorizontalResolution,
+                bitmap.VerticalResolution,
+                PixelFormats.Bgra32,
+                null,
+                bitmapData.Scan0,
+                size,
+                bitmapData.Stride);
+        }
+        finally
+        {
+            bitmap.UnlockBits(bitmapData);
+        }
+    }
+    */
+
 }
