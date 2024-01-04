@@ -136,11 +136,11 @@ namespace CompileScore
                     new ClassifiedTextElement(
                             new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, $"Compile Score ({criteria}):  ")
                         ),
-                    new ImageElement(value.Severity > 0 ? _severityOnIcon : _severityOffIcon),
-                    new ImageElement(value.Severity > 1 ? _severityOnIcon : _severityOffIcon),
-                    new ImageElement(value.Severity > 2 ? _severityOnIcon : _severityOffIcon),
-                    new ImageElement(value.Severity > 3 ? _severityOnIcon : _severityOffIcon),
-                    new ImageElement(value.Severity > 4 ? _severityOnIcon : _severityOffIcon)
+                    new ImageElement(value.Severity >= 1 ? _severityOnIcon : _severityOffIcon),
+                    new ImageElement(value.Severity >= 2 ? _severityOnIcon : _severityOffIcon),
+                    new ImageElement(value.Severity >= 3 ? _severityOnIcon : _severityOffIcon),
+                    new ImageElement(value.Severity >= 4 ? _severityOnIcon : _severityOffIcon),
+                    new ImageElement(value.Severity >= 5 ? _severityOnIcon : _severityOffIcon)
                 ));
 
                 CreateIncludersElement(elements, value, documentPath);

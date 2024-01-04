@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Drawing;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace CompileScore.Common
 {
@@ -14,6 +14,8 @@ namespace CompileScore.Common
     public class MonikerProxy : Grid
     {
         private Border Shape {  get; set; } = new Border();
+
+        public static int Dpi { get; set; } = 1;
 
         public double MonikerSize 
         { 
@@ -45,5 +47,20 @@ namespace CompileScore.Common
                 Children.Add(Shape);
             }
         }
+
+        public static void DrawTo(DrawingContext drawingContext, Rect rect, MonikerType type)
+        {
+            switch (type)
+            {
+                case MonikerType.ScoreOn:
+                    drawingContext.DrawRectangle(Colors.OtherBrush, new Pen(Brushes.Transparent, 1), rect);
+                    break;
+                default:
+                    drawingContext.DrawRectangle(Colors.ThreadBrush, new Pen(Brushes.Transparent, 1), rect);
+                    break;
+            }
+
+        }
+
     }
 }

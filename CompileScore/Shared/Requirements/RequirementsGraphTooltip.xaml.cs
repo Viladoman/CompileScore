@@ -30,11 +30,11 @@ namespace CompileScore.Requirements
             {
                 float severity = (value as CompileValue).Severity;
 
-                score0.SetMoniker(severity > 0 ? MonikerType.ScoreOn : MonikerType.ScoreOff);
-                score1.SetMoniker(severity > 1 ? MonikerType.ScoreOn : MonikerType.ScoreOff);
-                score2.SetMoniker(severity > 2 ? MonikerType.ScoreOn : MonikerType.ScoreOff);
-                score3.SetMoniker(severity > 3 ? MonikerType.ScoreOn : MonikerType.ScoreOff);
-                score4.SetMoniker(severity > 4 ? MonikerType.ScoreOn : MonikerType.ScoreOff);
+                score0.SetMoniker(severity >= 1 ? MonikerType.ScoreOn : MonikerType.ScoreOff);
+                score1.SetMoniker(severity >= 2 ? MonikerType.ScoreOn : MonikerType.ScoreOff);
+                score2.SetMoniker(severity >= 3 ? MonikerType.ScoreOn : MonikerType.ScoreOff);
+                score3.SetMoniker(severity >= 4 ? MonikerType.ScoreOn : MonikerType.ScoreOff);
+                score4.SetMoniker(severity >= 5 ? MonikerType.ScoreOn : MonikerType.ScoreOff);
             }
             
             scoreGrid.Visibility = value is CompileValue ? Visibility.Visible : Visibility.Collapsed;

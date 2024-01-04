@@ -134,7 +134,7 @@ namespace CompileScore
         public SeverityCriteria OptionSeverityCriteria { set; get; }
 
         private List<uint> fakeSeveritiesValue = new List<uint>();
-        private List<float> fakeSeveritiesNormalized = new List<float>();
+        private List<float> fakeSeveritiesNormalized = new List<float> { 50.0f, 75.0f, 90.0f, 98.0f };
 
         public List<uint> GetOptionValueSeverities() { return fakeSeveritiesValue; }
         public List<float> GetOptionNormalizedSeverities() { return fakeSeveritiesNormalized; }

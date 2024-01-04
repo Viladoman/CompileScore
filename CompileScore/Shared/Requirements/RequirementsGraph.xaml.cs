@@ -145,6 +145,8 @@ namespace CompileScore.Requirements
         const double NodeWidthSeparation = 10.0;
         const double NodeHeightSeparation = 10.0;
         const double IndirectExtraSeparation = 20.0;
+        const double ScoreIconSize = 16.0;
+        const double ScoreIconSpacing = 2.0;
 
         private double NodeHeight = NodeBaseHeight;
 
@@ -156,7 +158,7 @@ namespace CompileScore.Requirements
         private Brush activeBrush  = Brushes.White.Clone();
         private Pen borderPen = new Pen(Brushes.Black, 1);
         private Pen dashedPen = new Pen(Brushes.Black, 1);
-        private Pen transparentPen = new Pen(Brushes.Transparent, 1);
+        private Pen selectedPen = new Pen(Brushes.Black, 3);
         private Typeface Font = new Typeface("Verdana");
 
         private ParserUnit Unit { set; get; }
@@ -176,7 +178,8 @@ namespace CompileScore.Requirements
             compilerData.Hydrate(CompilerData.HydrateFlag.Main);
 
             compilerData.ScoreDataChanged += OnScoreDataChanged;
-            //TODO ~ ramonv ~ add parser data changed 
+
+            MonikerProxy.Dpi = (int)VisualTreeHelper.GetDpi(this).PixelsPerInchX;
 
             dashedPen.DashStyle = DashStyles.Dash;
             overlayBrush.Opacity = 0.3;
@@ -210,6 +213,8 @@ namespace CompileScore.Requirements
 
         private void SetRoot(RequirementGraphRoot root)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             Root = root;
 
             SetActiveNode(null);
@@ -222,6 +227,8 @@ namespace CompileScore.Requirements
 
         private void SetHoverNode(object node)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (node != Hover)
             {
                 //Close Tooltip 
@@ -242,6 +249,8 @@ namespace CompileScore.Requirements
 
         private void SetActiveNode(object node)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (node != Active)
             {
                 Active = node;
@@ -288,6 +297,8 @@ namespace CompileScore.Requirements
 
         private void OnScrollViewerLoaded(object sender, RoutedEventArgs e)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             //Fix the issue with the colored corner square
             ((Rectangle)scrollViewer.Template.FindName("Corner", scrollViewer)).Fill = scrollViewer.Background;
 
@@ -297,6 +308,8 @@ namespace CompileScore.Requirements
 
         private void OnScrollViewerScrollChanged(object sender, ScrollChangedEventArgs e)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             restoreScrollX = scrollViewer.HorizontalOffset;
             restoreScrollY = scrollViewer.VerticalOffset;
             RefreshAll();
@@ -310,17 +323,23 @@ namespace CompileScore.Requirements
 
         private void OnScrollViewerMouseMove(object sender, MouseEventArgs e)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             Point p = e.GetPosition(canvas);
             SetHoverNode(Root == null ? null : GetElementAtPosition(p.X, p.Y));
         }
 
         private void OnScrollViewerMouseLeave(object sender, MouseEventArgs e)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             SetHoverNode(null);
         }
 
         private void OnScrollViewerMouseLeftClick(object sender, MouseButtonEventArgs e)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if ( Root == null )
                 return;
 
@@ -365,12 +384,16 @@ namespace CompileScore.Requirements
 
         private void RefreshAll()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             RenderBase();
             RenderOverlay();
         }
 
         private void RenderBase()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (Root == null)
             {
                 //Clear the canvas
@@ -384,7 +407,7 @@ namespace CompileScore.Requirements
 
                 using (DrawingContext drawingContext = baseVisual.Visual.RenderOpen())
                 {
-                    RenderRootNode(drawingContext, Root.ProfilerValue is UnitValue ? Common.Colors.ExecuteCompilerBrush : Common.Colors.IncludeBrush);
+                    RenderRootNode(drawingContext, Root.ProfilerValue is UnitValue ? Common.Colors.ExecuteCompilerBrush : Common.Colors.IncludeBrush, borderPen);
 
                     if ( Root.Nodes.Count > 0 )
                     {
@@ -407,28 +430,34 @@ namespace CompileScore.Requirements
             }
         }
 
-        private void RenderOverlayedNode(DrawingContext drawingContext, object node, Brush brush)
+        private void RenderOverlayedNode(DrawingContext drawingContext, object node, Brush brush, Pen pen)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (node != null)
             {
                 if (node is RequirementGraphNode)
                 {
                     RequirementGraphNode graphNode = node as RequirementGraphNode;
-                    RenderNodeSingle(drawingContext, graphNode, GetColumnLocation(graphNode.Column), GetRowLocation(graphNode.Row), brush);
+                    RenderOverlayedNodeGraph(drawingContext, graphNode, GetColumnLocation(graphNode.Column), GetRowLocation(graphNode.Row), brush, pen);
                 }
                 else if (Hover is RequirementGraphRoot)
                 {
-                    RenderRootNode(drawingContext, brush);
+                    RenderRootNode(drawingContext, brush, pen);
                 }
             }
         }
 
         private void RenderOverlay()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             using (DrawingContext drawingContext = overlayVisual.Visual.RenderOpen())
             {
-                RenderOverlayedNode(drawingContext, Active, activeBrush);
-                RenderOverlayedNode(drawingContext, Hover,  overlayBrush);
+                selectedPen.Brush = this.Foreground;
+
+                RenderOverlayedNode(drawingContext, Active, activeBrush, selectedPen);
+                RenderOverlayedNode(drawingContext, Hover,  overlayBrush, borderPen);
             }
 
             RefreshCanvasVisual(overlayVisual);
@@ -512,6 +541,8 @@ namespace CompileScore.Requirements
 
         private void RenderNodeRow(DrawingContext drawingContext, RequirementGraphNode node, int firstColumn, int lastColumn)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             double nodePositionY = GetRowLocation(node.Row);
 
             for (int column = 0; column <= lastColumn && node != null; ++column)
@@ -548,20 +579,30 @@ namespace CompileScore.Requirements
 
         private void RenderNodeProfilerChunk(DrawingContext drawingContext, CompileValue value, double posX, double posY)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if ( value != null)
             {
                 Brush severityColor = Common.Colors.GetSeverityBrush((uint)value.Severity);
-                drawingContext.DrawRoundedRectangle(severityColor, transparentPen, new Rect(posX, posY+NodeBaseHeight, NodeWidth, NodeProfilerHeight), 5, 5);
+                drawingContext.DrawRectangle(severityColor, borderPen, new Rect(posX+5, posY+NodeBaseHeight, NodeWidth-10, NodeProfilerHeight));
 
-                //MonikerProxy.DrawTo(drawingContext);
+                double iconPosX = posX + (NodeWidth * 0.5) - (ScoreIconSize * 2.5) - (ScoreIconSpacing * 2.0);
+                double iconPosY = posY + NodeBaseHeight + (NodeProfilerHeight * 0.5) - (ScoreIconSize * 0.5);
 
-                //drawingContext.DrawImage(,);
+                //Score icons
+                for (int i = 1; i <= 5; ++i, iconPosX += (ScoreIconSize+ScoreIconSpacing))
+                {
+                    MonikerType moniker = value.Severity >= i ? MonikerType.ScoreOn : MonikerType.ScoreOff;
+                    MonikerProxy.DrawTo(drawingContext,new Rect(iconPosX, iconPosY, ScoreIconSize, ScoreIconSize), moniker);
+                }
             }
         }
 
         private void RenderNodeSingle(DrawingContext drawingContext, RequirementGraphNode node, double posX, double posY, Brush brush)
         {
-            drawingContext.DrawRoundedRectangle(brush, borderPen, new Rect(posX, posY, NodeWidth, NodeHeight), 5, 5);
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            drawingContext.DrawRoundedRectangle(brush, borderPen, new Rect(posX, posY, NodeWidth, NodeBaseHeight), 5, 5);
 
             //Render text
             var UIText = new FormattedText(node.Label, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, Font, 12, Common.Colors.GetCategoryForeground(), VisualTreeHelper.GetDpi(this).PixelsPerDip);
@@ -576,10 +617,20 @@ namespace CompileScore.Requirements
             RenderNodeProfilerChunk(drawingContext, node.ProfilerValue, posX, posY);
         }
 
-        private void RenderRootNode(DrawingContext drawingContext, Brush brush)
+        private void RenderOverlayedNodeGraph(DrawingContext drawingContext, RequirementGraphNode node, double posX, double posY, Brush brush, Pen pen)
+        {
+            drawingContext.DrawRoundedRectangle(brush, pen, new Rect(posX, posY, NodeWidth, NodeBaseHeight), 5, 5);
+
+            if (node.ProfilerValue != null)
+            {
+                drawingContext.DrawRectangle(brush, pen, new Rect(posX + 5, posY + NodeBaseHeight, NodeWidth - 10, NodeProfilerHeight));
+            }
+        }
+
+        private void RenderRootNode(DrawingContext drawingContext, Brush brush, Pen pen)
         {
             double rootHeight = canvas.Height - ( ( 2.0 * CanvasPaddingY) );
-            drawingContext.DrawRectangle(brush, borderPen, new Rect(CanvasPaddingX, CanvasPaddingY, RootWidth, rootHeight));
+            drawingContext.DrawRectangle(brush, pen, new Rect(CanvasPaddingX, CanvasPaddingY, RootWidth, rootHeight));
         }
 
     }
