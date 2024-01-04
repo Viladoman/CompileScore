@@ -312,7 +312,6 @@ namespace CompileScore.Requirements
 
             restoreScrollX = scrollViewer.HorizontalOffset;
             restoreScrollY = scrollViewer.VerticalOffset;
-            RefreshAll();
         }
 
         private void OnScrollView2DMouseScroll(object sender, Timeline.Mouse2DScrollEventArgs e)
@@ -351,7 +350,7 @@ namespace CompileScore.Requirements
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (Root == null)
+            if (Root == null || e.ChangedButton != MouseButton.Left)
                 return;
 
             Point p = e.GetPosition(canvas);
@@ -409,19 +408,9 @@ namespace CompileScore.Requirements
                 {
                     RenderRootNode(drawingContext, Root.ProfilerValue is UnitValue ? Common.Colors.ExecuteCompilerBrush : Common.Colors.IncludeBrush, borderPen);
 
-                    if ( Root.Nodes.Count > 0 )
+                    for ( int row = 0; row < Root.Nodes.Count; ++row)
                     {
-                        //Get the Row and Columns we need to draw
-                        int firstRow = GetRow(scrollViewer.VerticalOffset);
-                        int lastRow = GetRow(scrollViewer.VerticalOffset + scrollViewer.ViewportHeight);
-
-                        int firstColumn = GetColumn(scrollViewer.HorizontalOffset);
-                        int lastColumn = GetColumn(scrollViewer.HorizontalOffset + scrollViewer.ViewportWidth);
-
-                        for ( int row = firstRow; row <= lastRow && row < Root.Nodes.Count; ++row)
-                        {
-                            RenderNodeRow(drawingContext, Root.Nodes[row], firstColumn, lastColumn);
-                        }
+                        RenderNodeRow(drawingContext, Root.Nodes[row]);
                     }
                 }
 
@@ -539,21 +528,17 @@ namespace CompileScore.Requirements
             return node;
         }
 
-        private void RenderNodeRow(DrawingContext drawingContext, RequirementGraphNode node, int firstColumn, int lastColumn)
+        private void RenderNodeRow(DrawingContext drawingContext, RequirementGraphNode node)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             double nodePositionY = GetRowLocation(node.Row);
 
-            for (int column = 0; column <= lastColumn && node != null; ++column)
+            while (node != null)
             {
-                if ( column >= firstColumn )
-                {
-                    double nodePositionX = GetColumnLocation(node.Column);
-                    RenderConnectingLine(drawingContext, node, nodePositionX, nodePositionY);
-                    RenderNodeSingle(drawingContext, node, nodePositionX, nodePositionY, Common.Colors.InstantiateFuncBrush);
-                }
-
+                double nodePositionX = GetColumnLocation(node.Column);
+                RenderConnectingLine(drawingContext, node, nodePositionX, nodePositionY);
+                RenderNodeSingle(drawingContext, node, nodePositionX, nodePositionY, Common.Colors.InstantiateFuncBrush);
                 node = node.ChildNode;
             }
         }
