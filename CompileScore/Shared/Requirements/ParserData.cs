@@ -134,6 +134,8 @@ namespace CompileScore
 
         private Dictionary<string, ParserUnit> Units = new Dictionary<string, ParserUnit>();
 
+        public event Notify ThemeChanged;
+
         public void LoadUnitFile(string fullPath)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -456,5 +458,9 @@ namespace CompileScore
             return window;
         }
 
+        public void OnThemeChanged()
+        {
+            ThemeChanged?.Invoke();
+        }
     }
 }

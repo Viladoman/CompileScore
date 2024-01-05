@@ -195,6 +195,8 @@ namespace CompileScore.Requirements
             scrollViewer.OnMouseLeftClick += OnScrollViewerMouseLeftClick;
             scrollViewer.MouseDoubleClick += OnScrollViewerDoubleClick;
             //scrollViewer.MouseRightButtonDown += OnScrollViewerContextMenu;
+
+            ParserData.Instance.ThemeChanged += RefreshAll;
         }
 
         private void OnScoreDataChanged()

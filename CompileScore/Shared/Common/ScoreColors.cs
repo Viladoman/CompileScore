@@ -23,13 +23,6 @@ namespace CompileScore.Common
         public static Brush ThreadBrush               = new SolidColorBrush(Color.FromRgb(75,  75,  75));
         public static Brush TimelineBrush             = new SolidColorBrush(Color.FromRgb(51,  51,  51));
 
-
-        public static Brush LinkNoneBrush             = new SolidColorBrush(Color.FromRgb(75,  75,  75));
-        public static Brush LinkMinimalBrush          = new SolidColorBrush(Color.FromRgb(0, 119, 0));
-        public static Brush LinkWeakBrush             = new SolidColorBrush(Color.FromRgb(0, 0, 119));
-        public static Brush LinkMediumBrush           = new SolidColorBrush(Color.FromRgb(170, 115, 0));
-        public static Brush LinkStrongBrush           = new SolidColorBrush(Color.FromRgb(119, 0, 0));
-
         static public Brush GetCategoryBackground(CompilerData.CompileCategory category)
         {
             switch (category)
@@ -80,16 +73,12 @@ namespace CompileScore.Common
 
         public static Brush GetRequirementStrengthBrush(ParserEnums.LinkStrength strength)
         {
-            switch (strength)
+            int strengthIndex = ((int)strength);
+            if (strengthIndex >= 0 && strengthIndex < ThemeSettingsPageGrid.StrengthColors.Length)
             {
-                case ParserEnums.LinkStrength.None:    return LinkNoneBrush;
-                case ParserEnums.LinkStrength.Minimal: return LinkMinimalBrush;
-                case ParserEnums.LinkStrength.Weak:    return LinkWeakBrush;
-                case ParserEnums.LinkStrength.Medium:  return LinkMediumBrush;
-                case ParserEnums.LinkStrength.Strong:  return LinkStrongBrush;
-
-                default: return OtherBrush;
+                return new SolidColorBrush(ThemeSettingsPageGrid.StrengthColors[strengthIndex]);
             }
+            return new SolidColorBrush(Color.FromArgb((byte)255, (byte)0, (byte)0, (byte)0));
         }
 
     }

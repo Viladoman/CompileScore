@@ -145,11 +145,17 @@ namespace CompileScore
 
     public class ThemeSettingsPageGrid
     {
-        static public Color[] SeverityColors { set; get; } = { (Color)ColorConverter.ConvertFromString("#40C8C8C8"),
+        static public readonly Color[] SeverityColors = { (Color)ColorConverter.ConvertFromString("#40C8C8C8"),
                                                           (Color)ColorConverter.ConvertFromString("#401EFF00"),
                                                           (Color)ColorConverter.ConvertFromString("#400070DD"),
                                                           (Color)ColorConverter.ConvertFromString("#40A335EE"),
                                                           (Color)ColorConverter.ConvertFromString("#40FF8000") };
+
+        static public readonly Color[] StrengthColors ={ (Color)ColorConverter.ConvertFromString("#FF606060"),
+                                                         (Color)ColorConverter.ConvertFromString("#FF40B740"),
+                                                         (Color)ColorConverter.ConvertFromString("#FF40B7B7"),
+                                                         (Color)ColorConverter.ConvertFromString("#FFB7B700"),
+                                                         (Color)ColorConverter.ConvertFromString("#FFB70000") };
 
     }
 

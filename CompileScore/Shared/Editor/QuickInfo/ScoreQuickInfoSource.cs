@@ -1,4 +1,5 @@
 ﻿using CompileScore.Includers;
+using EnvDTE;
 using Microsoft.VisualStudio.Core.Imaging;
 using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Language.Intellisense;
@@ -271,6 +272,13 @@ namespace CompileScore
                 elements.Add(new ContainerElement(ContainerElementStyle.Wrapped, new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, "-- No Direct Requirements Found --"))));
             }
 
+            elements.Insert(0, new ContainerElement(
+                                  ContainerElementStyle.Wrapped,
+                                  new ClassifiedTextElement(
+                                      new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "Requirement Strength:"),
+                                      new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.BasicUILabel.GetLabel( file.Strength ) )
+                                 )));
+
             if (file.Includes != null && file.Includes.Count > 0)
             {
                 elements.Add(new ContainerElement(
@@ -287,13 +295,10 @@ namespace CompileScore
                 }
             }
 
-            //TODO ~ Ramonv ~ add option to open requirement window from here on VS17
-
-            //#if VS17
-            //ClassifiedTextElement text = new ClassifiedTextElement( ClassifiedTextElement.CreateHyperlink(tag, null,  => Parser.Log(loc.ToString()) ) );
-            //#else
-            //ClassifiedTextElement text = new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, tag));
-            //#endif
+#if VS17
+            //Add Link to open the window for more details
+            //ClassifiedTextElement text = new ClassifiedTextElement( ClassifiedTextElement.CreateHyperlink("Open Requirements Window", null, (e,sender) => Parser.Log(loc.ToString()) ) );
+#endif
 
             return new ContainerElement(ContainerElementStyle.Stacked, elements);
 

@@ -26,8 +26,30 @@ namespace CompileScore
                                                         (Color)ColorConverter.ConvertFromString("#500053E7"),
                                                         (Color)ColorConverter.ConvertFromString("#690000E7") };
 
+
+        static private readonly Color[] kStrWarningColors ={ (Color)ColorConverter.ConvertFromString("#FF606060"),
+                                                             (Color)ColorConverter.ConvertFromString("#FF40B740"),
+                                                             (Color)ColorConverter.ConvertFromString("#FF40B7B7"),
+                                                             (Color)ColorConverter.ConvertFromString("#FFB7B700"),
+                                                             (Color)ColorConverter.ConvertFromString("#FFB70000") };
+
+        static private readonly Color[] kStrFireColors ={ (Color)ColorConverter.ConvertFromString("#FF606060"),
+                                                          (Color)ColorConverter.ConvertFromString("#FFB7B700"),
+                                                          (Color)ColorConverter.ConvertFromString("#FFB7A000"),
+                                                          (Color)ColorConverter.ConvertFromString("#FFB77000"),
+                                                          (Color)ColorConverter.ConvertFromString("#FFB70000") };
+
+        static private readonly Color[] kStrAquaColors ={ (Color)ColorConverter.ConvertFromString("#FF606060"),
+                                                          (Color)ColorConverter.ConvertFromString("#FF00C7C7"),
+                                                          (Color)ColorConverter.ConvertFromString("#FF00B0C7"),
+                                                          (Color)ColorConverter.ConvertFromString("#FF0080C7"),
+                                                          (Color)ColorConverter.ConvertFromString("#FF0050C7") };
+
+
+
         static public Color[] SeverityColors { set; get; } = { kRPGColors[0], kRPGColors[1], kRPGColors[2], kRPGColors[3], kRPGColors[4] };
 
+        static public Color[] StrengthColors { set; get; } = { kStrWarningColors[0], kStrWarningColors[1], kStrWarningColors[2], kStrWarningColors[3], kStrWarningColors[4] };
 
         public enum SeverityTheme
         {
@@ -37,7 +59,16 @@ namespace CompileScore
             Aqua,
         }
 
+        public enum StrengthTheme
+        {
+            Custom,
+            Warning,
+            Fire,
+            Aqua,
+        }
+
         private SeverityTheme optionSeverityTheme = SeverityTheme.RPG;
+        private StrengthTheme optionStrengthTheme = StrengthTheme.Warning;
 
         private void ChangeSeverityColor(int slot, Color value)
         {
@@ -48,6 +79,18 @@ namespace CompileScore
             {
                 optionSeverityTheme = SeverityTheme.Custom;
                 CompilerData.Instance.OnThemeChanged();
+            }
+        }
+
+        private void ChangeStrengthColor(int slot, Color value)
+        {
+            bool hasChanged = !StrengthColors[slot].Equals(value);
+            StrengthColors[slot] = value;
+
+            if (hasChanged)
+            {
+                optionStrengthTheme = StrengthTheme.Custom;
+                ParserData.Instance.OnThemeChanged();
             }
         }
 
@@ -75,6 +118,32 @@ namespace CompileScore
                 }
             }
         }
+
+        [Category("Global")]
+        [DisplayName("Requirement Strength Theme")]
+        [Description("Set the color theme for the different requirement strengths")]
+        public StrengthTheme OptionStrengthTheme
+        {
+            get { return optionStrengthTheme; }
+            set
+            {
+                bool hasChanged = optionStrengthTheme != value;
+                optionStrengthTheme = value;
+                switch (value)
+                {
+                    case StrengthTheme.Warning: Array.Copy(kStrWarningColors, StrengthColors, 5); break;
+                    case StrengthTheme.Fire:    Array.Copy(kStrFireColors, StrengthColors, 5); break;
+                    case StrengthTheme.Aqua:    Array.Copy(kStrAquaColors, StrengthColors, 5); break;
+                    case StrengthTheme.Custom: break;
+                }
+
+                if (hasChanged)
+                {
+                    ParserData.Instance.OnThemeChanged();
+                }
+            }
+        }
+
 
         [Category("Severity")]
         [DisplayName("Score 1")]
@@ -120,6 +189,52 @@ namespace CompileScore
             get { return SeverityColors[4]; }
             set { ChangeSeverityColor(4, value); }
         }
+
+        [Category("Strength")]
+        [DisplayName("Strength 1 (None)")]
+        [Description("Color used to indicate a requirement strength of level 1")]
+        public Color OptionStrengthColor1
+        {
+            get { return StrengthColors[0]; }
+            set { ChangeStrengthColor(0, value); }
+        }
+
+        [Category("Strength")]
+        [DisplayName("Strength 2 (Minimal)")]
+        [Description("Color used to indicate a requirement strength of level 2")]
+        public Color OptionStrengthColor2
+        {
+            get { return StrengthColors[1]; }
+            set { ChangeStrengthColor(1, value); }
+        }
+
+        [Category("Strength")]
+        [DisplayName("Strength 3 (Weak)")]
+        [Description("Color used to indicate a requirement strength of level 3")]
+        public Color OptionStrengthColor3
+        {
+            get { return StrengthColors[2]; }
+            set { ChangeStrengthColor(2, value); }
+        }
+
+        [Category("Strength")]
+        [DisplayName("Strength 4 (Medium)")]
+        [Description("Color used to indicate a requirement strength of level 4")]
+        public Color OptionStrengthColor4
+        {
+            get { return StrengthColors[3]; }
+            set { ChangeStrengthColor(3, value); }
+        }
+
+        [Category("Strength")]
+        [DisplayName("Strength 5 (Strong)")]
+        [Description("Color used to indicate a requirement strength of level 5")]
+        public Color OptionStrengthColor5
+        {
+            get { return StrengthColors[4]; }
+            set { ChangeStrengthColor(4, value); }
+        }
+
     }
 
 }
