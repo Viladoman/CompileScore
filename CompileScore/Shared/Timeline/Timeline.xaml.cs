@@ -561,6 +561,10 @@ namespace CompileScore.Timeline
                         contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Includers Graph", (a, b) => Includers.CompilerIncluders.Instance.DisplayIncluders(value)));
                     }
 
+#if VS17 || VS16
+                    contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Requirements Graph", (a, b) => ParserData.DisplayRequirements(CompilerData.Instance.Folders.GetValuePathSafe(value))));
+#endif
+
                     contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open File", (sender, e) => EditorUtils.OpenFile(value)));
                     contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetDataObject(CompilerData.Instance.Folders.GetValuePathSafe(value))));
                 }
@@ -574,6 +578,10 @@ namespace CompileScore.Timeline
             else if (nodeValue is UnitValue)
             {
                 var value = nodeValue as UnitValue;
+
+#if VS17 || VS16
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Requirements Graph", (a, b) => ParserData.DisplayRequirements(CompilerData.Instance.Folders.GetUnitPathSafe(value))));
+#endif
 
                 contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open File", (sender, e) => EditorUtils.OpenFile(value)));
                 contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetDataObject(CompilerData.Instance.Folders.GetUnitPathSafe(value))));

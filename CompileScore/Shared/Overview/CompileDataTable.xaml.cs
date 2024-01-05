@@ -292,6 +292,9 @@ namespace CompileScore.Overview
             if (Category == CompilerData.CompileCategory.Include)
             {
                 contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Includers Graph", (a,b) => Includers.CompilerIncluders.Instance.DisplayIncluders(value)));
+#if VS17 || VS16
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Requirements Graph", (a, b) => ParserData.DisplayRequirements(CompilerData.Instance.Folders.GetValuePathSafe(value))));
+#endif
             }
 
             if (Category == CompilerData.CompileCategory.Include)

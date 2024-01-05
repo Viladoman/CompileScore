@@ -238,6 +238,10 @@ namespace CompileScore.Overview
 
             contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Timeline", (a, b) => Timeline.CompilerTimeline.Instance.DisplayTimeline(value)));
 
+#if VS17 || VS16
+            contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Requirements Graph", (a, b) => ParserData.DisplayRequirements(CompilerData.Instance.Folders.GetUnitPathSafe(value))));
+#endif
+
             contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open File", (a, b) => EditorUtils.OpenFile(value)));
             contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetDataObject(CompilerData.Instance.Folders.GetUnitPathSafe(value))));
 

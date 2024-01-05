@@ -140,7 +140,10 @@ namespace CompileScore
 
             if ( unit != null )
             {
-                Timeline.CompilerTimeline.Instance.DisplayTimeline(unit);
+                System.Windows.Forms.ContextMenuStrip contextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Timeline", (a, b) => Timeline.CompilerTimeline.Instance.DisplayTimeline(unit) ));
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Requirements Graph", (a, b) => ParserData.DisplayRequirements(CompilerData.Instance.Folders.GetUnitPathSafe(unit))));
+                contextMenuStrip.Show(System.Windows.Forms.Control.MousePosition, System.Windows.Forms.ToolStripDropDownDirection.AboveLeft);
             }
             
             if ( value != null )
@@ -149,6 +152,7 @@ namespace CompileScore
                 contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Locate Max Timeline", (a, b) => Timeline.CompilerTimeline.Instance.DisplayTimeline(value.MaxUnit, value)));
                 contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Locate Max Self Timeline", (a, b) => Timeline.CompilerTimeline.Instance.DisplayTimeline(value.SelfMaxUnit, value)));
                 contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Includers Graph", (a, b) => Includers.CompilerIncluders.Instance.DisplayIncluders(value)));
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Requirements Graph", (a, b) => ParserData.DisplayRequirements(CompilerData.Instance.Folders.GetValuePathSafe(value))));
                 contextMenuStrip.Show(System.Windows.Forms.Control.MousePosition, System.Windows.Forms.ToolStripDropDownDirection.AboveLeft);
             }
 

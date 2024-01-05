@@ -19,26 +19,26 @@ namespace CompileScore
         public const int CommandId_RequirementsWindow = 259;
         public static readonly Guid CommandSet_Windows = new Guid("e5262ec1-fb68-442d-92f7-0b4a66774209");
 
-        public const int CommandId_Build          = 256;
-        public const int CommandId_Rebuild        = 257;
-        public const int CommandId_BuildProject   = 267;
-        public const int CommandId_RebuildProject = 268;
-		public const int CommandId_StartTrace     = 269;
-		public const int CommandId_StopTrace      = 270;
+        public const int CommandId_Build            = 256;
+        public const int CommandId_Rebuild          = 257;
+        public const int CommandId_BuildProject     = 267;
+        public const int CommandId_RebuildProject   = 268;
+		public const int CommandId_StartTrace       = 269;
+		public const int CommandId_StopTrace        = 270;
 
-		public const int CommandId_Generate       = 259;
-		public const int CommandId_Clean          = 258;
+		public const int CommandId_Generate         = 259;
+		public const int CommandId_Clean            = 258;
 
-        public const int CommandId_Open           = 260;
-        public const int CommandId_LoadDefault    = 261;
-        public const int CommandId_Settings       = 262;
-        public const int CommandId_Documentation  = 263;
-        public const int CommandId_About          = 264;
+        public const int CommandId_Open             = 260;
+        public const int CommandId_LoadDefault      = 261;
+        public const int CommandId_Settings         = 262;
+        public const int CommandId_Documentation    = 263;
+        public const int CommandId_About            = 264;
 
-        public const int CommandId_ShowTimeline   = 265;
-        public const int CommandId_ShowIncluders  = 266;
-
-        public const int CommandId_TriggerParser  = 272;
+        public const int CommandId_ShowTimeline     = 265;
+        public const int CommandId_ShowIncluders    = 266;
+        public const int CommandId_ShowRequirements = 272;
+        public const int CommandId_TriggerParser    = 273;
 
         public const int CommandId_ToggleTextHighlight = 271;
 
@@ -76,6 +76,7 @@ namespace CompileScore
                 commandService.AddCommand(menuItem);
             }
 
+            commandService.AddCommand(new MenuCommand(Execute_ShowRequirements, new CommandID(CommandSet_Custom, CommandId_ShowRequirements)));
             commandService.AddCommand(new MenuCommand(Execute_TriggerParser, new CommandID(CommandSet_Custom, CommandId_TriggerParser)));
 
             commandService.AddCommand(new MenuCommand(Execute_Settings,      new CommandID(CommandSet_Custom, CommandId_Settings)));
@@ -236,6 +237,20 @@ namespace CompileScore
             {
                 Includers.CompilerIncluders.Instance.DisplayIncluders(value);
             }
+        }
+
+        private static void Execute_ShowRequirements(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            Document doc = EditorUtils.GetActiveDocument();
+            if (doc == null)
+            {
+                MessageWindow.Display(new MessageContent("Unable to get the active document."));
+                return;
+            }
+
+            ParserData.DisplayRequirements(doc.FullName);
         }
 
         private static void Execute_TriggerParser(object sender, EventArgs e)
