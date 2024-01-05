@@ -28,22 +28,22 @@ namespace CompileScore
 
 
         static private readonly Color[] kStrWarningColors ={ (Color)ColorConverter.ConvertFromString("#FF606060"),
-                                                             (Color)ColorConverter.ConvertFromString("#FF40B740"),
-                                                             (Color)ColorConverter.ConvertFromString("#FF40B7B7"),
-                                                             (Color)ColorConverter.ConvertFromString("#FFB7B700"),
-                                                             (Color)ColorConverter.ConvertFromString("#FFB70000") };
+                                                             (Color)ColorConverter.ConvertFromString("#FF309730"),
+                                                             (Color)ColorConverter.ConvertFromString("#FF309797"),
+                                                             (Color)ColorConverter.ConvertFromString("#FF979700"),
+                                                             (Color)ColorConverter.ConvertFromString("#FF970000") };
 
         static private readonly Color[] kStrFireColors ={ (Color)ColorConverter.ConvertFromString("#FF606060"),
-                                                          (Color)ColorConverter.ConvertFromString("#FFB7B700"),
-                                                          (Color)ColorConverter.ConvertFromString("#FFB7A000"),
-                                                          (Color)ColorConverter.ConvertFromString("#FFB77000"),
-                                                          (Color)ColorConverter.ConvertFromString("#FFB70000") };
+                                                          (Color)ColorConverter.ConvertFromString("#FF97B700"),
+                                                          (Color)ColorConverter.ConvertFromString("#FF978000"),
+                                                          (Color)ColorConverter.ConvertFromString("#FF975000"),
+                                                          (Color)ColorConverter.ConvertFromString("#FF970000") };
 
         static private readonly Color[] kStrAquaColors ={ (Color)ColorConverter.ConvertFromString("#FF606060"),
-                                                          (Color)ColorConverter.ConvertFromString("#FF00C7C7"),
-                                                          (Color)ColorConverter.ConvertFromString("#FF00B0C7"),
-                                                          (Color)ColorConverter.ConvertFromString("#FF0080C7"),
-                                                          (Color)ColorConverter.ConvertFromString("#FF0050C7") };
+                                                          (Color)ColorConverter.ConvertFromString("#FF00A7A7"),
+                                                          (Color)ColorConverter.ConvertFromString("#FF0090A7"),
+                                                          (Color)ColorConverter.ConvertFromString("#FF0050A7"),
+                                                          (Color)ColorConverter.ConvertFromString("#FF0020A7") };
 
 
 

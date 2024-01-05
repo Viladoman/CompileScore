@@ -152,10 +152,10 @@ namespace CompileScore
                                                           (Color)ColorConverter.ConvertFromString("#40FF8000") };
 
         static public readonly Color[] StrengthColors ={ (Color)ColorConverter.ConvertFromString("#FF606060"),
-                                                         (Color)ColorConverter.ConvertFromString("#FF40B740"),
-                                                         (Color)ColorConverter.ConvertFromString("#FF40B7B7"),
-                                                         (Color)ColorConverter.ConvertFromString("#FFB7B700"),
-                                                         (Color)ColorConverter.ConvertFromString("#FFB70000") };
+                                                         (Color)ColorConverter.ConvertFromString("#FF309730"),
+                                                         (Color)ColorConverter.ConvertFromString("#FF309797"),
+                                                         (Color)ColorConverter.ConvertFromString("#FF979700"),
+                                                         (Color)ColorConverter.ConvertFromString("#FF970000") };
 
     }
 
