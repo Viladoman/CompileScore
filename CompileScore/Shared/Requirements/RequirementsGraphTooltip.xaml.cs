@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Documents;
 
 namespace CompileScore.Requirements
 {
@@ -94,25 +95,41 @@ namespace CompileScore.Requirements
             string globalsTxt = GetGlobalsRequirementRecap(fileReq);
             if (globalsTxt.Length > 0)
             {
-                requirementPanel.Children.Add(new TextBlock() { Text = "Globals:" + globalsTxt });
+                TextBlock txtblock = new TextBlock();
+                txtblock.Inlines.Add(new Run("Globals:") { TextDecorations = TextDecorations.Underline });
+                txtblock.Inlines.Add(globalsTxt);
+                requirementPanel.Children.Add(txtblock);
+
             }
 
             string structureUsageTxt = GetStructureUsageRequirementRecap(fileReq);
             if (structureUsageTxt.Length > 0)
             {
-                requirementPanel.Children.Add(new TextBlock() { Text = "Structure Usage:" + structureUsageTxt });
+                TextBlock txtblock = new TextBlock();
+                txtblock.Inlines.Add(new Run("Structure Usage:") { TextDecorations = TextDecorations.Underline });
+                txtblock.Inlines.Add(structureUsageTxt);
+                requirementPanel.Children.Add(txtblock);
             }
 
             string structureAccessTxt = GetStructureAccessRequirementRecap(fileReq);
             if (structureAccessTxt.Length > 0)
             {
-                requirementPanel.Children.Add(new TextBlock() { Text = "Structure Access:" + structureAccessTxt });
+                TextBlock txtblock = new TextBlock();
+                txtblock.Inlines.Add(new Run("Structure Access:") { TextDecorations = TextDecorations.Underline });
+                txtblock.Inlines.Add(structureAccessTxt);
+                requirementPanel.Children.Add(txtblock);
             }
 
             if ( requirementPanel.Children.Count == 0 ) 
             {
                 requirementPanel.Children.Add(new TextBlock(){ Text = "-- No Direct Requirements Found --" });
             }
+
+            //set Strength
+            TextBlock strengthText = new TextBlock();
+            strengthText.Inlines.Add(new Run("Requirement Strength:") { TextDecorations = TextDecorations.Underline });
+            strengthText.Inlines.Add(new Run(" " + BasicUILabel.GetLabel(fileReq.Strength)) { FontWeight = FontWeights.Bold });
+            requirementPanel.Children.Insert(0, strengthText);
         }
 
         private void OnNode()

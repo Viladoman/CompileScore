@@ -165,7 +165,7 @@
       <Button guid="guidCompileScorePackageCmdSet1" id="cmdIdTriggerParser" priority="0x0100" type="Button">
         <Parent guid="guidCompileScorePackageCmdSet1" id="CompileScoreMenuActionsGroup" />
         <Strings>
-          <ButtonText>Perform Requirement Analysis on Active Document</ButtonText>
+          <ButtonText>Parse file for Requirements</ButtonText>
         </Strings>
       </Button>
       

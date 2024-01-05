@@ -275,7 +275,7 @@ namespace CompileScore
             {
                 elements.Add(new ContainerElement(
                    ContainerElementStyle.Wrapped,
-                   new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "Required Includes:")
+                   new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "Required Sub Includes:")
                    )));
 
                 foreach (ParserFileRequirements fileReq in file.Includes)

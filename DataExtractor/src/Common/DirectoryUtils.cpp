@@ -3,8 +3,6 @@
 //TODO ~ ramonv ~ This include hurts a lot - I need to find a substitution that works on all platforms
 #include <filesystem>
 
-#include "IOStream.h"
-
 //#define USE_STL_ISEXTENSION
 
 namespace fs = std::filesystem;
