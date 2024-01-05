@@ -284,8 +284,6 @@ namespace CompileScore
                 strength = RequirementLabel.GetStrength((ParserEnums.StructureNamedRequirement)value);
             }
 
-            //TODO ~ ramonv ~ if this is within a context of a source file... snap weak and medium together 
-
             file.Strength = (int)strength > (int)file.Strength ? strength : file.Strength;
         }
 
@@ -456,6 +454,17 @@ namespace CompileScore
             window.ProxyShow();
 
             return window;
+        }
+
+        public static void DisplayRequirements(string fullpath)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            
+            Requirements.RequirementsWindow window = FocusRequirementsWindow();
+            if (window != null)
+            {
+                window.SetRequirements(fullpath);
+            }
         }
 
         public void OnThemeChanged()

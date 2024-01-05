@@ -1,4 +1,5 @@
 ﻿using CompileScore.Common;
+using CompileScore.Timeline;
 using Microsoft.VisualStudio.Shell;
 using System;
 using System.Collections.Generic;
@@ -194,7 +195,7 @@ namespace CompileScore.Requirements
             scrollViewer.MouseLeave += OnScrollViewerMouseLeave;
             scrollViewer.OnMouseLeftClick += OnScrollViewerMouseLeftClick;
             scrollViewer.MouseDoubleClick += OnScrollViewerDoubleClick;
-            //scrollViewer.MouseRightButtonDown += OnScrollViewerContextMenu;
+            scrollViewer.MouseRightButtonDown += OnScrollViewerContextMenu;
 
             ParserData.Instance.ThemeChanged += RefreshAll;
         }
@@ -358,6 +359,16 @@ namespace CompileScore.Requirements
             Point p = e.GetPosition(canvas);
             SetActiveNode(Root == null ? null : GetElementAtPosition(p.X, p.Y));
             OpenFileByNode(Active);
+        }
+
+        private void OnScrollViewerContextMenu(object sender, MouseButtonEventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (Hover != null)
+            {
+                CreateContextualMenu(Hover);
+            }
         }
 
         private void OpenFileByNode(object node)
@@ -621,6 +632,71 @@ namespace CompileScore.Requirements
         {
             double rootHeight = canvas.Height - ( ( 2.0 * CanvasPaddingY) );
             drawingContext.DrawRectangle(brush, pen, new Rect(CanvasPaddingX, CanvasPaddingY, RootWidth, rootHeight));
+        }
+
+        private void CreateContextualMenu(object node)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            System.Windows.Forms.ContextMenuStrip contextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
+            AppendContextualMenuValue(contextMenuStrip, node);
+            contextMenuStrip.Show(System.Windows.Forms.Control.MousePosition);
+        }
+
+        private void AppendContextMenuProfilerValue(System.Windows.Forms.ContextMenuStrip contextMenuStrip, object nodeValue)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (nodeValue == null) 
+                return;
+
+            contextMenuStrip.Items.Add(new System.Windows.Forms.ToolStripSeparator());
+
+            if (nodeValue is CompileValue)
+            {
+                var value = nodeValue as CompileValue;
+
+                contextMenuStrip.Items.Add(UIHelpers.CreateContextItem("Locate Max Timeline", (a, b) => CompilerTimeline.Instance.DisplayTimeline(value.MaxUnit, value)));
+                contextMenuStrip.Items.Add(UIHelpers.CreateContextItem("Locate Max Self Timeline", (a, b) => CompilerTimeline.Instance.DisplayTimeline(value.SelfMaxUnit, value)));                
+                contextMenuStrip.Items.Add(new System.Windows.Forms.ToolStripSeparator());
+                contextMenuStrip.Items.Add(UIHelpers.CreateContextItem("Show Includers Graph", (a, b) => Includers.CompilerIncluders.Instance.DisplayIncluders(value)));
+            }
+            else if (nodeValue is UnitValue)
+            {
+                var value = nodeValue as UnitValue;
+
+                contextMenuStrip.Items.Add(UIHelpers.CreateContextItem("Open Timeline", (a, b) => CompilerTimeline.Instance.DisplayTimeline(value)));
+            }
+        }
+
+        private void AppendContextualMenuValue(System.Windows.Forms.ContextMenuStrip contextMenuStrip, object node)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (node is RequirementGraphRoot)
+            {
+                var value = node as RequirementGraphRoot;
+
+                contextMenuStrip.Items.Add(UIHelpers.CreateContextItem("Open File", (sender, e) => EditorUtils.OpenFileByName(value.Value.Filename)));
+                contextMenuStrip.Items.Add(UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetDataObject(value.Value.Filename)));
+                contextMenuStrip.Items.Add(UIHelpers.CreateContextItem("Copy Name", (sender, e) => Clipboard.SetDataObject(EditorUtils.GetFileNameSafe( value.Value.Filename))));
+
+                AppendContextMenuProfilerValue(contextMenuStrip, value.ProfilerValue);
+
+            }
+            else if (node is RequirementGraphNode)
+            {
+                var value = node as RequirementGraphNode;
+
+                contextMenuStrip.Items.Add(UIHelpers.CreateContextItem("Open File", (sender, e) => EditorUtils.OpenFileByName(value.Value.Name)));
+                contextMenuStrip.Items.Add(UIHelpers.CreateContextItem("Copy Full Path", (a, b) => Clipboard.SetDataObject(value.Value.Name)));
+                contextMenuStrip.Items.Add(UIHelpers.CreateContextItem("Copy Name", (sender, e) => Clipboard.SetDataObject(value.Label)));
+
+                contextMenuStrip.Items.Add(new System.Windows.Forms.ToolStripSeparator());
+                contextMenuStrip.Items.Add(UIHelpers.CreateContextItem("Show Requirements Graph", (sender, e) => ParserData.DisplayRequirements(value.Value.Name)));
+
+                AppendContextMenuProfilerValue(contextMenuStrip, value.ProfilerValue);
+            }
         }
 
     }
