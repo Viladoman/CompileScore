@@ -18,7 +18,7 @@ jobs:
       parserSolution: CompileScoreParser.sln
       appsSolution: CompileScore.sln
       toolsBuildConfig: Release
-      NetPlatform: net8.0-windows
+      NetPlatform: net7.0-windows
     
     strategy:
       matrix:

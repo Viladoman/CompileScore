@@ -15,7 +15,7 @@ jobs:
       parserSolution: ./Parser/CompileScoreParser.sln
       appsDir: ./CompileScore
       appsSolutionName: CompileScore.sln
-      NetPlatform: net8.0-windows
+      NetPlatform: net7.0-windows
 
     steps:
     - name: Checkout
