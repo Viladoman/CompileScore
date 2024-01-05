@@ -1,7 +1,7 @@
 #include "IOStream.h"
 
 #include <cstdio>
-#include <cstdarg>
+#include <stdarg.h>
 
 #include "StringUtils.h"
 

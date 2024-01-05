@@ -1,4 +1,5 @@
 ﻿using CompileScore.Common;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -78,6 +79,16 @@ namespace CompileScore.Requirements
                 }
             }
             return structureAccessTxt;
+        }
+
+        public static string GetSubIncludesRequirementRecap(ParserFileRequirements fileReq)
+        {
+            string txt = "";
+            foreach(ParserFileRequirements subfile in fileReq.Includes ?? Enumerable.Empty<ParserFileRequirements>())
+            {
+                txt += (txt.Length > 0 ? "," : "") + " " + EditorUtils.GetFileNameSafe(subfile.Name);
+            }
+            return txt;
         }
 
         private void SetRequirements(object value)

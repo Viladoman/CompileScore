@@ -234,6 +234,7 @@ namespace CompileScore
             string globalsTxt         = Requirements.RequirementsGraphTooltip.GetGlobalsRequirementRecap(file);
             string structureUsageTxt  = Requirements.RequirementsGraphTooltip.GetStructureUsageRequirementRecap(file);
             string structureAccessTxt = Requirements.RequirementsGraphTooltip.GetStructureAccessRequirementRecap(file);
+            string subIncludesTxt     = Requirements.RequirementsGraphTooltip.GetSubIncludesRequirementRecap(file);
 
             List<ContainerElement> elements = new List<ContainerElement>();
 
@@ -242,7 +243,7 @@ namespace CompileScore
                 elements.Add(new ContainerElement(
                                     ContainerElementStyle.Wrapped,
                                     new ClassifiedTextElement(
-                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "Required Globals:"),
+                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, "Required Globals:"),
                                         new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, globalsTxt)
                                    )));
             }
@@ -252,7 +253,7 @@ namespace CompileScore
                 elements.Add(new ContainerElement(
                                    ContainerElementStyle.Wrapped,
                                    new ClassifiedTextElement(
-                                       new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "Required Structure Usage:"),
+                                       new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, "Required Structure Usage:"),
                                        new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, structureUsageTxt)
                                   )));
             }
@@ -262,7 +263,7 @@ namespace CompileScore
                 elements.Add(new ContainerElement(
                                   ContainerElementStyle.Wrapped,
                                   new ClassifiedTextElement(
-                                      new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "Required Structure Access:"),
+                                      new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, "Required Structure Access:"),
                                       new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, structureAccessTxt)
                                  )));
             }
@@ -272,28 +273,22 @@ namespace CompileScore
                 elements.Add(new ContainerElement(ContainerElementStyle.Wrapped, new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, "-- No Direct Requirements Found --"))));
             }
 
+            if (subIncludesTxt.Length > 0) 
+            {
+                elements.Add(new ContainerElement(
+                                  ContainerElementStyle.Wrapped,
+                                  new ClassifiedTextElement(
+                                      new ClassifiedTextRun(PredefinedClassificationTypeNames.SymbolDefinition, "Required Sub Includes:"),
+                                      new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, subIncludesTxt)
+                                 )));
+            }
+
             elements.Insert(0, new ContainerElement(
                                   ContainerElementStyle.Wrapped,
                                   new ClassifiedTextElement(
-                                      new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "Requirement Strength:"),
+                                      new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "Requirement Strength: "),
                                       new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, Common.BasicUILabel.GetLabel( file.Strength ) )
                                  )));
-
-            if (file.Includes != null && file.Includes.Count > 0)
-            {
-                elements.Add(new ContainerElement(
-                   ContainerElementStyle.Wrapped,
-                   new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.Keyword, "Required Sub Includes:")
-                   )));
-
-                foreach (ParserFileRequirements fileReq in file.Includes)
-                {
-                    elements.Add(new ContainerElement(
-                            ContainerElementStyle.Wrapped,
-                            new ClassifiedTextElement(new ClassifiedTextRun(PredefinedClassificationTypeNames.Comment, fileReq.Name)
-                            )));
-                }
-            }
 
 #if VS17
             //Add Link to open the window for more details
