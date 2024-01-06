@@ -99,7 +99,7 @@ namespace CompileScore
             LogFocus();
             Log("Searching Code Requirements for " + inputFilename + "...");
 
-            if (ParserProcessor.GetParserSettings().OptionParserShowCommandLine)
+            if (ParserProcessor.GetParserSettings().OptionParserShowDetailedCommandLine)
             {
                 Log($"TOOL ARGUMENTS: {toolCmd}");
                 Log($"CLANG ARGUMENTS: {clangCmd}");
