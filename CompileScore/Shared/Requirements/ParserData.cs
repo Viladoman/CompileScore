@@ -59,9 +59,9 @@ namespace CompileScore
             Inheritance,
             [Common.RequirementLabel(Strength = LinkStrength.Strong,  Label = "Member Field", Short = "F")]
             MemberField,
-            [Common.RequirementLabel(Strength = LinkStrength.Weak,    Label = "Function Argument", Short = "A")]
+            [Common.RequirementLabel(Strength = LinkStrength.Minimal, Label = "Function Argument", Short = "A")]
             FunctionArgument,
-            [Common.RequirementLabel(Strength = LinkStrength.Weak,    Label = "Function Return", Short = "R")]
+            [Common.RequirementLabel(Strength = LinkStrength.Minimal, Label = "Function Return", Short = "R")]
             FunctionReturn,
             [Common.RequirementLabel(Strength = LinkStrength.Weak,    Label = "Cast", Short = "C")]
             Cast,
