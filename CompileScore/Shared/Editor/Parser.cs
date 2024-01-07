@@ -6,18 +6,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using VSLangProj;
 using EnvDTE;
 using Newtonsoft.Json;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace CompileScore
 {
-    public class ParseResult
-    {
-        //TODO ~ ramonv ~ add unbinarized data here
-    }
-
     public static class Parser
     {
         static public void LogClear() { ThreadHelper.ThrowIfNotOnUIThread(); OutputLog.Clear( OutputLog.PaneInstance.Parser); }

@@ -82,7 +82,6 @@ namespace CompileScore.Common
 
     public class RequirementLabel : BasicUILabel
     {
-        public string Short { set; get; }
         public ParserEnums.LinkStrength Strength { set; get; } = ParserEnums.LinkStrength.None;
 
         public static RequirementLabel GetAttribute(Enum value)
@@ -96,12 +95,6 @@ namespace CompileScore.Common
             }
             return null;
         }      
-
-        public static string GetShort(Enum value)
-        {
-            RequirementLabel attr = GetAttribute(value);
-            return attr != null && attr.Short != null ? attr.Short : "?";
-        }
 
         public static ParserEnums.LinkStrength GetStrength(Enum value)
         {

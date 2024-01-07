@@ -25,8 +25,16 @@ namespace CompileScore.Requirements
             ThreadHelper.ThrowIfNotOnUIThread();
 
             string realFullPath = EditorUtils.RemapFullPath(fullPath);
-            realFullPath = realFullPath == null ? null : realFullPath.ToLower(); 
-            SetRequirements(ParserData.Instance.GetParserUnit(realFullPath), realFullPath);
+            realFullPath = realFullPath == null ? null : realFullPath.ToLower();
+
+            ParserUnit unit = ParserData.Instance.GetParserUnit(realFullPath);
+            SetRequirements(unit, realFullPath);
+
+            if (unit == null && realFullPath != null)
+            {
+                //we have a query without any sort of data. Trigger a parse
+                ParserProcessor.OpenAndParsePath(realFullPath);
+            }
         }
 
         private void SetRequirements(ParserUnit parserUnit, string fullPath)
