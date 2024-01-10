@@ -67,7 +67,8 @@ namespace CompileScore.Includers
                 return null;
             }
 
-            Timeline.TimelineNode root = BuildGraphRecursive(IncludersData.Includers, mode, index);
+            int nodesCount = 0; 
+            Timeline.TimelineNode root = BuildGraphRecursive(IncludersData.Includers, mode, index, ref nodesCount);
             ClearVisited(IncludersData.Includers);
             InitializeTree(root);
             return root;
@@ -219,9 +220,10 @@ namespace CompileScore.Includers
             return null;
         }
 
-        private Timeline.TimelineNode BuildGraphRecursive(List<IncludersValue> includers, IncludersDisplayMode mode, uint index, CompileValue includee = null, IncludersInclValue includerValue = null)
+        private Timeline.TimelineNode BuildGraphRecursive(List<IncludersValue> includers, IncludersDisplayMode mode, uint index, ref int nodesCount, CompileValue includee = null, IncludersInclValue includerValue = null)
         {
-            if (index > includers.Count)
+            const int NODES_MAX = 500000;
+            if (index > includers.Count || nodesCount >= NODES_MAX)
             {
                 return null;
             }
@@ -246,10 +248,10 @@ namespace CompileScore.Includers
 
             if (value.Includes != null)
             {
-                for (int i=0;i<value.Includes.Count;++i)
+                for (int i=0;i<value.Includes.Count && nodesCount < NODES_MAX; ++i)
                 {
                     //Build all children 
-                    Timeline.TimelineNode child = BuildGraphRecursive(includers, mode, value.Includes[i].Index, compileValue, value.Includes[i]);
+                    Timeline.TimelineNode child = BuildGraphRecursive(includers, mode, value.Includes[i].Index, ref nodesCount, compileValue, value.Includes[i]);
                     if (child != null)
                     {
                         node.Duration += child.Duration;
@@ -260,11 +262,12 @@ namespace CompileScore.Includers
 
             if (value.Units != null)
             {
-                for (int i=0;i<value.Units.Count;++i)
+                for (int i=0;i<value.Units.Count && nodesCount < NODES_MAX; ++i)
                 {
                     Timeline.TimelineNode child = CreateUnitNode(value.Units[i].Index, compileValue, value.Units[i]);
                     node.Duration += child.Duration;
                     node.AddChild(child);
+                    ++nodesCount;
                 }
             }
 
