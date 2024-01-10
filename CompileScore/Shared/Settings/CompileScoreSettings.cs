@@ -34,7 +34,7 @@ namespace CompileScore
 
         private SeverityCriteria optionSeverityCriteria = SeverityCriteria.Max;
         private bool optionNormalizedSeverity = true;
-        private HighlightMode optionHighlightMode = HighlightMode.Full;
+        private HighlightMode optionHighlightMode = HighlightMode.Simple;
         private AdornmentMode optionAdornmentMode = AdornmentMode.Enabled;
         private List<uint> optionValueSeverities = new List<uint> { 250u, 1000u, 25000u, 100000u };
         private List<float> optionNormalizedSeverities = new List<float> { 50.0f, 75.0f, 90.0f, 98.0f };

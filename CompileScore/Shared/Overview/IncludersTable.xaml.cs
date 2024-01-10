@@ -297,10 +297,15 @@ namespace CompileScore.Overview
             contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Locate Max Timeline", (a, b) => Timeline.CompilerTimeline.Instance.DisplayTimeline(value.MaxUnit, value.Includee)));
             contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Includers Graph", (a, b) => CompilerIncluders.Instance.DisplayIncluders(value.Includee)));
 
+
             contextMenuStrip.Items.Add(new System.Windows.Forms.ToolStripSeparator());
 
+            string includeeFullPath = CompilerData.Instance.Folders.GetValuePathSafe(value.Includee);
+#if VS17 || VS16
+            contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Includee Requirements Graph", (a, b) => ParserData.DisplayRequirements(includeeFullPath)));
+#endif
             contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Includee File", (a, b) => EditorUtils.OpenFile(value.Includee)));
-            contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Includee Full Path", (a, b) => Clipboard.SetDataObject(CompilerData.Instance.Folders.GetValuePathSafe(value.Includee))));
+            contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Includee Full Path", (a, b) => Clipboard.SetDataObject(includeeFullPath)));
 
             if (value.Includee.Name.Length > 0)
             {
@@ -311,13 +316,22 @@ namespace CompileScore.Overview
 
             if (value.Includer is UnitValue)
             {
+                string includerFullPath = CompilerData.Instance.Folders.GetUnitPathSafe(value.Includer as UnitValue);
+
+#if VS17 || VS16
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Includer Requirements Graph", (a, b) => ParserData.DisplayRequirements(includerFullPath)));
+#endif
                 contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Includer File", (a, b) => EditorUtils.OpenFile(value.Includer as UnitValue)));
-                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Includer Full Path", (a, b) => Clipboard.SetDataObject(CompilerData.Instance.Folders.GetUnitPathSafe(value.Includer as UnitValue))));
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Includer Full Path", (a, b) => Clipboard.SetDataObject(includerFullPath)));
             }
             if (value.Includer is CompileValue)
             {
+                string includerFullPath = CompilerData.Instance.Folders.GetValuePathSafe(value.Includer as CompileValue);
+#if VS17 || VS16
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Show Includer Requirements Graph", (a, b) => ParserData.DisplayRequirements(includerFullPath)));
+#endif
                 contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Open Includer File", (a, b) => EditorUtils.OpenFile(value.Includer as CompileValue)));
-                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Includer Full Path", (a, b) => Clipboard.SetDataObject(CompilerData.Instance.Folders.GetValuePathSafe(value.Includer as CompileValue))));
+                contextMenuStrip.Items.Add(Common.UIHelpers.CreateContextItem("Copy Includer Full Path", (a, b) => Clipboard.SetDataObject(includerFullPath)));
             }
 
             if (value.IncluderName.Length > 0)

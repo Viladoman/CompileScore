@@ -25,21 +25,21 @@ namespace CompileScore
         //important keep this enumerations in sync with the Parser code
         public enum GlobalRequirement
         {
-            [Common.RequirementLabel(Strength = LinkStrength.Medium,    Label = "Macro Expansion", Short ="M")]
+            [Common.RequirementLabel(Strength = LinkStrength.Medium,    Label = "Macro Expansion")]
             MacroExpansion = 0,
-            [Common.RequirementLabel(Strength = LinkStrength.Weak,      Label = "Free Function",   Short = "FF")]
+            [Common.RequirementLabel(Strength = LinkStrength.Weak,      Label = "Free Function")]
             FreeFunctionCall,
-            [Common.RequirementLabel(Strength = LinkStrength.Weak,      Label = "Free Variable", Short = "FV")]
+            [Common.RequirementLabel(Strength = LinkStrength.Weak,      Label = "Free Variable")]
             FreeVariable,
 
-            [Common.RequirementLabel(Strength = LinkStrength.Minimal,   Label = "Enumeration", Short = "E")]
+            [Common.RequirementLabel(Strength = LinkStrength.Minimal,   Label = "Enumeration")]
             EnumInstance,
-            [Common.RequirementLabel(Strength = LinkStrength.Weak,      Label = "Enumeration Constant", Short = "EI")]
+            [Common.RequirementLabel(Strength = LinkStrength.Weak,      Label = "Enumeration Constant")]
             EnumConstant,
 
-            [Common.RequirementLabel(Strength = LinkStrength.Minimal,   Label = "Forward Declaration", Short = "FD")]
+            [Common.RequirementLabel(Strength = LinkStrength.Minimal,   Label = "Forward Declaration")]
             ForwardDeclaration,
-            [Common.RequirementLabel(Strength = LinkStrength.Minimal,   Label = "Type Definition", Short = "TD")]
+            [Common.RequirementLabel(Strength = LinkStrength.Minimal,   Label = "Type Definition")]
             TypeDefinition,
 
             Count
@@ -47,23 +47,23 @@ namespace CompileScore
 
         public enum StructureSimpleRequirement
         {
-            [Common.RequirementLabel(Strength = LinkStrength.Weak,    Label = "Instance", Short = "I")]
+            [Common.RequirementLabel(Strength = LinkStrength.Weak,    Label = "Instance")]
             Instance = 0,
-            [Common.RequirementLabel(Strength = LinkStrength.Minimal, Label = "Reference", Short = "&")]
+            [Common.RequirementLabel(Strength = LinkStrength.Minimal, Label = "Reference")]
             Reference,
-            [Common.RequirementLabel(Strength = LinkStrength.Weak,    Label = "Allocation", Short = "N")]
+            [Common.RequirementLabel(Strength = LinkStrength.Weak,    Label = "Allocation")]
             Allocation,
-            [Common.RequirementLabel(Strength = LinkStrength.Weak,    Label = "Destruction", Short = "D")]
+            [Common.RequirementLabel(Strength = LinkStrength.Weak,    Label = "Destruction")]
             Destruction,
-            [Common.RequirementLabel(Strength = LinkStrength.Strong,  Label = "Inheritance", Short = "I")]
+            [Common.RequirementLabel(Strength = LinkStrength.Strong,  Label = "Inheritance")]
             Inheritance,
-            [Common.RequirementLabel(Strength = LinkStrength.Strong,  Label = "Member Field", Short = "F")]
+            [Common.RequirementLabel(Strength = LinkStrength.Strong,  Label = "Member Field")]
             MemberField,
-            [Common.RequirementLabel(Strength = LinkStrength.Weak,    Label = "Function Argument", Short = "A")]
+            [Common.RequirementLabel(Strength = LinkStrength.Minimal, Label = "Function Argument")]
             FunctionArgument,
-            [Common.RequirementLabel(Strength = LinkStrength.Weak,    Label = "Function Return", Short = "R")]
+            [Common.RequirementLabel(Strength = LinkStrength.Minimal, Label = "Function Return")]
             FunctionReturn,
-            [Common.RequirementLabel(Strength = LinkStrength.Weak,    Label = "Cast", Short = "C")]
+            [Common.RequirementLabel(Strength = LinkStrength.Weak,    Label = "Cast")]
             Cast,
 
             Count
@@ -71,13 +71,13 @@ namespace CompileScore
 
         public enum StructureNamedRequirement
         {
-            [Common.RequirementLabel(Strength = LinkStrength.Medium, Label = "Method Call", Short = "M")]
+            [Common.RequirementLabel(Strength = LinkStrength.Medium, Label = "Method Call")]
             MethodCall = 0,
-            [Common.RequirementLabel(Strength = LinkStrength.Medium, Label = "Field Access", Short = "F")]
+            [Common.RequirementLabel(Strength = LinkStrength.Medium, Label = "Field Access")]
             FieldAccess,
-            [Common.RequirementLabel(Strength = LinkStrength.Weak,   Label = "Static Method Call", Short = "SM")]
+            [Common.RequirementLabel(Strength = LinkStrength.Weak,   Label = "Static Method Call")]
             StaticCall,
-            [Common.RequirementLabel(Strength = LinkStrength.Weak,   Label = "Static Field Access", Short = "SF")]
+            [Common.RequirementLabel(Strength = LinkStrength.Weak,   Label = "Static Field Access")]
             StaticAccess,
 
             Count
