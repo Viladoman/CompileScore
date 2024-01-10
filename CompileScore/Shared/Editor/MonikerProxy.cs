@@ -66,6 +66,8 @@ namespace CompileScore.Common
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            //CAUTION!!! This is too slow
+
             //create if not already created
             if (Bitmaps[(int)type] == null)
             {

@@ -146,8 +146,7 @@ namespace CompileScore.Requirements
         const double NodeWidthSeparation = 10.0;
         const double NodeHeightSeparation = 10.0;
         const double IndirectExtraSeparation = 20.0;
-        const double ScoreIconSize = 16.0;
-        const double ScoreIconSpacing = 2.0;
+        const byte   SeverityBrushOpacity = 125;
 
         private double NodeHeight = NodeBaseHeight;
 
@@ -158,9 +157,12 @@ namespace CompileScore.Requirements
         private Brush overlayBrush = Brushes.White.Clone();
         private Brush activeBrush  = Brushes.White.Clone();
         private Pen borderPen = new Pen(Brushes.Black, 1);
+        private Pen transparentPen = new Pen(Brushes.Transparent, 1);
         private Pen dashedPen = new Pen(Brushes.Black, 1);
         private Pen selectedPen = new Pen(Brushes.Black, 3);
         private Typeface Font = new Typeface("Verdana");
+
+        private static Brush[] SeverityBrushes { set; get; } = new Brush[6];
 
         private ParserUnit Unit { set; get; }
         private RequirementGraphRoot Root { set; get; }
@@ -198,6 +200,7 @@ namespace CompileScore.Requirements
             scrollViewer.MouseRightButtonDown += OnScrollViewerContextMenu;
 
             ParserData.Instance.ThemeChanged += RefreshAll;
+            CompilerData.Instance.ThemeChanged += RefreshAll;
         }
 
         private void OnScoreDataChanged()
@@ -398,6 +401,8 @@ namespace CompileScore.Requirements
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            Array.Clear(SeverityBrushes, 0, SeverityBrushes.Length);
+
             RenderBase();
             RenderOverlay();
         }
@@ -575,24 +580,39 @@ namespace CompileScore.Requirements
             }
         }
 
+        private static Brush GetSeverityBrush(float severity)
+        {
+            uint severityIndex = (uint)severity; 
+            
+            if ( severityIndex < SeverityBrushes.Length)
+            {
+                if (SeverityBrushes[severityIndex] == null)
+                {
+                    Color severityColor = Common.Colors.GetSeverityColor(severityIndex);
+                    SeverityBrushes[severityIndex] = new SolidColorBrush(Color.FromArgb(SeverityBrushOpacity, severityColor.R, severityColor.G, severityColor.B));
+                }
+
+                return SeverityBrushes[severityIndex];
+            }
+
+            return Common.Colors.OtherBrush;
+        }
+
         private void RenderNodeProfilerChunk(DrawingContext drawingContext, CompileValue value, double posX, double posY, Pen pen)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             if ( value != null)
             {
-                Brush severityColor = Common.Colors.GetSeverityBrush((uint)value.Severity);
-                drawingContext.DrawRectangle(severityColor, pen, new Rect(posX+5, posY+NodeBaseHeight, NodeWidth-10, NodeProfilerHeight));
+                double profilerWidth = NodeWidth - 10;
 
-                double iconPosX = posX + (NodeWidth * 0.5) - (ScoreIconSize * 2.5) - (ScoreIconSpacing * 2.0);
-                double iconPosY = posY + NodeBaseHeight + (NodeProfilerHeight * 0.5) - (ScoreIconSize * 0.5);
+                drawingContext.DrawRectangle(this.Background, pen, new Rect(posX+5, posY+NodeBaseHeight, profilerWidth, NodeProfilerHeight));
 
-                //Score icons
-                for (int i = 1; i <= 5; ++i, iconPosX += (ScoreIconSize+ScoreIconSpacing))
-                {
-                    MonikerType moniker = value.Severity >= i ? MonikerType.ScoreOn : MonikerType.ScoreOff;
-                    MonikerProxy.DrawTo(drawingContext,new Rect(iconPosX, iconPosY, ScoreIconSize, ScoreIconSize), moniker);
-                }
+                //TODO ~ ramonv ~ PRECOMPUTE brushes
+                
+              
+                double filledRatio = Math.Max(0,(value.Severity - 1)/4);
+                drawingContext.DrawRectangle(GetSeverityBrush(value.Severity), transparentPen, new Rect(posX + 5, posY + NodeBaseHeight, profilerWidth * filledRatio, NodeProfilerHeight));
             }
         }
 

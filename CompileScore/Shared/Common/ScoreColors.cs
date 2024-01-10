@@ -60,15 +60,20 @@ namespace CompileScore.Common
             return Brushes.White;
         }
 
-        public static Brush GetSeverityBrush(uint severity)
+        public static Color GetSeverityColor(uint severity)
         {
             int severityIndex = ((int)severity) - 1;
             if (severityIndex >= 0 && severityIndex < ThemeSettingsPageGrid.SeverityColors.Length)
             {
-                return new SolidColorBrush(ThemeSettingsPageGrid.SeverityColors[severityIndex]);
+                return ThemeSettingsPageGrid.SeverityColors[severityIndex];
             }
 
-            return new SolidColorBrush(Color.FromArgb((byte)255, (byte)0, (byte)0, (byte)0));
+            return Color.FromArgb((byte)255, (byte)0, (byte)0, (byte)0);
+        }
+
+        public static Brush GetSeverityBrush(uint severity)
+        {
+            return new SolidColorBrush(GetSeverityColor(severity));
         }
 
         public static Brush GetRequirementStrengthBrush(ParserEnums.LinkStrength strength)
