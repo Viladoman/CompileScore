@@ -29,12 +29,6 @@ namespace CompileScore.Requirements
 
             ParserUnit unit = ParserData.Instance.GetParserUnit(realFullPath);
             SetRequirements(unit, realFullPath);
-
-            if (unit == null && realFullPath != null)
-            {
-                //we have a query without any sort of data. Trigger a parse
-                ParserProcessor.OpenAndParsePath(realFullPath);
-            }
         }
 
         private void SetRequirements(ParserUnit parserUnit, string fullPath)
