@@ -217,54 +217,59 @@ namespace CompileScore
 
         static public ParserSettingsPageGrid GetParserSettings() { return (ParserSettingsPageGrid)EditorUtils.Package.GetDialogPage(typeof(ParserSettingsPageGrid)); }
 
-        public static void OpenAndParsePath(string fullPath)
+        public static void ParsePath(string fullPath)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (!EditorUtils.OpenFileAtLocation(fullPath, 0, 0))
+            ProjectItem item = EditorUtils.FindFilenameInProject(fullPath);
+            if ( item == null )
             {
-                MessageWindow.Display(new MessageContent("Unable to open file: " + fullPath));
+                MessageWindow.Display(new MessageContent("Unable to find file: " + fullPath));
                 return;
             }
 
-            ParseActiveDocument();
+            _ = ParseProjectItemAsync(item);
         }
 
         public static void ParseActiveDocument()
         {
-            _ = Instance.ParseAtCurrentLocationAsync();
-        }
-
-        private async System.Threading.Tasks.Task ParseAtCurrentLocationAsync()
-        {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            Parser.LogClear();
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             Document activeDocument = EditorUtils.GetActiveDocument(); 
             if ( activeDocument == null )
             {
-                Parser.LogError("Unable to retrieve current document position.");
+                MessageWindow.Display(new MessageContent("Unable to retrieve active document."));
                 return;
             }
 
             EditorUtils.SaveActiveDocument();
 
-            ProjectProperties properties = GetProjectData();
+            _ = ParseProjectItemAsync(activeDocument.ProjectItem);
+        }
+
+        private static async System.Threading.Tasks.Task ParseProjectItemAsync(ProjectItem item)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            Parser.LogClear();
+
+            ProjectProperties properties = GetProjectData(item);
             if (properties == null)
             {
                 Parser.LogError("Unable to retrieve the project configuration");
                 return;
             }
 
-            string outputFilePath = await Parser.ParseClangAsync(properties, activeDocument.FullName, GetParserOutputDirectory());
+            string itemFullPath = EditorUtils.GetProjectItemFullPath(item);
+
+            string outputFilePath = await Parser.ParseClangAsync(properties, itemFullPath, GetParserOutputDirectory(item.ContainingProject));
             ParserData.Instance.LoadUnitFile(outputFilePath);
 
             Requirements.RequirementsWindow window = ParserData.FocusRequirementsWindow();
-            window.SetRequirements(activeDocument.FullName);
+            window.SetRequirements(itemFullPath);
         }
 
-        private string GetParserOutputDirectory()
+        private static string GetParserOutputDirectory(Project project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -277,7 +282,7 @@ namespace CompileScore
                 dir = @"$(ExtensionInstallationDir)Generated";
             }
 
-            dir = GetProjectExtractor().EvaluateMacros(dir);
+            dir = GetProjectExtractor(project).EvaluateMacros(dir,project);
 
             if (dir != null && dir.Length > 0)
             {
@@ -291,14 +296,14 @@ namespace CompileScore
 
             return dir;
         }
-        private IExtractor GetProjectExtractor()
+        private static IExtractor GetProjectExtractor(Project project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var customSettings = SettingsManager.Instance.Settings.ParserSettings;
             if (customSettings == null || customSettings.AutomaticExtraction)
             {
-                switch (EditorUtils.GetEditorMode())
+                switch (EditorUtils.GetEditorMode(project))
                 {
                     case EditorUtils.EditorMode.UnrealEngine: return new ExtractorUnreal();
                     case EditorUtils.EditorMode.VisualStudio: return new ExtractorVisualStudio();
@@ -313,11 +318,11 @@ namespace CompileScore
             return null;
         }
 
-        private ProjectProperties GetProjectData()
+        private static ProjectProperties GetProjectData(ProjectItem item)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var extractor = GetProjectExtractor();
-            return extractor == null ? null : extractor.GetProjectData();
+            var extractor = GetProjectExtractor(item.ContainingProject);
+            return extractor == null ? null : extractor.GetProjectData(item);
         }
 
     }

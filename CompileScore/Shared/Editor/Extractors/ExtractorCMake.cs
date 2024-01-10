@@ -64,14 +64,14 @@ namespace CompileScore
             return null;
         }
 
-        public override ProjectProperties GetProjectData()
+        public override ProjectProperties GetProjectData(ProjectItem projItem)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             OutputLog.Log("Capturing configuration from CMake...");
 
-            Document document = EditorUtils.GetActiveDocument();
-            if (document == null) { return null; }
+            if (projItem == null) 
+                return null; 
 
             var evaluator = new MacroEvaluatorCMake();
             var customSettings = SettingsManager.Instance.Settings.ParserSettings;
@@ -97,14 +97,14 @@ namespace CompileScore
                 }
             }
 
-            var ret = CaptureCMakeCommands(commandsFile, document.FullName);
+            var ret = CaptureCMakeCommands(commandsFile, EditorUtils.GetProjectItemFullPath( projItem ) );
 
             AddCustomSettings(ret, evaluator);
 
             return ret;
         }
 
-        public override string EvaluateMacros(string input)
+        public override string EvaluateMacros(string input, Project project)
         {
             var evaluatorExtra = new MacroEvaluatorExtra();          
             var evaluatorPlatform = new MacroEvaluatorCMake();

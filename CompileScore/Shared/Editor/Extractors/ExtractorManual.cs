@@ -11,7 +11,7 @@ namespace CompileScore
 {
     public class ExtractorManual : IExtractor
     {
-        public override ProjectProperties GetProjectData()
+        public override ProjectProperties GetProjectData(ProjectItem projItem)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -19,7 +19,7 @@ namespace CompileScore
 
             var ret = new ProjectProperties();
 
-            Project project = EditorUtils.GetActiveProject();
+            Project project = projItem == null? EditorUtils.GetActiveProject() : projItem.ContainingProject;
             VCProject prj = project == null ? null : project.Object as VCProject;
             VCConfiguration config = prj == null ? null : prj.ActiveConfiguration;
             VCPlatform platform = config == null ? null : config.Platform as VCPlatform;
@@ -36,12 +36,12 @@ namespace CompileScore
             return ret;
         }
 
-        public override string EvaluateMacros(string input)
+        public override string EvaluateMacros(string input, Project inputProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            Project project = EditorUtils.GetActiveProject();
-            VCProject prj = project.Object as VCProject;
+            Project project = inputProject == null ? EditorUtils.GetActiveProject() : inputProject;
+            VCProject prj = project == null ? null : project.Object as VCProject;
             VCConfiguration config = prj == null ? null : prj.ActiveConfiguration;
             VCPlatform platform = config == null ? null : config.Platform as VCPlatform;
 

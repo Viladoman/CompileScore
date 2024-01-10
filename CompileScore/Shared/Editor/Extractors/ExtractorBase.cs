@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.Shell;
+﻿using EnvDTE;
+using Microsoft.VisualStudio.Shell;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,8 +45,8 @@ namespace CompileScore
 
     public abstract class IExtractor 
     {
-        public abstract ProjectProperties GetProjectData();
-        public abstract string EvaluateMacros(string input);
+        public abstract ProjectProperties GetProjectData(ProjectItem projItem);
+        public abstract string EvaluateMacros(string input, Project inputProject);
 
         protected static void AppendMSBuildStringToList(List<string> list, string input)
         {

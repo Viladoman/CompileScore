@@ -9,13 +9,13 @@ namespace CompileScore
 {
     public class ExtractorVisualStudio : IExtractor
     {
-        public override ProjectProperties GetProjectData()
+        public override ProjectProperties GetProjectData(ProjectItem projItem)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             OutputLog.Log("Capturing configuration from VS projects...");
 
-            Project project = EditorUtils.GetActiveProject();
+            Project project = projItem == null ? EditorUtils.GetActiveProject() : projItem.ContainingProject;
 
             VCProject prj = project.Object as VCProject;
             if (prj == null) return null;
@@ -51,10 +51,8 @@ namespace CompileScore
             AppendMSBuildStringToList(ret.IncludeDirectories, evaluator.Evaluate(includeDirectories));
             AppendProjectProperties(ret, vctools.Item("VCCLCompilerTool") as VCCLCompilerTool, vctools.Item("VCNMakeTool") as VCNMakeTool, evaluator);
 
-            //Get settings from the single file (this might fail badly if there are no settings to catpure)
-            var applicationObject = EditorUtils.ServiceProvider.GetService(typeof(DTE)) as EnvDTE80.DTE2;
-            Assumes.Present(applicationObject);
-            ProjectItem item = applicationObject.ActiveDocument.ProjectItem;
+            //Get settings from the single file (this might fail badly if there are no settings to capture)
+            ProjectItem item = projItem;
             VCFile vcfile = item != null ? item.Object as VCFile : null;
             IVCCollection fileCfgs = vcfile != null ? (IVCCollection)vcfile.FileConfigurations : null;
             VCFileConfiguration fileConfig = fileCfgs != null ? fileCfgs.Item(config.Name) as VCFileConfiguration : null;
@@ -74,7 +72,7 @@ namespace CompileScore
 
             AppendProjectProperties(ret, fileToolCL, fileToolNMake, evaluator);
 
-            CaptureExtraProperties(ret, evaluator);
+            CaptureExtraProperties(ret, evaluator, projItem);
 
             AddCustomSettings(ret, evaluator);
 
@@ -83,12 +81,12 @@ namespace CompileScore
             return ret;
         }
 
-        public override string EvaluateMacros(string input)
+        public override string EvaluateMacros(string input, Project inputProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            Project project = EditorUtils.GetActiveProject();
-            VCProject prj = project.Object as VCProject;
+            Project project = inputProject == null ? EditorUtils.GetActiveProject() : inputProject;
+            VCProject prj = project == null ? null : project.Object as VCProject;
             VCConfiguration config = prj == null? null : prj.ActiveConfiguration;
             VCPlatform platform = config == null? null : config.Platform as VCPlatform;
 
@@ -105,7 +103,7 @@ namespace CompileScore
             return evaluatorVS == null ? output : evaluatorVS.Evaluate(output);
         }
 
-        protected virtual void CaptureExtraProperties(ProjectProperties projProperties, IMacroEvaluator evaluator){ }
+        protected virtual void CaptureExtraProperties(ProjectProperties projProperties, IMacroEvaluator evaluator, ProjectItem projItem) { }
         protected virtual void ProcessPostProjectData(ProjectProperties projProperties) { }
 
         private ProjectProperties.StandardVersion GetStandardVersion(VCConfiguration config)

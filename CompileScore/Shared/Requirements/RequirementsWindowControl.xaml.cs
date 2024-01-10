@@ -69,7 +69,7 @@ namespace CompileScore.Requirements
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            ParserProcessor.OpenAndParsePath(details.RootFullPath);
+            ParserProcessor.ParsePath(details.RootFullPath);
         }
 
         public void ButtonParseActiveDocument_OnClick(object sender, object e)

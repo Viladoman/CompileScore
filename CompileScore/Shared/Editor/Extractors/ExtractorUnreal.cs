@@ -26,7 +26,7 @@ namespace CompileScore
             return null;
         }
 
-        protected override void CaptureExtraProperties(ProjectProperties projProperties, IMacroEvaluator evaluator)
+        protected override void CaptureExtraProperties(ProjectProperties projProperties, IMacroEvaluator evaluator, ProjectItem projItem)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -35,11 +35,29 @@ namespace CompileScore
             OutputLog.Log("Capturing Extra configuration from Unreal...");
 
             //Basic VS context
-            Document doc = EditorUtils.GetActiveDocument();
-            Project project = EditorUtils.GetActiveProject();
+            ProjectItem item = projItem;
+            if ( item == null)
+            {
+                Document doc = EditorUtils.GetActiveDocument();
+                item = doc == null ? null : doc.ProjectItem;
+            }
+
+            if (item == null)
+            {
+                OutputLog.Log("Unable to capture Extra configuration from Unreal, no project Item provided.");
+                return;
+            }
+
+            Project project = item.ContainingProject;
+
+            if (project == null)
+            {
+                OutputLog.Log("Unable to capture Extra configuration from Unreal, no project found.");
+                return;
+            }
 
             //Find module path & name for the given file 
-            string modulePath = GetModulePath(doc.FullName);
+            string modulePath = GetModulePath( EditorUtils.GetProjectItemFullPath(item) );
             string moduleName = modulePath == null ? null : Path.GetFileName(modulePath);
             OutputLog.Log(moduleName == null ? "Unable to find Unreal Engine Module." : "Unreal Engine Module Name: " + moduleName);
 

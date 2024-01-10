@@ -124,7 +124,7 @@ namespace CompileScore
 
     public class ParserProcessor
     {
-        public static void OpenAndParsePath(string fullPath) { }
+        public static void ParsePath(string fullPath) { }
         public static void ParseActiveDocument() { }
     }
 }

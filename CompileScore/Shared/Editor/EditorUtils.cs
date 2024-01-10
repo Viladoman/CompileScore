@@ -95,7 +95,7 @@ namespace CompileScore
             }
         }
 
-        static private ProjectItem FindFilenameInProject(string filename)
+        static public ProjectItem FindFilenameInProject(string filename)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -145,7 +145,8 @@ namespace CompileScore
 
                 foreach (var item in EnumerateProjectItems(project.ProjectItems))
                 {
-                    if (String.Equals(item.Name, filename, StringComparison.OrdinalIgnoreCase))
+                    if (String.Equals(item.Name, filename, StringComparison.OrdinalIgnoreCase) || 
+                        String.Equals(GetProjectItemFullPath(item), filename, StringComparison.OrdinalIgnoreCase))
                     {
                         return item;
                     }
@@ -153,6 +154,24 @@ namespace CompileScore
             }
 
             return null;
+        }
+
+        static public string GetProjectItemFullPath(ProjectItem item)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            var properties = item.Properties;
+            if (properties == null)
+                return item.Name;
+
+            try
+            {
+                return properties.Item("FullPath").Value.ToString();
+            }
+            catch (Exception)
+            {
+                return item.Name;
+            }
         }
 
         static public string RemapFullPath(string fullPath)
@@ -175,7 +194,7 @@ namespace CompileScore
 
                 if ( item != null)
                 {
-                    string finalPath = item.Properties.Item("FullPath").Value.ToString();
+                    string finalPath = GetProjectItemFullPath(item);
                     return finalPath == null ? fullPath.Replace('/', '\\') : finalPath; 
                 }
             }
@@ -335,11 +354,11 @@ namespace CompileScore
             return File.Exists(ret) ? ret : null;
         }
 
-        static public EditorMode GetEditorMode()
+        static public EditorMode GetEditorMode(Project inputProject = null)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            Project project = GetActiveProject();
+            Project project = inputProject == null ? GetActiveProject() : inputProject;
             if (project == null)
             {
                 return EditorMode.None;
