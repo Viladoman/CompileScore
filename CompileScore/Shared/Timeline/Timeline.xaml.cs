@@ -74,7 +74,7 @@ namespace CompileScore.Timeline
             }
             else if ( e.ChangedButton == MouseButton.Left && e.ButtonState == MouseButtonState.Pressed)
             {
-                OnMouseLeftClick.Invoke(this, e);
+                OnMouseLeftClick?.Invoke(this, e);
             }
         }
 
