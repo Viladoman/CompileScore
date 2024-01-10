@@ -86,8 +86,7 @@ namespace CompileScore
                 writer.WriteValue(inputFilename);
             }
 
-            //TODO ~ at the moment just output on the output pane ( binarize the data to the output file and build a proper UI for this )
-            string toolCmd = $"-print -o={AdjustPath(outputPath)} -p {AdjustPath(compileCommandsDir)} {AdjustPath(inputFilename)}";
+            string toolCmd = $"-o={AdjustPath(outputPath)} -p {AdjustPath(compileCommandsDir)} {AdjustPath(inputFilename)}";
 
             LogFocus();
             Log("Searching Code Requirements for " + inputFilename + "...");

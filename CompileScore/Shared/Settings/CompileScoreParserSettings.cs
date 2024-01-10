@@ -7,8 +7,8 @@ namespace CompileScore
     {
         [Category("Parser")]
         [DisplayName("Print Detailed Output")]
-        [Description("Print the parser results from the command line in the Tool output pane")]
-        public bool OptionParserShowDetailedCommandLine { set; get; } = false;
+        [Description("Print the parser commands the Tool output pane")]
+        public bool OptionParserShowDetailedCommandLine { set; get; } = true;
     }
 
 }
