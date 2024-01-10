@@ -99,6 +99,33 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            ProjectItem item = FindFilenameInProjectSingle(filename);
+
+            if (item != null)
+                return item;
+
+            if (Path.HasExtension(filename))
+                return null;
+
+            item = FindFilenameInProjectSingle(filename + ".cpp");
+            if (item != null) 
+                return item;
+
+            item = FindFilenameInProjectSingle(filename + ".cxx");
+            if (item != null)
+                return item;
+
+            item = FindFilenameInProjectSingle(filename + ".c");
+            if (item != null)
+                return item;
+
+            return null;
+        }
+
+        static private ProjectItem FindFilenameInProjectSingle(string filename)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             //TODO ~ ramonv ~ improve this for Open Folder and External Tool
             //TODO ~ ramonv ~ this won't work on Open Folder projects
             if (EditorContext.Instance.Mode != EditorContext.EditorMode.VisualStudio) return null;
@@ -142,9 +169,10 @@ namespace CompileScore
 
             string filename = GetFileNameSafe(fullPath);
 
-            if ( filename != null )
+            if ( filename != null)
             {
                 ProjectItem item = FindFilenameInProject(filename);
+
                 if ( item != null)
                 {
                     string finalPath = item.Properties.Item("FullPath").Value.ToString();
