@@ -42,8 +42,6 @@ namespace CompileScore.Common
                 case CompilerData.CompileCategory.CodeGenPasses:         return CodeGenBrush; //repeated color
                 case CompilerData.CompileCategory.PerFunctionPasses:     return RunPassBrush; //repeated color
                 case CompilerData.CompileCategory.PerModulePasses:       return RunPassBrush; //repeated color
-                case CompilerData.CompileCategory.DebugType:             return OtherBrush; //repeated color
-                case CompilerData.CompileCategory.DebugGlobalVariable:   return OtherBrush; //repeated color
                 case CompilerData.CompileCategory.FrontEnd:              return FrontEndBrush;
                 case CompilerData.CompileCategory.BackEnd:               return BackEndBrush;
                 case CompilerData.CompileCategory.ExecuteCompiler:       return ExecuteCompilerBrush;

@@ -117,13 +117,24 @@ namespace CompileScore.Timeline
             uint start = reader.ReadUInt32();
             uint duration = reader.ReadUInt32();
             uint eventId = reader.ReadUInt32();
-            CompilerData.CompileCategory category = (CompilerData.CompileCategory)reader.ReadByte();
+            byte categoryRaw = reader.ReadByte();
+            CompilerData.CompileCategory category = categoryRaw < (byte)CompilerData.CompileCategory.Invalid? (CompilerData.CompileCategory)categoryRaw : CompilerData.CompileCategory.Other;
             CompileValue value = CompilerData.Instance.GetValue(category,(int)eventId);
+            object storedValue = value;
 
             string label = value != null ? value.Name : Common.UIConverters.ToSentenceCase(category.ToString()); 
+
+            //Search for an override other tag
+            if ( category == CompilerData.CompileCategory.Other )
+            {
+                string tag = CompilerData.Instance.GetOtherTag((int)eventId);
+                label = tag != null ? tag : label;
+                storedValue = tag;
+            }
+
             label += " ( "+ Common.UIConverters.GetTimeStr(duration) +" )" ;
 
-            return new TimelineNode(label, start, duration, category, value);
+            return new TimelineNode(label, start, duration, category, storedValue);
         }
 
         private void AdjustNodeProperties(TimelineNode node)

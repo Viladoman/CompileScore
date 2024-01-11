@@ -27,15 +27,14 @@ enum class CompileCategory : CompileCategoryType
     FrontEnd,
     BackEnd,
     ExecuteCompiler,
-    Other,   //TODO ~ ramonv ~ this should not be part of the display section as it is just leftovers 
     //Display End
 
+    Other, 
     RunPass,
     CodeGenPasses,
     PerFunctionPasses,
     PerModulePasses,
-    DebugType,
-    DebugGlobalVariable,
+
     Invalid,
 
     FullCount,
@@ -43,7 +42,7 @@ enum class CompileCategory : CompileCategoryType
     GatherBasic    = ParseClass, 
     GatherFrontEnd = CodeGenFunction,
     GatherFull     = PendingInstantiations,
-    DisplayCount   = RunPass,
+    DisplayCount   = Other,
 };
 
 constexpr CompileCategoryType ToUnderlying(CompileCategory input){ return static_cast<CompileCategoryType>(input);}
@@ -169,7 +168,7 @@ struct CompileIncluder
     TCompileIncluderUnitMap  units;
 };
 
-using TCompileDataDictionary = fastl::unordered_map<U64,U32>;
+using TIndexDataDictionary = fastl::unordered_map<U64,U32>;
 
 struct CompileFolder
 {
@@ -180,7 +179,7 @@ struct CompileFolder
     {}
 
     fastl::string          name;
-    TCompileDataDictionary children;
+    TIndexDataDictionary   children;
     fastl::vector<U32>     unitIds;
     fastl::vector<U32>     includeIds;
 };
@@ -202,6 +201,7 @@ using TCompileEvents           = fastl::vector<CompileEvent>;
 using TCompileEventTracks      = fastl::vector<TCompileEvents>;
 using TCompileStrings          = fastl::unordered_map<U64,fastl::string>;
 using TCompileFolders          = fastl::vector<CompileFolder>;
+using TTags                    = fastl::vector<U64>;
 
 struct ScoreTimeline
 { 
@@ -218,8 +218,10 @@ struct ScoreData
     TCompileIncluders includers;
     TCompileStrings   strings;
     TCompileFolders   folders;
+    TTags             otherTags;
 
     //helper data
-    TCompileDataDictionary globalsDictionary[ToUnderlying(CompileCategory::GatherFull)];
+    TIndexDataDictionary globalsDictionary[ToUnderlying(CompileCategory::GatherFull)];
+    TIndexDataDictionary otherTagsDictionary;
 };
 

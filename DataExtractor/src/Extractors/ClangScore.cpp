@@ -93,17 +93,9 @@ namespace Clang
 
 		constexpr static Json::Token tagRunPass               = Utils::CreateLiteralToken("RunPass");
 		constexpr static Json::Token tagCodeGenPasses         = Utils::CreateLiteralToken("CodeGenPasses");
-		constexpr static Json::Token tagDebugType             = Utils::CreateLiteralToken("DebugType");
-		constexpr static Json::Token tagDebugGlobalVariable   = Utils::CreateLiteralToken("DebugGlobalVariable");
 		constexpr static Json::Token tagPerFunctionPasses     = Utils::CreateLiteralToken("PerFunctionPasses");
 		constexpr static Json::Token tagPerModulePasses       = Utils::CreateLiteralToken("PerModulePasses");
-		/*
-		constexpr static Json::Token tagCFGSimplification     = Utils::CreateLiteralToken("SimplifyCFGPass");
-		constexpr static Json::Token tagFunctionAnalysis      = Utils::CreateLiteralToken("PassManager<");
-		constexpr static Json::Token tagDevirtualization      = Utils::CreateLiteralToken("DevirtSCCRepeatedPass");
-		constexpr static Json::Token tagModuleToFunction      = Utils::CreateLiteralToken("ModuleToFunctionPassAdaptor");
-		constexpr static Json::Token tagGSCCToFunction        = Utils::CreateLiteralToken("CGSCCToFunctionPassAdaptor");
-		*/
+
 		//Invalid Tags
 		constexpr static Json::Token tagInvalidA              = Utils::CreateLiteralToken("process_name");
 		constexpr static Json::Token tagInvalidB              = Utils::CreateLiteralToken("thread_name");
@@ -124,20 +116,10 @@ namespace Clang
 			if (Utils::EqualTokens(token,tagCodeGenPasses))         return CompileCategory::CodeGenPasses; 
 			if (Utils::EqualTokens(token,tagPerFunctionPasses))     return CompileCategory::PerFunctionPasses; 
 			if (Utils::EqualTokens(token,tagPerModulePasses))       return CompileCategory::PerModulePasses; 
-			if (Utils::EqualTokens(token,tagDebugType))             return CompileCategory::DebugType; 
-			if (Utils::EqualTokens(token,tagDebugGlobalVariable))   return CompileCategory::DebugGlobalVariable; 
 			if (Utils::EqualTokens(token,tagFrontend))              return CompileCategory::FrontEnd; 
 			if (Utils::EqualTokens(token,tagBackend))               return CompileCategory::BackEnd; 
 			if (Utils::EqualTokens(token,tagTotal))                 return CompileCategory::ExecuteCompiler; 
-			
-			/* 
-			//TODO ~ ramonv ~ give them new tags ( requires version upgrade )
-			if (Utils::EqualTokens(token, tagCFGSimplification))    return CompileCategory::Other;
-			if (Utils::StartsWithToken(token, tagFunctionAnalysis)) return CompileCategory::Other;
-			if (Utils::EqualTokens(token, tagModuleToFunction))     return CompileCategory::Other;
-			if (Utils::EqualTokens(token, tagDevirtualization))     return CompileCategory::Other;
-			if (Utils::EqualTokens(token, tagGSCCToFunction))       return CompileCategory::Other;
-			*/
+
 
 			if (Utils::EqualTokens(token,tagInvalidA) || 
 				Utils::EqualTokens(token,tagInvalidB) || 
@@ -170,7 +152,7 @@ namespace Clang
 			{
 				if (!reader.NextToken(token) || token.type != Json::Token::Type::String) return false;
 				output.category = ToCompileCategory(token);
-				if (output.nameHash == 0ull) output.nameHash = CompileScore::StoreString(scoreData,token.str,token.length);
+				if (output.nameHash == 0ull) output.nameHash = CompileScore::StoreCategoryTagString(scoreData,token.str,token.length, output.category);
 			}
 			else if (Utils::EqualTokens(token,tagStart))
 			{
@@ -191,8 +173,12 @@ namespace Clang
 				{ 
 					if (Utils::EqualTokens(token,tagDetail))
 					{ 
-						if (!reader.NextToken(token) || token.type != Json::Token::Type::String) return false;  
-						output.nameHash = CompileScore::StoreCategoryValueString(scoreData,token.str,token.length, output.category);
+						if (!reader.NextToken(token) || token.type != Json::Token::Type::String) return false;
+
+						if( output.category < CompileCategory::GatherFull )
+						{
+							output.nameHash = CompileScore::StoreCategoryValueString(scoreData,token.str,token.length, output.category);
+						}
 					}
 					else 
 					{ 

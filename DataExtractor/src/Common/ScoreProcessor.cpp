@@ -87,6 +87,21 @@ namespace CompileScore
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
+	U64 StoreCategoryTagString( ScoreData& scoreData, const char* str, size_t length, CompileCategory category )
+	{
+		if( category == CompileCategory::Other )
+		{
+			fastl::string symbolName( str, length );
+			StringUtils::CollapseTemplates( symbolName );
+			return StoreString( scoreData, symbolName );
+		}
+		else
+		{
+			return StoreString( scoreData, str, length );
+		}
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
 	U64 StoreCategoryValueString(ScoreData& scoreData, const char* str, size_t length, CompileCategory category)
 	{
 		switch (category)
@@ -119,14 +134,33 @@ namespace CompileScore
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
+	U32 StoreOtherTag( ScoreData& scoreData, CompileEvent& element )
+	{
+		const U32 nextIndex = static_cast<U32>(scoreData.otherTags.size());
+		auto const& result = scoreData.otherTagsDictionary.insert( TIndexDataDictionary::value_type( element.nameHash, nextIndex ) );
+
+		if( result.second )
+		{
+			//the element got inserted
+			element.nameId = nextIndex;
+			scoreData.otherTags.emplace_back( element.nameHash );
+
+			return nextIndex;
+		}
+
+		element.nameId = result.first->second;
+		return element.nameId;
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
 	U32 CreateGlobalEntry(ScoreData& scoreData, CompileEvent& element)
 	{ 
 		const CompileCategoryType globalIndex = ToUnderlying(element.category);
 		TCompileDatas& global = scoreData.globals[globalIndex];
-		TCompileDataDictionary& dictionary = scoreData.globalsDictionary[globalIndex];
+		TIndexDataDictionary& dictionary = scoreData.globalsDictionary[globalIndex];
 
 		const U32 nextIndex = static_cast<U32>(global.size());
-		auto const& result = dictionary.insert(TCompileDataDictionary::value_type(element.nameHash,nextIndex));
+		auto const& result = dictionary.insert( TIndexDataDictionary::value_type(element.nameHash,nextIndex));
 		if (result.second) 
 		{ 
 			//the element got inserted
@@ -262,6 +296,11 @@ namespace CompileScore
 				dataIdStack.push_back(Utils::kInvalidIndex);  
 			}
 
+			if( element.category == CompileCategory::Other )
+			{
+				StoreOtherTag( scoreData, element );
+			}
+
 			if (element.category < CompileCategory::DisplayCount)
 			{
 				if ( parent == nullptr || parent->category != element.category )
@@ -339,7 +378,7 @@ namespace CompileScore
 
 				CompileFolder& currentFolder = folders[folderIndex];
 
-				auto const& result = currentFolder.children.insert(TCompileDataDictionary::value_type(strHash, static_cast<U32>(folders.size())));
+				auto const& result = currentFolder.children.insert( TIndexDataDictionary::value_type(strHash, static_cast<U32>(folders.size())));
 				folderIndex = result.first->second; //move to the child folder
 				if (result.second)
 				{

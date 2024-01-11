@@ -95,6 +95,12 @@ namespace CompileScore.Timeline
             {
                 headerText.Text = Common.UIConverters.ToSentenceCase(node.Category.ToString());
 
+                if (node.Category == CompilerData.CompileCategory.Other)
+                {
+                    string tag = node.Value as string;
+                    headerText.Text = tag != null ? tag : headerText.Text;
+                }
+
                 if (Mode == Timeline.Mode.Includers)
                 {
                     durationText.Text = "Stacks: " + (node.Duration/CompileScore.Includers.CompilerIncluders.durationMultiplier).ToString();

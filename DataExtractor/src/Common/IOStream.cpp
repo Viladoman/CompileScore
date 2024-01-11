@@ -7,7 +7,7 @@
 
 #include "ScoreDefinitions.h"
 
-constexpr U32 SCORE_VERSION = 12;
+constexpr U32 SCORE_VERSION = 13;
 constexpr U32 TIMELINE_FILE_NUM_DIGITS = 4;
 
 static_assert(TIMELINE_FILE_NUM_DIGITS > 0);
@@ -471,6 +471,16 @@ namespace IO
         }
 
         // -----------------------------------------------------------------------------------------------------------
+        void BinarizeTags( FILE* stream, const TCompileStrings& strings, const TTags& tags )
+        {
+			BinarizeU32( stream, static_cast< U32 >( tags.size() ) );
+            for( U64 nameHash : tags )
+            {
+                BinarizeStringHash(stream, strings, nameHash);
+            }
+        }
+
+        // -----------------------------------------------------------------------------------------------------------
         void BinarizeFolders(FILE* stream, const TCompileFolders& folders)
         {
             BinarizeU32(stream, static_cast<U32>(folders.size()));
@@ -662,6 +672,8 @@ namespace IO
                 Utils::BinarizeGlobalsStr(stream, data.strings, data.globals[i]);
             }
         }
+
+        Utils::BinarizeTags(stream, data.strings, data.otherTags);
 
         fclose(stream);
 

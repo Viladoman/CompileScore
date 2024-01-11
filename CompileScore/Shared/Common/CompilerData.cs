@@ -108,7 +108,7 @@ namespace CompileScore
         public static CompilerData Instance { get { return lazy.Value; } }
 
         public const uint VERSION_MIN = 9;
-        public const uint VERSION = 12;
+        public const uint VERSION = 13;
 
         //Keep this in sync with the data exporter
         public enum CompileCategory
@@ -128,14 +128,12 @@ namespace CompileScore
             FrontEnd,
             BackEnd,
             ExecuteCompiler,
-            Other,
 
+            Other,
             RunPass,
             CodeGenPasses,
             PerFunctionPasses,
             PerModulePasses,
-            DebugType,
-            DebugGlobalVariable,
             Invalid,
 
             //Meta categories only for the visualizers
@@ -150,7 +148,7 @@ namespace CompileScore
         {
             Severity = CompileCategory.ParseClass,
             Gather = CompileCategory.PendingInstantiations,
-            Display = CompileCategory.RunPass,
+            Display = CompileCategory.Other,
         }
 
         public enum DataSource
@@ -184,6 +182,8 @@ namespace CompileScore
 
         private CompileDataset[] Datasets { set; get; } = new CompileDataset[(int)CompileThresholds.Gather].Select(h => new CompileDataset()).ToArray();
 
+        private List<string> OtherTags { set; get; }
+
         //load structures 
 
         private class MainLoadChunk
@@ -201,6 +201,7 @@ namespace CompileScore
         {
             public uint LoadingBatch { set; get; } = 0;
             public CompileDataset[] Datasets { set; get; } = new CompileDataset[(int)CompileThresholds.Gather].Select(h => new CompileDataset()).ToArray();
+            public List<string> OtherTags { set; get; }
         }
 
         private bool _customTextHighlightEnabled = true;
@@ -374,6 +375,11 @@ namespace CompileScore
             return index >= 0 && index < UnitsCollection.Count ? UnitsCollection[index] : null;
         }
 
+        public string GetOtherTag(int index)
+        {
+            return index >= 0 && OtherTags != null && index < OtherTags.Count ? OtherTags[index] : null;
+        }
+
         public void LoadDefaultSource()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -428,12 +434,12 @@ namespace CompileScore
             }
         }
 
-        private static void ReadSession(BinaryReader reader, uint version,  CompileSession session, List<UnitTotal> totals)
+        private static void ReadSession(BinaryReader reader, uint version, CompileSession session, List<UnitTotal> totals)
         {
             session.Version = version;
             session.TimelinePacking = reader.ReadUInt32();
             session.FullDuration = reader.ReadUInt64();
-            
+
             if (version < 12)
             {
                 //Read deprecated numThreads
@@ -445,6 +451,12 @@ namespace CompileScore
                 UnitTotal total = new UnitTotal((CompileCategory)k);
                 total.Total = reader.ReadUInt64();
                 totals.Add(total);
+            }
+
+            if ( version < 13 )
+            {
+                //read deprecated Other total
+                reader.ReadUInt64(); 
             }
         }
 
@@ -468,6 +480,12 @@ namespace CompileScore
                 compileData.SetValue(category, reader.ReadUInt32());
             }
 
+            if (version < 13)
+            {
+                //read deprecated Other value
+                reader.ReadUInt32();
+            }
+
             list.Add(compileData);
         }
 
@@ -488,6 +506,24 @@ namespace CompileScore
 
             var compileData = new CompileValue(name, acc, selfAcc, unitAcc, min, max, selfMax, count, unitCount, maxUnit, selfMaxUnit);
             list.Add(compileData);
+        }
+
+        private static List<string> ReadOtherTags(BinaryReader reader, uint version )
+        {
+            if (version < 13) 
+                return null;
+
+            uint numTags = reader.ReadUInt32();
+            if ( numTags == 0 ) 
+                return null;
+
+            List<string> tags = new List<string>((int)numTags);
+            for ( int i = 0;i<numTags;++i)
+            {
+                tags.Add(reader.ReadString()); 
+            }
+
+            return tags;
         }
 
         private void ClearDatasets()
@@ -665,6 +701,8 @@ namespace CompileScore
                             }
                             chunk.Datasets[i].collection = new List<CompileValue>(thislist);
                         }
+
+                        chunk.OtherTags = ReadOtherTags(reader, version);
                     }
                 }
 
@@ -705,8 +743,9 @@ namespace CompileScore
             {
                 Datasets[i] = chunk.Datasets[i];
             }
+
+            OtherTags = chunk.OtherTags;
         }
-             
 
         private void LoadMainScore(string fullPath)
         {
