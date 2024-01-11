@@ -141,8 +141,8 @@ namespace CompileScore.Requirements
         const double RootWidth = 20.0;
         const double RootWidthSeparation = 10.0;
         const double NodeWidth = 200.0;
-        const double NodeBaseHeight = 40.0;
-        const double NodeProfilerHeight = 20.0;
+        const double NodeBaseHeight = 25.0;
+        const double NodeProfilerHeight = 10.0;
         const double NodeWidthSeparation = 10.0;
         const double NodeHeightSeparation = 10.0;
         const double IndirectExtraSeparation = 20.0;
