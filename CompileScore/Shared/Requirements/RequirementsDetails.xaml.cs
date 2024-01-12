@@ -1,15 +1,10 @@
 ﻿using Microsoft.VisualStudio.Shell;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ExplorerBar;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
+
 
 namespace CompileScore.Requirements
 {
