@@ -57,7 +57,7 @@ namespace CompileScore.Requirements
 
         private static Hyperlink CreateHyperlink( string text, RoutedEventHandler callback)
         {
-            var h = new Hyperlink();
+            var h = new Hyperlink() { TextDecorations = null };
             h.Inlines.Add(text);
             h.Click += callback;
             return h; 
