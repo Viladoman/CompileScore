@@ -32,7 +32,7 @@ namespace CompileScore
 
             if (projProperties == null) return;
 
-            OutputLog.Log("Capturing Extra configuration from Unreal...");
+            Parser.Log("Capturing Extra configuration from Unreal...");
 
             //Basic VS context
             ProjectItem item = projItem;
@@ -44,7 +44,7 @@ namespace CompileScore
 
             if (item == null)
             {
-                OutputLog.Log("Unable to capture Extra configuration from Unreal, no project Item provided.");
+                Parser.Log("Unable to capture Extra configuration from Unreal, no project Item provided.");
                 return;
             }
 
@@ -52,14 +52,14 @@ namespace CompileScore
 
             if (project == null)
             {
-                OutputLog.Log("Unable to capture Extra configuration from Unreal, no project found.");
+                Parser.Log("Unable to capture Extra configuration from Unreal, no project found.");
                 return;
             }
 
             //Find module path & name for the given file 
             string modulePath = GetModulePath( EditorUtils.GetProjectItemFullPath(item) );
             string moduleName = modulePath == null ? null : Path.GetFileName(modulePath);
-            OutputLog.Log(moduleName == null ? "Unable to find Unreal Engine Module." : "Unreal Engine Module Name: " + moduleName);
+            Parser.Log(moduleName == null ? "Unable to find Unreal Engine Module." : "Unreal Engine Module Name: " + moduleName);
 
             //Open project vcxproj as xml 
             //Find the first .cpp file from the given module & steal its configuration
@@ -78,7 +78,7 @@ namespace CompileScore
                 string pchFile = projProperties.ForceIncludes[i] + ".pch";
                 if (File.Exists(pchFile))
                 {
-                    OutputLog.Log("Found incompatible pch file, generating alias for: " + pchFile);
+                    Parser.Log("Found incompatible pch file, generating alias for: " + pchFile);
 
                     string originalName = projProperties.ForceIncludes[i];
                     string newName = Path.GetDirectoryName(originalName) + @"\SL_" + Path.GetFileName(originalName);
@@ -110,12 +110,12 @@ namespace CompileScore
                 if (fileName != null && fileName.InnerText.StartsWith(relativePath))
                 {
                     string fileRelativeToModule = fileName.InnerText.Substring(relativePath.Length);
-                    OutputLog.Log("Found compilation unit in same module: " + fileRelativeToModule);
+                    Parser.Log("Found compilation unit in same module: " + fileRelativeToModule);
                     return tu;
                 } 
             }
-            
-            OutputLog.Log("Could not find any compilation unit in the same Unreal module.");
+
+            Parser.Log("Could not find any compilation unit in the same Unreal module.");
             return null;
         }
 

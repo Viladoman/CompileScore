@@ -52,7 +52,7 @@ namespace CompileScore
                 }
                 catch (Exception e)
                 {
-                    OutputLog.Error(e.Message);
+                    Parser.LogError(e.Message);
                 }
 
                 if (activeConfig != null)
@@ -68,7 +68,7 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            OutputLog.Log("Capturing configuration from CMake...");
+            Parser.Log("Capturing configuration from CMake...");
 
             if (projItem == null) 
                 return null; 
@@ -130,7 +130,7 @@ namespace CompileScore
                 }
                 catch (Exception e)
                 {
-                    OutputLog.Error(e.Message);
+                    Parser.LogError(e.Message);
                 }
 
                 string activeConfigName = GetActiveConfigurationName();
@@ -190,7 +190,7 @@ namespace CompileScore
 
             if (command == null) return;
 
-            OutputLog.Log("Extracting commands from Translation Unit: " + command.file);
+            Parser.Log("Extracting commands from Translation Unit: " + command.file);
 
             inout.WorkingDirectory = command.directory;
 
@@ -302,13 +302,13 @@ namespace CompileScore
 
             if (commandsFile == null || commandsFile.Length == 0)
             {
-                OutputLog.Log("Unable to retrieve a CMake commands file.\nMake sure the cmake flag -DCMAKE_EXPORT_COMPILE_COMMANDS=1 is set and the options are pointing to the proper file.");
+                Parser.Log("Unable to retrieve a CMake commands file.\nMake sure the cmake flag -DCMAKE_EXPORT_COMPILE_COMMANDS=1 is set and the options are pointing to the proper file.");
             }
             else
             {
                 if (File.Exists(commandsFile))
                 {
-                    OutputLog.Log("Capturing commands from CMake commands file: " + commandsFile);
+                    Parser.Log("Capturing commands from CMake commands file: " + commandsFile);
 
                     List<CMakeCommandEntry> allCommands = null;
                     try
@@ -318,14 +318,14 @@ namespace CompileScore
                     }
                     catch (Exception e)
                     {
-                        OutputLog.Error(e.Message);
+                        Parser.LogError(e.Message);
                     }
 
                     ExtractCMakeProjectProperties(ret, FindBestCMakeEntry(allCommands, documentName));
                 }
                 else
                 {
-                    OutputLog.Log("Unable to find CMake commands file at " + commandsFile + ".\nMake sure the cmake flag -DCMAKE_EXPORT_COMPILE_COMMANDS=1 is set and the options are pointing to the proper file.");
+                    Parser.Log("Unable to find CMake commands file at " + commandsFile + ".\nMake sure the cmake flag -DCMAKE_EXPORT_COMPILE_COMMANDS=1 is set and the options are pointing to the proper file.");
                 }
             }
 

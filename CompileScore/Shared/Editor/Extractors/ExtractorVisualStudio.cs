@@ -13,7 +13,7 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            OutputLog.Log("Capturing configuration from VS projects...");
+            Parser.Log("Capturing configuration from VS projects...");
 
             Project project = projItem == null ? EditorUtils.GetActiveProject() : projItem.ContainingProject;
 
@@ -67,7 +67,7 @@ namespace CompileScore
             catch (Exception e)
             {
                 //If we really need this data we can always parse the vcxproj as an xml 
-                OutputLog.Log("File specific properties not found, only project properties used (" + e.Message + ")");
+                Parser.Log("File specific properties not found, only project properties used (" + e.Message + ")");
             }
 
             AppendProjectProperties(ret, fileToolCL, fileToolNMake, evaluator);

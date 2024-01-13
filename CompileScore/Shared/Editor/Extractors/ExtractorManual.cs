@@ -15,7 +15,7 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            OutputLog.Log("Using manual configuration...");
+            Parser.Log("Using manual configuration...");
 
             var ret = new ProjectProperties();
 
