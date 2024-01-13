@@ -52,6 +52,9 @@ namespace CompileScore
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            if (input == null)
+                return;
+
             var split = input.Split(';').ToList(); //Split
             split.RemoveAll(s => IsMSBuildStringInvalid(s)); //Validate
 

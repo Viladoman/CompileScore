@@ -1,5 +1,4 @@
 ﻿using EnvDTE;
-using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.VCProjectEngine;
 using System;
@@ -23,8 +22,6 @@ namespace CompileScore
             VCConfiguration config = prj.ActiveConfiguration;
             if (config == null) return null;
 
-            //VCPlatform lol = config.Platforms[0] as VCPlatform;
-
             VCPlatform platform = config.Platform as VCPlatform;
             if (platform == null) return null;
 
@@ -45,10 +42,10 @@ namespace CompileScore
             //Include dirs / files and preprocessor
 
             //CAUTION: platform.IncludeDirectories might be corrupted and it will crash Visual Studio ( platform.IncludeDirectories are equivalent to the INCLUDE environment var according to the documentation)
-            string includeDirectories = "";
-            System.Environment.SetEnvironmentVariable("INCLUDE", includeDirectories);
+            //string includeDirectories = platform.IncludeDirectories;
 
-            AppendMSBuildStringToList(ret.IncludeDirectories, evaluator.Evaluate(includeDirectories));
+            AppendMSBuildStringToList(ret.IncludeDirectories, evaluator.Evaluate("$(IncludePath)"));
+
             AppendProjectProperties(ret, vctools.Item("VCCLCompilerTool") as VCCLCompilerTool, vctools.Item("VCNMakeTool") as VCNMakeTool, evaluator);
 
             //Get settings from the single file (this might fail badly if there are no settings to capture)

@@ -81,7 +81,7 @@ namespace CompileScore
                     Parser.Log("Found incompatible pch file, generating alias for: " + pchFile);
 
                     string originalName = projProperties.ForceIncludes[i];
-                    string newName = Path.GetDirectoryName(originalName) + @"\SL_" + Path.GetFileName(originalName);
+                    string newName = Path.GetDirectoryName(originalName) + @"\CSP_" + Path.GetFileName(originalName);
                     projProperties.ForceIncludes[i] = newName;
 
                     File.Copy(originalName, newName, true);
