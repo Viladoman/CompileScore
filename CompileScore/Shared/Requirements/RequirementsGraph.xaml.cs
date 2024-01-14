@@ -476,7 +476,7 @@ namespace CompileScore.Requirements
         {
             double bgWidth  = (PreAreaPaddingX * 2) + (Root.PreNodes.Count * ( NodeWidth + NodeWidthSeparation ) );
             double bgHeight = (PreAreaPaddingY * 2) + NodeHeight;
-            drawingContext.DrawRoundedRectangle(Common.Colors.CodeGenBrush, dashedPen, new Rect(CanvasPaddingX, CanvasPaddingY, bgWidth, bgHeight), 10,10);
+            drawingContext.DrawRoundedRectangle(Brushes.Transparent, dashedPen, new Rect(CanvasPaddingX, CanvasPaddingY, bgWidth, bgHeight), 10,10);
         }
 
         private void RenderOverlayedNode(DrawingContext drawingContext, object node, Brush brush, Pen pen)

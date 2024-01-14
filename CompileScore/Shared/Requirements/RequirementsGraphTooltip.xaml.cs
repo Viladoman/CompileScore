@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
 
 namespace CompileScore.Requirements
@@ -167,6 +166,9 @@ namespace CompileScore.Requirements
                 SetRequirements(graphNode.Value);
             }
 
+            inclusionBucketText.Text = RequirementsDetails.GetInclusionBucketText(node);
+
+            inclusionBucketText.Visibility = inclusionBucketText.Text == null ? Visibility.Collapsed : Visibility.Visible;  
             profilerGrid.Visibility = detailsText.Text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
             profilerBorder.Visibility = detailsText.Text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
 

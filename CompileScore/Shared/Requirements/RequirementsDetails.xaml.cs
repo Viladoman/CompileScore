@@ -182,6 +182,32 @@ namespace CompileScore.Requirements
             }
         }
 
+        public static string GetInclusionBucketText(object node)
+        {
+            if (node is RequirementGraphRoot)
+            {
+                return "Main";
+            }
+
+            if (node is RequirementGraphNode)
+            {
+                RequirementGraphNode graphNode = (RequirementGraphNode) node;
+                if (graphNode.Row < 1)
+                {
+                    return "PreInclude";
+                }
+
+                if (graphNode.Column == 0)
+                {
+                    return "Direct";
+                }
+
+                return "Indirect";
+            }
+
+            return null;
+        }
+
         private void BuildRequirementsUI(ParserFileRequirements file)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -231,6 +257,7 @@ namespace CompileScore.Requirements
                 headerIncludes.Visibility = Visibility.Visible;
             }
         }
+
         private void SetScore(object value)
         {
             if (value == null)
@@ -264,7 +291,7 @@ namespace CompileScore.Requirements
             profilerPanel.Visibility = Visibility.Visible;
         }
 
-        public void BuildMainUI(string fileName)
+        public void BuildMainUI(string fileName, string bucketText)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -276,6 +303,10 @@ namespace CompileScore.Requirements
             headerMainText.Visibility = Visibility.Visible; 
             headerMainText.Inlines.Clear();
             headerMainText.Inlines.Add(CreateHyperlink(EditorUtils.GetFileNameSafe(fileName), (sender, e) => EditorUtils.OpenFileByName(fileName)));
+            
+            if ( bucketText != null )
+                headerMainText.Inlines.Add($" ({bucketText})");
+
             headerMainText.ToolTip = fileName;
         }
 
@@ -285,7 +316,7 @@ namespace CompileScore.Requirements
 
             if (graphNode == null)
             {
-                BuildMainUI(null);
+                BuildMainUI(null, null);
                 BuildProfilerUI(null, null);
                 BuildRequirementsUI(null);
             }
@@ -293,7 +324,7 @@ namespace CompileScore.Requirements
             {
                 RequirementGraphNode node = graphNode as RequirementGraphNode;
 
-                BuildMainUI(node.Value.Name);
+                BuildMainUI(node.Value.Name, GetInclusionBucketText(node) );
                 BuildProfilerUI(node.ProfilerValue, node.IncluderValue);
                 BuildRequirementsUI(node.Value);
             }
@@ -301,7 +332,7 @@ namespace CompileScore.Requirements
             {
                 RequirementGraphRoot node = graphNode as RequirementGraphRoot;
 
-                BuildMainUI(node.Value.Filename);
+                BuildMainUI(node.Value.Filename, GetInclusionBucketText(node) );
                 BuildProfilerUI(node.ProfilerValue, null);
                 BuildRequirementsUI(null);
             }
