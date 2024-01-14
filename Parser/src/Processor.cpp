@@ -2,7 +2,7 @@
 
 #include "ParserDefinitions.h"
 
-//#pragma optimize("",off) //TODO ~ ramonv ~ do not submit
+//#pragma optimize("",off)
 
 namespace CompileScore
 {
@@ -40,8 +40,9 @@ namespace CompileScore
         {
             File& file = result.files[i];
 
-            if ( file.mainIncludeeIndex < 0 )
-                continue;
+            //we want to export these as 'already included'
+            //if ( file.mainIncludeeIndex < 0 )
+            //    continue;
 
             if ( file.mainIncludeeIndex != i && IsFileEmpty(file) )
             {
@@ -57,18 +58,30 @@ namespace CompileScore
     // -----------------------------------------------------------------------------------------------------------
     void ProcessIncludeRequirements(Result& result)
     {
+        //TODO ~ ramonv ~ also store orphaned includes ( already included ) 
+
         //Check from the exported files which ones included indirectly and add those requirements to the direct file
         for (size_t i = 0, sz = result.finalFiles.size(); i < sz; ++i)
         {
             File* file = result.finalFiles[i];
-            File* mainIncludee = &(result.files[file->mainIncludeeIndex]);
-            if (file == mainIncludee)
+            if (file->mainIncludeeIndex < 0)
             {
-                result.directIncludes.emplace_back(mainIncludee->exportIndex);
+                //preinclude 
+                result.preIncludes.emplace_back(file->exportIndex);
             }
-            else 
+            else
             {
-                result.indirectIncludes.emplace_back(mainIncludee->exportIndex, file->exportIndex);
+                File* mainIncludee = &(result.files[file->mainIncludeeIndex]);
+                if (file == mainIncludee)
+                {
+                    //direct include
+                    result.directIncludes.emplace_back(mainIncludee->exportIndex);
+                }
+                else 
+                {
+                    //indirect include
+                    result.indirectIncludes.emplace_back(mainIncludee->exportIndex, file->exportIndex);
+                }
             }
         }
     }

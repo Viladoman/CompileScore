@@ -120,6 +120,7 @@ namespace CompileScore
     {
         public string Filename { set; get; }
         public List<ParserFileRequirements> Files { set; get; }
+        public List<ParserFileRequirements> PreIncludes { set; get; }
         public List<ParserFileRequirements> DirectIncludes { set; get; }
         public Dictionary<string, ParserFileRequirements> FilesMap { set; get; }
 
@@ -130,7 +131,7 @@ namespace CompileScore
         private static readonly Lazy<ParserData> lazy = new Lazy<ParserData>(() => new ParserData());
         public static ParserData Instance { get { return lazy.Value; } }
 
-        public const uint VERSION = 2;
+        public const uint VERSION = 3;
 
         private Dictionary<string, ParserUnit> Units = new Dictionary<string, ParserUnit>();
 
@@ -406,6 +407,17 @@ namespace CompileScore
         private static void ReadIncludes(BinaryReader reader, ParserUnit unit)
         {
             int numFiles = unit.Files.Count;
+
+            uint preIncludesLength = reader.ReadUInt32();
+            unit.PreIncludes = new List<ParserFileRequirements>((int)preIncludesLength);
+            for (uint i = 0; i < preIncludesLength; ++i)
+            {
+                uint index = reader.ReadUInt32();
+                if (index < numFiles)
+                {
+                    unit.PreIncludes.Add(unit.Files[(int)index]);
+                }
+            }
 
             uint directIncludesLength = reader.ReadUInt32();
             unit.DirectIncludes = new List<ParserFileRequirements>((int)directIncludesLength);

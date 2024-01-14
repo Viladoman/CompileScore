@@ -8,7 +8,7 @@
 
 namespace IO
 {
-	enum { DATA_VERSION = 2 };
+	enum { DATA_VERSION = 3 };
 
 	using TBuffer = FILE*;
 	using U8 = char;
@@ -320,6 +320,7 @@ namespace IO
 
         BinUtils::BinarizeMain(stream, result);
         BinUtils::BinarizeFiles(stream, result.finalFiles);
+        BinUtils::BinarizeIncludes(stream, result.preIncludes);
         BinUtils::BinarizeIncludes(stream, result.directIncludes);
         BinUtils::BinarizeIncludes(stream, result.indirectIncludes);
 

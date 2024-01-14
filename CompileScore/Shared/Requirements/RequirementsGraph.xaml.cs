@@ -40,6 +40,8 @@ namespace CompileScore.Requirements
     {
         public ParserUnit Value { get; set; }
 
+        public List<RequirementGraphNode> PreNodes { set; get; }
+
         public List<RequirementGraphNode> Nodes { set; get; }
 
         public object ProfilerValue { set; get; }
@@ -121,6 +123,15 @@ namespace CompileScore.Requirements
                 root.Nodes.Add(newNode);
             }
 
+            root.PreNodes = new List<RequirementGraphNode>(parserUnit.PreIncludes.Count);
+            int preColumn = 0;
+            foreach (ParserFileRequirements file in parserUnit.PreIncludes ?? Enumerable.Empty<ParserFileRequirements>())
+            {
+                RequirementGraphNode newNode = BuildGraphNode(file);
+                newNode.Column = preColumn++;
+                root.PreNodes.Add(newNode);
+            }
+
             return root;
         }
 
@@ -138,6 +149,11 @@ namespace CompileScore.Requirements
 
         const double CanvasPaddingY = 10.0;
         const double CanvasPaddingX = 5.0;
+
+        const double PreAreaPaddingX = 10.0;
+        const double PreAreaPaddingY = 10.0;
+        const double PreAreaSpacingY = 10.0;
+
         const double RootWidth = 20.0;
         const double RootWidthSeparation = 10.0;
         const double NodeWidth = 200.0;
@@ -149,6 +165,7 @@ namespace CompileScore.Requirements
         const byte   SeverityBrushOpacity = 125;
 
         private double NodeHeight = NodeBaseHeight;
+        private double PreAreaHeight = 0;
 
         private double restoreScrollX = -1.0;
         private double restoreScrollY = -1.0;
@@ -285,9 +302,16 @@ namespace CompileScore.Requirements
 
                 NodeHeight = NodeBaseHeight + ( Root.ProfilerValue != null ? NodeProfilerHeight : 0 ); 
 
+                PreAreaHeight = Root.PreNodes.Count > 0? (NodeHeight + (2 * PreAreaPaddingY) + PreAreaSpacingY) : 0;
+
                 double extraWidth = Root.MaxColumn > 0 ? IndirectExtraSeparation : 0; 
-                canvas.Width = RootWidth + RootWidthSeparation + extraWidth + (Root.MaxColumn * (NodeWidth + NodeWidthSeparation) ) + 2 * CanvasPaddingX;
-                canvas.Height = (numVisalCells * ( NodeHeight + NodeHeightSeparation ) ) + ( 2 * CanvasPaddingY ) - NodeHeightSeparation;
+                double mainWidth = RootWidth + RootWidthSeparation + extraWidth + (Root.MaxColumn * (NodeWidth + NodeWidthSeparation) ) + 2 * CanvasPaddingX;
+                double mainHeight = (numVisalCells * ( NodeHeight + NodeHeightSeparation ) ) + ( 2 * CanvasPaddingY ) - NodeHeightSeparation;
+
+                double preWidth = Root.PreNodes.Count * (NodeWidth + NodeWidthSeparation) + 2 * (CanvasPaddingX + PreAreaPaddingX);
+
+                canvas.Width = Math.Max(mainWidth, preWidth);
+                canvas.Height = mainHeight + PreAreaHeight;
 
                 if (restoreScrollX >= 0)
                 {
@@ -424,6 +448,17 @@ namespace CompileScore.Requirements
 
                 using (DrawingContext drawingContext = baseVisual.Visual.RenderOpen())
                 {
+
+                    if ( Root.PreNodes.Count > 0 )
+                    {
+                        RenderPeeBackground(drawingContext);
+
+                        foreach (RequirementGraphNode node in Root.PreNodes)
+                        {
+                            RenderPreNode(drawingContext, node);
+                        }
+                    }
+
                     RenderRootNode(drawingContext, Root.ProfilerValue is UnitValue ? Common.Colors.ExecuteCompilerBrush : Common.Colors.IncludeBrush, borderPen);
 
                     for ( int row = 0; row < Root.Nodes.Count; ++row)
@@ -437,6 +472,13 @@ namespace CompileScore.Requirements
             }
         }
 
+        private void RenderPeeBackground(DrawingContext drawingContext)
+        {
+            double bgWidth  = (PreAreaPaddingX * 2) + (Root.PreNodes.Count * ( NodeWidth + NodeWidthSeparation ) );
+            double bgHeight = (PreAreaPaddingY * 2) + NodeHeight;
+            drawingContext.DrawRoundedRectangle(Common.Colors.CodeGenBrush, dashedPen, new Rect(CanvasPaddingX, CanvasPaddingY, bgWidth, bgHeight), 10,10);
+        }
+
         private void RenderOverlayedNode(DrawingContext drawingContext, object node, Brush brush, Pen pen)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -446,7 +488,10 @@ namespace CompileScore.Requirements
                 if (node is RequirementGraphNode)
                 {
                     RequirementGraphNode graphNode = node as RequirementGraphNode;
-                    RenderOverlayedNodeGraph(drawingContext, graphNode, GetColumnLocation(graphNode.Column), GetRowLocation(graphNode.Row), brush, pen);
+                    
+                    double x,y;
+                    GetLocation(out x,out y,graphNode.Row, graphNode.Column);  
+                    RenderOverlayedNodeGraph(drawingContext, graphNode, x, y, brush, pen);
                 }
                 else if (Hover is RequirementGraphRoot)
                 {
@@ -470,38 +515,74 @@ namespace CompileScore.Requirements
             RefreshCanvasVisual(overlayVisual);
         }
 
-        private double GetRowLocation(int row)
+        private void GetLocation(out double x, out double y, int row, int column)
         {
-            double initialOffset = CanvasPaddingY;
-            double cellSize = NodeHeight + NodeHeightSeparation;
-            return initialOffset + row * cellSize; 
+            double cellSizeX = NodeWidth  + NodeWidthSeparation;
+            double cellSizeY = NodeHeight + NodeHeightSeparation;
+
+            if ( row < 0 )
+            {
+                double initialOffsetX = CanvasPaddingX + PreAreaPaddingX;
+                double initialOffsetY = CanvasPaddingY + PreAreaPaddingY;
+
+                x = initialOffsetX + column * cellSizeX;
+                y = initialOffsetY;
+            }
+            else
+            {
+                double initialOffsetX = CanvasPaddingX + RootWidth + RootWidthSeparation + (column > 0 ? IndirectExtraSeparation : 0);
+                double initialOffsetY = CanvasPaddingY + PreAreaHeight;
+
+                x = initialOffsetX + column * cellSizeX;
+                y = initialOffsetY + row    * cellSizeY;
+            }
         }
 
-        private double GetColumnLocation(int column)
+        private bool GetGridLocation(out int row, out int column, double x, double y)
         {
-            double initialOffset = CanvasPaddingX + RootWidth + RootWidthSeparation + (column > 0 ? IndirectExtraSeparation : 0);
-            double cellSize = NodeWidth + NodeWidthSeparation;
-            return initialOffset + column * cellSize;
-        }
+            row = -1;
+            column = -1; 
 
-        private int GetColumn(double x)
-        {
-            double initialOffset = CanvasPaddingX + RootWidth + RootWidthSeparation;
-            if (x < initialOffset)
-                return -1;
-            
-            double initialIndirectOffset = initialOffset + NodeWidth + NodeWidthSeparation + IndirectExtraSeparation;
-            if (x < initialIndirectOffset)
-                return 0;
+            if ( y <= CanvasPaddingY)
+            {
+                //in top padding
+                return false;
+            }
 
-            return (int)((x - ( initialOffset + IndirectExtraSeparation ) ) / (NodeWidth + NodeWidthSeparation) );
-        }
+            double cellSizeX = NodeWidth + NodeWidthSeparation;
+            double cellSizeY = NodeHeight + NodeHeightSeparation;
 
-        private int GetRow(double y)
-        {
-            double initialOffset = CanvasPaddingY;
-            double cellSize = NodeHeight + NodeHeightSeparation;
-            return (int)((y - initialOffset) / cellSize); 
+            if ( y < PreAreaHeight )
+            {
+                double initialOffsetX = CanvasPaddingX + PreAreaPaddingX;
+                column = (int)((x - (initialOffsetX + IndirectExtraSeparation)) / cellSizeX);
+                row = -1;
+            }
+            else
+            {
+                //Column
+                double initialOffsetX = CanvasPaddingX + RootWidth + RootWidthSeparation;
+                if (x < initialOffsetX)
+                {
+                    return false;
+                }          
+
+                double initialIndirectOffsetX = initialOffsetX + cellSizeX + IndirectExtraSeparation;
+                if (x < initialIndirectOffsetX)
+                {
+                    column = 0;
+                }
+                else
+                {
+                    column = (int)((x - (initialOffsetX + IndirectExtraSeparation)) / cellSizeX); 
+                }
+
+                //Row
+                double initialOffsetY = CanvasPaddingY + PreAreaHeight;
+                row = (int)((y - initialOffsetY) / cellSizeY);
+            }
+
+            return true;
         }
 
         private object GetElementAtPosition(double x, double y)
@@ -517,7 +598,7 @@ namespace CompileScore.Requirements
         private RequirementGraphRoot GetRootNodeAtPosition(double x, double y)
         {
             double localX = x - CanvasPaddingX; 
-            double localY = y - CanvasPaddingY;
+            double localY = y - (CanvasPaddingY + PreAreaHeight);
             double rootHeight = canvas.Height - ((2.0 * CanvasPaddingY));
             return localX < 0 || localY < 0 || localX > RootWidth || localY > rootHeight ? null : Root;
         }
@@ -527,34 +608,57 @@ namespace CompileScore.Requirements
             if (Root == null) 
                 return null;
 
-            int column = GetColumn(x);
-            int row    = GetRow(y);
-            if (row < 0 || column < 0 || row >= Root.Nodes.Count) 
+            int row,column;
+            bool valid = GetGridLocation(out row, out column, x, y);
+
+            if (!valid || column < 0 || (row >= 0 && row >= Root.Nodes.Count) || (row < 0 && Root.PreNodes.Count == 0) )
                 return null;
 
-            double localX = x - GetColumnLocation(column);
-            double localY = y - GetRowLocation(row);
+            double gridX, gridY;
+            GetLocation(out gridX, out gridY, row, column);
+
+            double localX = x - gridX;
+            double localY = y - gridY;
             if ( localX > NodeWidth || localY > NodeHeight) 
                 return null;
 
-            RequirementGraphNode node = Root.Nodes[row];
-            for( int col = 0; node != null && col < column; ++col )
+            RequirementGraphNode node = null;
+            if ( row < 0 )
             {
-                node = node.ChildNode;
+                return column < Root.PreNodes.Count? Root.PreNodes[column] : null;
+            }
+            else
+            {
+                node = Root.Nodes[row];
+                for( int col = 0; node != null && col < column; ++col )
+                {
+                    node = node.ChildNode;
+                }
             }
 
             return node;
+        }
+
+        private void RenderPreNode(DrawingContext drawingContext, RequirementGraphNode node)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            double nodePositionX;
+            double nodePositionY;
+            GetLocation(out nodePositionX, out nodePositionY, node.Row, node.Column);
+            RenderNodeSingle(drawingContext, node, nodePositionX, nodePositionY);
         }
 
         private void RenderNodeRow(DrawingContext drawingContext, RequirementGraphNode node)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            double nodePositionY = GetRowLocation(node.Row);
-
             while (node != null)
             {
-                double nodePositionX = GetColumnLocation(node.Column);
+                double nodePositionX;
+                double nodePositionY;
+                GetLocation(out nodePositionX, out nodePositionY, node.Row, node.Column);
+
                 RenderConnectingLine(drawingContext, node, nodePositionX, nodePositionY);
                 RenderNodeSingle(drawingContext, node, nodePositionX, nodePositionY);
                 node = node.ChildNode;
@@ -606,11 +710,8 @@ namespace CompileScore.Requirements
             {
                 double profilerWidth = NodeWidth - 10;
 
-                drawingContext.DrawRectangle(this.Background, pen, new Rect(posX+5, posY+NodeBaseHeight, profilerWidth, NodeProfilerHeight));
+                drawingContext.DrawRectangle(this.Background, pen, new Rect(posX + 5, posY + NodeBaseHeight, profilerWidth, NodeProfilerHeight));            
 
-                //TODO ~ ramonv ~ PRECOMPUTE brushes
-                
-              
                 double filledRatio = Math.Max(0,(value.Severity - 1)/4);
                 drawingContext.DrawRectangle(GetSeverityBrush(value.Severity), transparentPen, new Rect(posX + 5, posY + NodeBaseHeight, profilerWidth * filledRatio, NodeProfilerHeight));
             }
@@ -650,8 +751,10 @@ namespace CompileScore.Requirements
 
         private void RenderRootNode(DrawingContext drawingContext, Brush brush, Pen pen)
         {
-            double rootHeight = canvas.Height - ( ( 2.0 * CanvasPaddingY) );
-            drawingContext.DrawRectangle(brush, pen, new Rect(CanvasPaddingX, CanvasPaddingY, RootWidth, rootHeight));
+            double paddingUp = CanvasPaddingY + PreAreaHeight;
+            double paddingDown = CanvasPaddingY;
+            double rootHeight = canvas.Height - ( paddingUp + paddingDown );
+            drawingContext.DrawRectangle(brush, pen, new Rect(CanvasPaddingX, paddingUp, RootWidth, rootHeight));
         }
 
         private void CreateContextualMenu(object node)

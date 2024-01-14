@@ -158,6 +158,7 @@ namespace CompileScore
 
         //filled by processor
         TFilePtrs       finalFiles;
+        TFileIndices    preIncludes;
         TFileIndices    directIncludes;
         TIncludeLinks   indirectIncludes;
     };
