@@ -18,7 +18,7 @@
 #include "ParserDefinitions.h"
 #include "Processor.h"
 
-//#pragma optimize("",off) //TODO ~ Ramonv ~ remove 
+//#pragma optimize("",off)
 
 //TODO List: 
 // Typedef type presence ( typedef CustomType NewType )
@@ -427,15 +427,18 @@ namespace CompileScore
         explicit PPIncludeTracer(const clang::SourceManager& sourceManager)
             : m_sourceManager(sourceManager)
             , m_currentMainIncludee(kInvalidFileIndex)
-        {}
+            , m_mainFileId(sourceManager.getMainFileID())
+        {
+            //Store the main file as index 0
+            std::optional<clang::StringRef> mainFileName = m_sourceManager.getNonBuiltinFilenameForID(m_mainFileId);
+            Helpers::GetFileIndex(m_mainFileId, mainFileName->data());
+        }
 
     private:
         virtual void LexedFileChanged(clang::FileID FID, LexedFileChangeReason Reason, clang::SrcMgr::CharacteristicKind FileType, clang::FileID PrevFID, clang::SourceLocation Loc) override
         {
             if (FID.isValid() && Reason == LexedFileChangeReason::EnterFile)
             {
-                m_mainFileId = m_mainFileId.isValid() ? m_mainFileId : FID;
-
                 const clang::FileID includer = PrevFID;
                 const clang::FileID includee = FID;
 
