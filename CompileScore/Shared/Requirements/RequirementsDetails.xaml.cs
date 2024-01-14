@@ -192,7 +192,7 @@ namespace CompileScore.Requirements
             if (node is RequirementGraphNode)
             {
                 RequirementGraphNode graphNode = (RequirementGraphNode) node;
-                if (graphNode.Row < 1)
+                if (graphNode.Row < 0)
                 {
                     return "PreInclude";
                 }

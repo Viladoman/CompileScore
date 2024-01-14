@@ -40,10 +40,6 @@ namespace CompileScore
         {
             File& file = result.files[i];
 
-            //we want to export these as 'already included'
-            //if ( file.mainIncludeeIndex < 0 )
-            //    continue;
-
             if ( file.mainIncludeeIndex != i && IsFileEmpty(file) )
             {
                 // Skip non direct empty includes
@@ -64,9 +60,9 @@ namespace CompileScore
         for (size_t i = 0, sz = result.finalFiles.size(); i < sz; ++i)
         {
             File* file = result.finalFiles[i];
-            if (file->mainIncludeeIndex < 0)
+            if (file->mainIncludeeIndex < 0 && i != 0 ) 
             {
-                //preinclude 
+                //preinclude: ( not the main file but not in the include trees )
                 result.preIncludes.emplace_back(file->exportIndex);
             }
             else
