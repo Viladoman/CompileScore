@@ -39,6 +39,11 @@ This window shows all the inclusion stacks that lead to the selected include, en
 
 Right-click on any include entry and select **Show Includers Graph** to open its includers graph.  
 
+### Requirements Graph & Details
+![RequirementsGraph image](https://github.com/Viladoman/CompileScore/wiki/data/RequirementsGraph.png?raw=true)
+
+This will parse the given file and display why you need each include and how strong is the binding of this include with the parsed file. This view also merges the cost of the file coming from the build profile data combining the 'why I need this' with the 'how much it costs' in the same place. 
+
 #### Navigation controls:
 - Zoom: Control + Mouse Wheel
 - Scroll: Middle mouse press and drag
