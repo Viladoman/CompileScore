@@ -49,10 +49,11 @@ namespace CompileScore.Overview
             Category = category;
 
             string prefix = category == CompilerData.CompileCategory.Include ? "Value." : "";
+            string countName = category == CompilerData.CompileCategory.Include ? "Units" : "Count";
 
             //Create columns
             CreateDataGridColumn("Name",               prefix + "Name",             300);
-            CreateDataGridColumn("Units",              prefix + "UnitCount",        75);
+            CreateDataGridColumn(countName,            prefix + "UnitCount",        75);
             CreateDataGridColumn("Accumulated",        prefix + "Accumulated",      140, "uiTimeConverter");
             CreateDataGridColumn("Accumulated Self",   prefix + "SelfAccumulated",  140, "uiTimeConverter");
             CreateDataGridColumn("Accumulated Unit",   prefix + "UnitAccumulated",  140, "uiTimeConverterZero");
