@@ -11,6 +11,7 @@
 *.orig
 
 #Temporary and binaries
+*.o
 *.ctl
 *.etl
 *.scor
