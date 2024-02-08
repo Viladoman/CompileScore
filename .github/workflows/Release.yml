@@ -90,7 +90,7 @@ jobs:
          
     - name: Generate App Asset
       working-directory: ${{env.appsDir}}/WPF/bin/Release/${{ env.NetPlatform }}
-      run: Compress-Archive -Path CompileScore.exe -DestinationPath CompileScoreApp.zip
+      run: Get-ChildItem -Path CompileScore.dll, CompileScore.exe, CompileScore.runtimeconfig.json | Compress-Archive -DestinationPath CompileScoreApp.zip
       
     - name: Upload App Asset
       uses: actions/upload-release-asset@v1
