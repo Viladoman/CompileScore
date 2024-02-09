@@ -12,10 +12,11 @@ EXECUTABLE_FILE = $(EXECUTABLE_NAME:%=$(TARGET_DIR)/%)
 
 INCLUDES =  -I$(ROOT)src
 
-CXX = clang 
+CXX = clang++
 CXXFLAGS = -std=c++20 -O2 -Wall -c $(INCLUDES)
 
 build: $(OBJECTS)
+	@mkdir -p $(TARGET_DIR)
 	@echo Linking...
 	@$(CXX) $(LDFLAGS) -o $(EXECUTABLE_FILE) $(OBJECTS) $(LIBS)
 	@echo "Build successful!"
