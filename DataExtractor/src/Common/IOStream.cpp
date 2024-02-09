@@ -29,7 +29,7 @@ namespace IO
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
             FILE* file;
             const errno_t result = fopen_s(&file, filename, mode);
-            return result ? nullptr : stream;
+            return result ? nullptr : file;
 #else
             return fopen(filename, mode);
 #endif
