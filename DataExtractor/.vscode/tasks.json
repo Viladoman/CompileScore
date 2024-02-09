@@ -1,0 +1,32 @@
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "Build Project",
+            "command": "make",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "Builds the project."
+        },
+        {
+            "type": "shell",
+            "label": "Rebuild Project",
+            "command": "make rebuild",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "Rebuilds the project."
+        },
+        {
+            "type": "shell",
+            "label": "Clean Project",
+            "command": "make clean",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "Cleans the project."
+        }
+    ],
+    "version": "2.0.0"
+}

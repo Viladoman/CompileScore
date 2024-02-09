@@ -13,7 +13,7 @@ EXECUTABLE_FILE = $(EXECUTABLE_NAME:%=$(TARGET_DIR)/%)
 INCLUDES =  -I$(ROOT)src
 
 CXX = clang++
-CXXFLAGS = -std=c++20 -O2 -Wall -c $(INCLUDES)
+CXXFLAGS = -std=c++20 -g -O2 -Wall -c $(INCLUDES)
 
 build: $(OBJECTS)
 	@mkdir -p $(TARGET_DIR)
@@ -23,9 +23,13 @@ build: $(OBJECTS)
 
 clean:
 	-rm $(OBJECTS)
-	-rm $(EXECUTABLE_FILE)s
+	-rm $(EXECUTABLE_FILE)
 
-.PHONY: build clean
+rebuild:
+	@make clean
+	@make build
+
+.PHONY: build clean rebuild
 
 $(OBJECTS): $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/%.cpp
 	@echo Building $<

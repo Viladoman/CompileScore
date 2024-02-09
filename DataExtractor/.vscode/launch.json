@@ -1,0 +1,18 @@
+{
+    "configurations": [
+      {
+        "name": "Run ScoreDataExtractor",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "${workspaceFolder}/bin/make/ScoreDataExtractor",
+        "args": [],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}",
+        "environment": [],
+        "externalConsole": true,
+        "MIMode": "lldb",
+        "preLaunchTask": "Rebuild Project"
+      }
+    ],
+    "version": "2.0.0"
+  }
