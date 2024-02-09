@@ -1,5 +1,7 @@
 #include "MSVCScore.h"
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
+
 #define VC_EXTRALEAN
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h> // Required because DbgHelp.h needs it ( bad dependency management there... )
@@ -796,3 +798,23 @@ namespace MSVC
     }
 }
 
+#else 
+
+#include "../Common/IOStream.h"
+
+namespace MSVC
+{ 
+    int MSVCError()
+    {
+        LOG_ERROR("MSVC operations only supported on Windows."); 
+        return -1;
+    }
+
+	int Extractor::StartRecording(const ExportParams& params){ return MSVCError(); }
+	int Extractor::CancelRecording(const ExportParams& params){ return MSVCError(); }
+	int Extractor::StopRecording(const ExportParams& params){ return MSVCError(); }
+	int Extractor::GenerateScore(const ExportParams& params){ return MSVCError(); }
+	int Extractor::Clean(const ExportParams& params){ return MSVCError(); }
+}
+
+#endif

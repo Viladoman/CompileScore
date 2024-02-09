@@ -71,7 +71,7 @@ namespace Hash
     constexpr U64 AppendCompileTimeCRC64(U64 oldCRC, U64 content) { return  AppendCompileTimeCRC64Impl(oldCRC ^ 0xFFFFFFFFFFFFFFFFull, content); }
 
     // Hash CRC 
-    U64 AppendToCRC64(U64 previousCRC, const char* rawData, size_t size);
+    U64 AppendToCRC64(U64 previousCRC, const char* rawData, U64 size);
     U64 CreateCRC64(const char* buf);
 }
 

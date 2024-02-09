@@ -18,7 +18,7 @@ ExportParams::ExportParams()
 namespace CommandLine
 { 
     constexpr int FAILURE = -1;
-    constexpr int SUCCESS = 0;
+    //constexpr int SUCCESS = 0;
 
     namespace Utils
     { 

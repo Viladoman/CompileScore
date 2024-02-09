@@ -212,7 +212,7 @@ namespace Clang
 			{ 
 				return (value.start == input.start)? value.duration <= input.duration : value.start >= input.start; 
 			});
-		TCompileEvents::iterator elem = events.emplace(found,compileEvent);    
+		events.emplace(found,compileEvent);    
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
@@ -257,8 +257,6 @@ namespace Clang
 	// -----------------------------------------------------------------------------------------------------------
 	bool ProcessFile(ScoreData& scoreData, const char* path, const char* content)
 	{ 
-		constexpr Json::Token literalTraceEvents = Utils::CreateLiteralToken("traceEvents");
-
 		CompileUnitContext context;
 
 		ScoreTimeline timeline;

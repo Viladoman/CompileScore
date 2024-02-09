@@ -59,8 +59,8 @@ struct CompileUnitContext
 struct CompileUnit
 { 
     CompileUnit(const U32 _unitId = 0u)
-        : unitId(_unitId)
-        , nameHash(0u)
+        : nameHash(0u)
+        , unitId(_unitId)
         , values()
     {}
 
@@ -147,10 +147,10 @@ struct CompileEvent
 struct CompileIncluderInclData
 {
     CompileIncluderInclData()
-        : maximum(0u)
+        : accumulated(0u)
         , count(0u)
+        , maximum(0u)
         , maxId(InvalidCompileId)
-        , accumulated(0u)
     {}
 
     U64 accumulated;

@@ -17,11 +17,22 @@ namespace IO
     namespace Utils
     { 
         // -----------------------------------------------------------------------------------------------------------
-        size_t StringLength(const char* s)
+        U64 StringLength(const char* s)
         {
-            size_t len = 0u;
+            U64 len = 0u;
             while(*s){++s; ++len;}
             return len;
+        }
+
+        FILE* OpenFile( const char* filename, const char* mode )
+        {
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
+            FILE* file;
+            const errno_t result = fopen_s(&file, filename, mode);
+            return result ? nullptr : stream;
+#else
+            return fopen(filename, mode);
+#endif
         }
     }
 
@@ -109,10 +120,9 @@ namespace IO
     { 
         RawBuffer content; 
 
-        FILE* stream;
-        const errno_t result = fopen_s(&stream,filename,"rb");
-
-        if (result) 
+        FILE* stream = Utils::OpenFile(filename, "rb");
+        
+        if (stream == nullptr)
         { 
             LOG_ERROR("Unable to open input file: %s.", filename);
         }
@@ -138,10 +148,9 @@ namespace IO
 
     bool WriteRawFile(const char* filename, RawBuffer buffer)
     {
-        FILE* stream;
-        const errno_t result = fopen_s(&stream,filename,"wb");
+        FILE* stream = Utils::OpenFile(filename, "wb");
 
-        if (result) 
+        if (stream == nullptr) 
         { 
             LOG_ERROR("Unable to open output file: %s.", filename);
             return false;
@@ -170,10 +179,9 @@ namespace IO
     {
         FileTextBuffer content = nullptr; 
 
-        FILE* stream;
-        const errno_t result = fopen_s(&stream,filename,"rb");
+        FILE* stream = Utils::OpenFile(filename, "rb");
 
-        if (result) 
+        if (stream == nullptr) 
         { 
             LOG_ERROR("Unable to open the file %s", filename);
         }
@@ -215,7 +223,7 @@ namespace IO
         bool IsValid() const { return file != nullptr; }
         void Open(const char* filename);
         void Close();
-        void Write(const void* buffer, const size_t elementSize, const size_t elementCount);
+        void Write(const void* buffer, const U64 elementSize, const U64 elementCount);
 
     private: 
         bool AppendTimelineExtension(fastl::string& filename);
@@ -227,9 +235,9 @@ namespace IO
     // -----------------------------------------------------------------------------------------------------------
     void TextOutputStream::Impl::Open(const char* filename)
     { 
-        const errno_t result = fopen_s(&file,filename,"wb");
+        file = Utils::OpenFile(filename, "wb");
 
-        if (result) 
+        if (file == nullptr) 
         { 
             LOG_ERROR("Unable to open output file: %s.", filename);
         }
@@ -245,7 +253,7 @@ namespace IO
     }
 
     // -----------------------------------------------------------------------------------------------------------
-    void TextOutputStream::Impl::Write(const void* buffer, const size_t elementSize, const size_t elementCount)
+    void TextOutputStream::Impl::Write(const void* buffer, const U64 elementSize, const U64 elementCount)
     {
         if (file)
         { 
@@ -266,7 +274,7 @@ namespace IO
     }
 
     // -----------------------------------------------------------------------------------------------------------
-    void TextOutputStream::Append(const char* txt, const size_t length)
+    void TextOutputStream::Append(const char* txt, const U64 length)
     { 
         m_impl->Write(txt,sizeof(char),length);
     }
@@ -306,7 +314,7 @@ namespace IO
         void BinarizeString(FILE* stream, const fastl::string& str)
         {
             //Perform size encoding in 7bitSize format
-            size_t strSize = str.length();
+            U64 strSize = str.length();
             do
             {
                 const U8 val = strSize < 0x80 ? strSize & 0x7F : (strSize & 0x7F) | 0x80;
@@ -525,7 +533,7 @@ namespace IO
         {
             BinarizeU64(stream, session.fullDuration);
 
-            for (size_t i = 0; i < ToUnderlying(CompileCategory::DisplayCount); ++i)
+            for (U64 i = 0; i < ToUnderlying(CompileCategory::DisplayCount); ++i)
             {
                 BinarizeU64(stream, session.totals[i]);
             }
@@ -539,9 +547,9 @@ namespace IO
     public: 
         Impl(const char* _path, unsigned int _timelinesPerFile)
             : path(_path)
-            , timelinesPerFile(_timelinesPerFile)
             , timelineStream(nullptr)
             , timelineCount(0u)
+            , timelinesPerFile(_timelinesPerFile)
         {}
 
         FILE* NextTimelineStream();
@@ -560,7 +568,7 @@ namespace IO
 
     private:
         FILE*       timelineStream; 
-        size_t      timelineCount;
+        U64         timelineCount;
         U32         timelinesPerFile;
     };
 
@@ -569,7 +577,7 @@ namespace IO
     // -----------------------------------------------------------------------------------------------------------
     bool ScoreBinarizer::Impl::AppendTimelineExtension(fastl::string& filename)
     { 
-        size_t extensionNumber = timelineCount / timelinesPerFile;
+        U64 extensionNumber = timelineCount / timelinesPerFile;
 
         char digits[TIMELINE_FILE_NUM_DIGITS];
         for(int i=TIMELINE_FILE_NUM_DIGITS-1;i>=0;--i,extensionNumber/=10)
@@ -602,8 +610,8 @@ namespace IO
             fastl::string filename = path;
             if (AppendTimelineExtension(filename))
             { 
-                const errno_t result = fopen_s(&timelineStream,filename.c_str(),"wb");
-                if (result) 
+                timelineStream = Utils::OpenFile(filename.c_str(), "wb");
+                if (timelineStream == nullptr) 
                 { 
                     LOG_ERROR("Unable to create output file %s",filename.c_str());
                     timelineStream = nullptr;
@@ -632,9 +640,9 @@ namespace IO
     void ScoreBinarizer::Impl::BinarizeGlobals(const ScoreData& data)
     {
         bool hasContent = false;
-        constexpr size_t firstIndex = ToUnderlying(CompileCategory::Include) + 1;
-        constexpr size_t lastIndex = ToUnderlying(CompileCategory::GatherFull);
-        for (size_t i = firstIndex; i < lastIndex; ++i)
+        constexpr U64 firstIndex = ToUnderlying(CompileCategory::Include) + 1;
+        constexpr U64 lastIndex = ToUnderlying(CompileCategory::GatherFull);
+        for (U64 i = firstIndex; i < lastIndex; ++i)
         {
             hasContent = hasContent || data.globals[i].empty();
         }
@@ -649,10 +657,9 @@ namespace IO
 
         LOG_INFO("Writing to file %s", filename.c_str());
 
-        FILE* stream;
-        const errno_t result = fopen_s(&stream, filename.c_str(), "wb");
-
-        if (result)
+        FILE* stream = Utils::OpenFile(filename.c_str(), "wb");
+       
+        if (stream == nullptr)
         {
             LOG_ERROR("Unable to create output file %s", filename.c_str());
             return;
@@ -661,7 +668,7 @@ namespace IO
         //Header
         Utils::BinarizeU32(stream, SCORE_VERSION);
 
-        for (size_t i = firstIndex; i < lastIndex; ++i)
+        for (U64 i = firstIndex; i < lastIndex; ++i)
         {
             if (i == ToUnderlying(CompileCategory::OptimizeModule))
             {
@@ -687,10 +694,9 @@ namespace IO
 
         LOG_PROGRESS("Writing to file %s", filename);
 
-        FILE* stream;
-        const errno_t result = fopen_s(&stream, filename, "wb");
+        FILE* stream = Utils::OpenFile(filename, "wb");
 
-        if (result)
+        if (stream == nullptr)
         {
             LOG_ERROR("Unable to create output file %s", filename);
             return;

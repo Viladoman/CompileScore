@@ -1,5 +1,7 @@
 #pragma once
 
+#include "BasicTypes.h"
+
 #define LOG_ALWAYS(...)   { IO::Log(IO::Verbosity::Always,__VA_ARGS__);             IO::Log(IO::Verbosity::Always,"\n");}
 #define LOG_ERROR(...)    { IO::Log(IO::Verbosity::Always,"[ERROR] " __VA_ARGS__); IO::Log(IO::Verbosity::Always,"\n");}
 #define LOG_PROGRESS(...) { IO::Log(IO::Verbosity::Progress,__VA_ARGS__);           IO::Log(IO::Verbosity::Progress,"\n");}
@@ -44,7 +46,7 @@ namespace IO
         RawBuffer();
 
         char*  buff; 
-        size_t size;
+        U64    size;
     };
 
     RawBuffer ReadRawFile(const char* filename);
@@ -72,7 +74,7 @@ namespace IO
         TextOutputStream& operator = (TextOutputStream&& input) = delete;
 
         bool IsValid() const;
-        void Append(const char* txt, const size_t length);
+        void Append(const char* txt, const U64 length);
         void Append(const char* txt);
         void Append(const char c);
 

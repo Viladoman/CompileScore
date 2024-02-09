@@ -1,5 +1,7 @@
 #pragma once
 
+#include "BasicTypes.h"
+
 namespace Json
 { 
 	struct Token
@@ -28,7 +30,7 @@ namespace Json
 
 		constexpr Token(
 			const char* _str , 
-			const size_t _length, 
+			const U64 _length, 
 			const Type _type
 		)
 			: str(_str)
@@ -37,7 +39,7 @@ namespace Json
 		{}
 
 		const char* str; 
-		size_t length;
+		U64 length;
 		Type  type; 
 	};
 
