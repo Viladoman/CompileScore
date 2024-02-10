@@ -11,6 +11,18 @@ namespace IO
 { 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    namespace Helpers
+    {
+        constexpr size_t StrLength(const char* str)
+		{
+			size_t ret = 0;
+			for(;*str!='\0';++str,++ret){}
+			return ret;
+		}
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     struct DirectoryScanner::Impl
     { 
         using TTimestamp = fs::file_time_type::clock::time_point;
@@ -82,8 +94,8 @@ namespace IO
 #ifdef USE_STL_ISEXTENSION
         return fs::path(path).extension() == extension;
 #else
-        const size_t extensionLength = strlen(extension);
-        size_t pathIndex = strlen(path);
+        const size_t extensionLength = Helpers::StrLength(extension);
+        size_t pathIndex = Helpers::StrLength(path);
 
         //Find the real pathLength ( trim end spaces )
         while (pathIndex > 0 && path[pathIndex - 1] == ' ') --pathIndex;
