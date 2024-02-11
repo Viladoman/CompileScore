@@ -13,7 +13,7 @@ EXECUTABLE_FILE = $(EXECUTABLE_NAME:%=$(TARGET_DIR)/%)
 INCLUDES =  -I$(ROOT)src
 
 CXX = clang++
-CXXFLAGS = -std=c++20 -g -O2 -Wall -c $(INCLUDES)
+CXXFLAGS = -std=c++20 -g -O2 -Wall -ftime-trace -c $(INCLUDES)
 
 build: $(OBJECTS)
 	@mkdir -p $(TARGET_DIR)
