@@ -22,8 +22,8 @@ build: $(OBJECTS)
 	@echo "Build successful!"
 
 clean:
-	-rm $(OBJECTS)
-	-rm $(EXECUTABLE_FILE)
+	-rm -rf $(OBJECT_DIR)
+	-rm -rf $(TARGET_DIR)
 
 rebuild:
 	@make clean

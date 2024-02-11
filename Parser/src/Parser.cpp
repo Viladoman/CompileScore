@@ -392,6 +392,21 @@ namespace CompileScore
                 //This is a custom type
                 StructureRequirement& structure = Helpers::GetStructRequirement(recordDecl, m_sourceManager);
                 structure.simpleRequirements[requirement].emplace_back(Helpers::CreateFileLocation(location, m_sourceManager));
+
+                /*
+                if (const clang::ClassTemplateSpecializationDecl* templatedRecordDecl = clang::dyn_cast<clang::ClassTemplateSpecializationDecl>(declaration))
+                {
+                    const clang::TemplateArgumentList& argList = templatedRecordDecl->getTemplateArgs();
+
+                    for (int i = 0; i < argList.size(); ++i)
+                    {
+                        const clang::TemplateArgument& arg = argList.get(i);
+                        //TODO ~ ramonv ~ remap from instance/reference.... to template arg from that 
+                        RefineType(arg.getAsType(),location,);
+                    }
+
+                }
+                */
             }
         }
 
