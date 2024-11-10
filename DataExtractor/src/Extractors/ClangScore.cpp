@@ -135,7 +135,17 @@ namespace Clang
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	bool ProcessEvent(ScoreData& scoreData, CompileEvent& output, CompileUnitContext& context, Json::Reader& reader)
+	enum class ProcessEventPhase
+	{
+		Failure, 
+		Start, 
+		End,
+		Single,
+		Drop,
+	};
+
+	// -----------------------------------------------------------------------------------------------------------
+	ProcessEventPhase ProcessEvent(ScoreData& scoreData, CompileEvent& output, CompileUnitContext& context, Json::Reader& reader, fastl::vector<CompileEvent>& pendingStack )
 	{ 
 		constexpr static Json::Token tagName     = Utils::CreateLiteralToken("name");
 		constexpr static Json::Token tagStart    = Utils::CreateLiteralToken("ts");
@@ -143,6 +153,10 @@ namespace Clang
 		constexpr static Json::Token tagArgs     = Utils::CreateLiteralToken("args");
 		constexpr static Json::Token tagDetail   = Utils::CreateLiteralToken("detail");
 		constexpr static Json::Token tagThread   = Utils::CreateLiteralToken("tid");
+		constexpr static Json::Token tagPhase    = Utils::CreateLiteralToken("ph");
+
+		//we assume a token that we want to drop unless we got a start/end phase or a complete event one
+		ProcessEventPhase phase = ProcessEventPhase::Drop;
 
 		//Open Object token already parsed by the caller
 		Json::Token token; 
@@ -150,30 +164,30 @@ namespace Clang
 		{ 			
 			if (Utils::EqualTokens(token,tagName))
 			{
-				if (!reader.NextToken(token) || token.type != Json::Token::Type::String) return false;
+				if (!reader.NextToken(token) || token.type != Json::Token::Type::String) return ProcessEventPhase::Failure;
 				output.category = ToCompileCategory(token);
 				if (output.nameHash == 0ull) output.nameHash = CompileScore::StoreCategoryTagString(scoreData,token.str,token.length, output.category);
 			}
 			else if (Utils::EqualTokens(token,tagStart))
 			{
-				if (!reader.NextToken(token) || token.type != Json::Token::Type::Number) return false; 
+				if (!reader.NextToken(token) || token.type != Json::Token::Type::Number) return ProcessEventPhase::Failure;
 				output.start = Utils::TokenToU32(token);
 			}
 			else if (Utils::EqualTokens(token,tagDuration))
 			{
-				if (!reader.NextToken(token) || token.type != Json::Token::Type::Number) return false; 
+				if (!reader.NextToken(token) || token.type != Json::Token::Type::Number) return ProcessEventPhase::Failure;
 				output.duration     = Utils::TokenToU32(token);
 				output.selfDuration = output.duration;
 			}
 			else if (Utils::EqualTokens(token,tagArgs))
 			{
 				//Check the internal object
-				if (!reader.NextToken(token) || token.type != Json::Token::Type::ObjectOpen) return false; 
+				if (!reader.NextToken(token) || token.type != Json::Token::Type::ObjectOpen) return ProcessEventPhase::Failure;
 				while(reader.NextToken(token) && token.type != Json::Token::Type::ObjectClose)
 				{ 
 					if (Utils::EqualTokens(token,tagDetail))
 					{ 
-						if (!reader.NextToken(token) || token.type != Json::Token::Type::String) return false;
+						if (!reader.NextToken(token) || token.type != Json::Token::Type::String) return ProcessEventPhase::Failure;
 
 						if( output.category < CompileCategory::GatherFull )
 						{
@@ -188,7 +202,27 @@ namespace Clang
 			}
 			else if (Utils::EqualTokens(token, tagThread))
 			{
-				if (!reader.NextToken(token) || token.type != Json::Token::Type::Number) return false;
+				if (!reader.NextToken(token) || token.type != Json::Token::Type::Number) return ProcessEventPhase::Failure;
+			}
+			else if( Utils::EqualTokens( token, tagPhase ) )
+			{
+				if( !reader.NextToken( token ) || token.type != Json::Token::Type::String ) return ProcessEventPhase::Failure;
+
+				if( token.length == 1 )
+				{
+					if( ( *token.str == 'b' || *token.str == 'B' || *token.str == 's' || *token.str == 'S' ) )
+					{
+						phase = ProcessEventPhase::Start;
+					}
+					else if( ( *token.str == 'e' || *token.str == 'E' || *token.str == 'f' || *token.str == 'F' ) )
+					{
+						phase = ProcessEventPhase::End;
+					}
+					else if( *token.str == 'X' ) 
+					{
+						phase = ProcessEventPhase::Single;
+					}
+				}
 			}
 			else 
 			{
@@ -199,7 +233,30 @@ namespace Clang
 
 		//TODO ~ ramonv ~ demangle optimize function names
 
-		return true;
+		//Process Start/End events
+		if ( phase == ProcessEventPhase::Start )
+		{
+			//Start event, we don't know the duration yet, store into the stack until we recieve the corresponding end event
+			pendingStack.emplace_back( output );
+		}
+		else if ( phase == ProcessEventPhase::End )
+		{
+			if ( pendingStack.empty() )
+			{
+				LOG_ERROR( "Found End tracing event with an empty pending Stack");
+				return ProcessEventPhase::Failure;
+			}
+
+			// Fix the self duration and replace with event with full data
+			CompileEvent& originalEvent = pendingStack.back();
+			originalEvent.duration = output.start - originalEvent.start;
+			originalEvent.selfDuration = originalEvent.duration;
+			output = originalEvent;
+
+			pendingStack.pop_back();
+		}		
+
+		return phase;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
@@ -276,11 +333,22 @@ namespace Clang
 		Json::Token token; 
 		if (!reader.NextToken(token) || token.type != Json::Token::Type::ArrayOpen)  return false;
 		
+		fastl::vector<CompileEvent> pendingEventStack;
+
 		while (reader.NextToken(token) && token.type != Json::Token::Type::ArrayClose)
 		{ 
 			CompileEvent compileEvent; 
-			if (token.type != Json::Token::Type::ObjectOpen || !ProcessEvent(scoreData,compileEvent,context,reader)) return false;
-	
+			if (token.type != Json::Token::Type::ObjectOpen) 
+				return false;
+
+			const ProcessEventPhase processResult = ProcessEvent( scoreData, compileEvent, context, reader, pendingEventStack );
+
+			if ( processResult == ProcessEventPhase::Failure ) 
+				return false;
+
+			if( processResult == ProcessEventPhase::Start || processResult == ProcessEventPhase::Drop )
+				continue;
+			
 			if (compileEvent.category == CompileCategory::FrontEnd)
 			{
 				context.startTime[0] = compileEvent.start;
@@ -294,6 +362,12 @@ namespace Clang
 			{ 
 				AddEventToTimeline(timeline,compileEvent);
 			}
+		}
+
+		if ( !pendingEventStack.empty() )
+		{
+			LOG_ERROR( "Mismatching Begin/End tracing events for %s ( pending stack size of %d )", path, pendingEventStack.size() );
+			return false;
 		}
 
 		//From here we can ignore the rest of the file
