@@ -153,6 +153,11 @@ namespace CompileScore.Timeline
         {
             uint numEvents = reader.ReadUInt32();
 
+            if (numEvents == 0)
+            { 
+                return null; 
+            }
+
             TimelineNode root = new TimelineNode(CompilerData.CompileCategory.Thread.ToString(), 0, 0, CompilerData.CompileCategory.Thread);
 
             TimelineNode parent = root;
@@ -225,6 +230,12 @@ namespace CompileScore.Timeline
             for (uint i=0;i<numTracks;++i)
             {
                 TimelineNode tree = BuildTimelineTree(reader);
+
+                if ( tree == null )
+                {
+                    //skip invalid and empty tracks
+                    continue;
+                }
 
                 if (tree.Children.Count > 0 && tree.Children[0].Category == CompilerData.CompileCategory.ExecuteCompiler)
                 {

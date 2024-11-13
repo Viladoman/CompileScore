@@ -18,6 +18,9 @@ namespace Clang
 
 	namespace Utils
 	{ 
+		// -----------------------------------------------------------------------------------------------------------
+		template <typename T> inline constexpr T Min( const T a, const T b ) { return a < b ? a : b; }
+
 		//------------------------------------------------------------------------------------------
 		constexpr size_t StrLength(const char* str)
 		{
@@ -275,21 +278,33 @@ namespace Clang
 	// -----------------------------------------------------------------------------------------------------------
 	void NormalizeStartTimes(const char* path, CompileUnitContext& context, ScoreTimeline& timeline)
 	{ 
-		TCompileEvents& events = timeline.tracks[0]; 
-
-		if (!events.empty())
+		//Retrieve the first event start time
+		U32 offset = 0u; 
+		for ( size_t i = 0, sz = timeline.tracks.size(); i < sz; ++i)
 		{
-			const U32 offset = events[0].start;
+			const TCompileEvents& events = timeline.tracks[i];
+			offset = events.empty() ? offset : Utils::Min( events[0].start, offset);
+		}
 
-			//Base the start times on the .json creation time instead of relying on consistent in json wall clock time
-			const U64 fileEndTime = IO::GetLastWriteTimeInMicros(path);
-			const U64 fileStartTime = fileEndTime - events[0].duration;
-			context.startTime[0] = fileStartTime + (context.startTime[0] - offset);
-			context.startTime[1] = fileStartTime + (context.startTime[1] - offset);
+		//Offset all events 
+		if ( offset > 0u )
+		{
+			for( size_t i = 0, sz = timeline.tracks.size(); i < sz; ++i )
+			{
+				TCompileEvents& events = timeline.tracks[i]; 
+				if( !events.empty() )
+				{
+					//Base the start times on the .json creation time instead of relying on consistent in json wall clock time
+					const U64 fileEndTime = IO::GetLastWriteTimeInMicros( path );
+					const U64 fileStartTime = fileEndTime - events[ 0 ].duration;
+					context.startTime[ 0 ] = fileStartTime + ( context.startTime[ 0 ] - offset );
+					context.startTime[ 1 ] = fileStartTime + ( context.startTime[ 1 ] - offset );
 
-			for (CompileEvent& entry : events)
-			{ 
-				entry.start -= offset;
+					for( CompileEvent& entry : events )
+					{
+						entry.start -= offset;
+					}
+				}
 			}
 		}
 	}
