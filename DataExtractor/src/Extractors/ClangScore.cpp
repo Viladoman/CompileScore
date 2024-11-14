@@ -2,6 +2,7 @@
 
 #include "../Common/CommandLine.h"
 #include "../Common/Context.h"
+#include "../Common/CRC64.h"
 #include "../Common/DirectoryUtils.h"
 #include "../Common/JsonParser.h"
 #include "../Common/IOStream.h"
@@ -263,10 +264,34 @@ namespace Clang
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
+	U8 GetTrack( const CompileEvent& compileEvent )
+	{
+		//Move some events to a different track 
+
+		enum AlternativeTrackNames : U64 
+		{ 
+			ParseDeclaration = Hash::CreateCompileTimeCRC64( "ParseDeclarationOrFunctionDefinition" ),
+			ParseFunction    = Hash::CreateCompileTimeCRC64( "ParseFunctionDefinition" ),
+		};
+
+		if( compileEvent.category == CompileCategory::Other && ( compileEvent.nameHash == ParseDeclaration || compileEvent.nameHash == ParseFunction ) )
+		{
+			return 1u;
+		}
+
+		return 0u;
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
 	void AddEventToTimeline(ScoreTimeline& timeline, const CompileEvent& compileEvent)
 	{ 
+		const U8 track = GetTrack(compileEvent);
+
+		//Make sure we have the track ready for this upcoming event 
+		while( track >= timeline.tracks.size() ) { timeline.tracks.emplace_back(); }
+
 		//inject in a sorted position
-		TCompileEvents& events = timeline.tracks[0]; 
+		TCompileEvents& events = timeline.tracks[ track ]; 
 		TCompileEvents::iterator found = fastl::lower_bound(events.begin(),events.end(),compileEvent,
 			[=](const CompileEvent& input, const CompileEvent& value)
 			{ 
@@ -332,7 +357,6 @@ namespace Clang
 		CompileUnitContext context;
 
 		ScoreTimeline timeline;
-		timeline.tracks.emplace_back(); //we only use one events track in Clang
 
 		fastl::string inputPath{path};
 		StringUtils::NormalizePath(inputPath);
