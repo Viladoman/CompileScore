@@ -317,6 +317,7 @@ namespace CompileScore
         }
         static public Solution GetActiveSolution()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             DTE2 applicationObject = ServiceProvider.GetService(typeof(SDTE)) as DTE2;
             Assumes.Present(applicationObject);
             return applicationObject.Solution;
