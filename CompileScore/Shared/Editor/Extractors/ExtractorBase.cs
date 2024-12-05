@@ -121,6 +121,7 @@ namespace CompileScore
                 AppendMSBuildStringToList(projProperties.PrepocessorDefinitions, evaluator.Evaluate(evaluatorExtra.Evaluate(customSettings.AdditionalPreprocessorDefinitions)));
                 projProperties.ExtraArguments += evaluator.Evaluate(evaluatorExtra.Evaluate(customSettings.AdditionalCommandLine));
                 projProperties.ShowWarnings = customSettings.EnableWarnings;
+                projProperties.Standard = customSettings.LanguageStandard != ProjectProperties.StandardVersion.Default ? customSettings.LanguageStandard : projProperties.Standard;
             }
         }
     }

@@ -65,6 +65,9 @@ namespace CompileScore
         [UIDescription(Label = "Automatic Extraction", Tooltip = "If true, it will try to extract the architecture, include paths, preprocessor macros... from the current solution.")]
         public bool AutomaticExtraction { set; get; } = true;
 
+        [UIDescription(Label = "Language Standard", Tooltip = "The Language standard to use when invoking the parser (Default) for untouched.")]
+        public ProjectProperties.StandardVersion LanguageStandard { set; get; } = ProjectProperties.StandardVersion.Default;
+
         [UIDescription(Label = "Explicit Commands File", FilterMethod = "DisplayCMakeCommandsFile", Tooltip = "File location for the build commands exported by CMAKE_EXPORT_COMPILE_COMMANDS=1 (This fields allows a limited set of $(SolutionDir) style macros)")]
         public string CMakeCommandsFile { set; get; } = "";
 
@@ -85,7 +88,6 @@ namespace CompileScore
 
         [UIDescription(Label = "Parser Output Folder", Tooltip = "File location where the Clang Parser will output the layout results. This files are temporary. This field will default to the extension installation folder. (This fields allows $(SolutionDir) style macros)")]
         public string ParserOutputFolder { set; get; } = "";
-
     };
 
 
